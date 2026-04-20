@@ -11,6 +11,7 @@ import com.flightsystem.model.PaymentRequest
 import com.flightsystem.model.PriceHold
 import com.flightsystem.model.PriceHoldSeats
 import com.flightsystem.model.PriceHolds
+import com.flightsystem.model.Users
 import com.flightsystem.service.AuthenticationService
 import com.flightsystem.service.CheckoutService
 import com.flightsystem.service.LoyaltyService
@@ -155,7 +156,7 @@ data class CreateBookingRequest(
 
 @Serializable
 data class CreateHoldRequest(
-    val userId: Int,
+    val userId: Int?,
     val flightId: String,
     val seatNumbers: List<String>
 )
@@ -217,6 +218,7 @@ fun Application.configureRouting() {
         staticResources("/log_in", "static/user/log_in")
         staticResources("/home", "static/user/home")
         staticResources("/images", "static/Images")
+        staticResources("/loyalty", "static/user/loyalty")
         staticResources("/manager/flight_view", "static/manager/flight_view")
         staticResources("/manager/home", "static/manager/home")
         staticResources("/manager/support", "static/manager/support")
@@ -710,7 +712,28 @@ fun Application.configureRouting() {
                 val request = call.receive<CreateHoldRequest>()
                 val priceHoldService = PriceHoldService()
 
-                var userId = request.userId
+                var userId = request.userId ?: transaction {
+                    val guestEmail = "guest@astraeus.local"
+                    val existingGuest = Users.selectAll().where {
+                        Users.email eq guestEmail
+                    }.singleOrNull()
+
+                    if (existingGuest != null) {
+                        existingGuest[Users.userId]
+                    } else {
+                        val insertedGuest = Users.insert {
+                            it[firstName] = "Guest"
+                            it[lastName] = "Customer"
+                            it[dateOfBirth] = "1900-01-01"
+                            it[email] = guestEmail
+                            it[passwordHash] = "guest"
+                            it[salt] = "guest"
+                            it[role] = "USER"
+                        }
+
+                        insertedGuest[Users.userId]
+                    }
+                }
                 var flightId = request.flightId
                 val seatNumbers = request.seatNumbers
 
@@ -728,6 +751,8 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.BadRequest, "Error while creating hold")
             }
         }
+        get("/addons") {
+            call.respondFile(File("src/main/resources/static/user/loyalty/addons.html"))
+        }
     }
 }
-
