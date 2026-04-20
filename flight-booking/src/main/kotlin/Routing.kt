@@ -336,7 +336,7 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.Created, savedPassengers)
         }
 
-        route("/api/passengers") {
+        route("/api/tickets") {
             post {
                 val request = call.receive<CreateTicketRequest>()
                 val createdTicket = ticketService.createTicket(request)
@@ -359,7 +359,9 @@ fun Application.configureRouting() {
                 val updatedTicket = ticketService.updateTicket(id, request)
 
                 if (updatedTicket == null) {
-                    call.respond(HttpStatusCode.NotFound, "Ticket not found")
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        "Ticket update failed. Ticket may not exist, or booking change could not be processed")
                 } else {
                     call.respond(HttpStatusCode.OK, updatedTicket)
                 }
@@ -574,7 +576,7 @@ fun Application.configureRouting() {
             ))
         }
 
-
+        /* 
         post("/api/auth/login") {
             val request = call.receive<LoginRequest>()
             val authenticationService = AuthenticationService()
@@ -605,6 +607,7 @@ fun Application.configureRouting() {
                 )
             }
         }
+        */
 
         post("/api/auth/register") {
             val request = call.receive<RegisterRequest>()
