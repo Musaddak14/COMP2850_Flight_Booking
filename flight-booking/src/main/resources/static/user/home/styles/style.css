@@ -45,14 +45,10 @@ body {
 /* CENTER NAVIGATION- MAIN LINKS) */
 /* -----------------------------  */
 
-.center-nav{
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+.center-nav {
     display: flex;
-    gap: clamp(15px, 4vw, 60px);
+    gap: clamp(15px, 4vw, 40px);
     white-space: nowrap;
-    /* keeps links in one line */
     min-width: 0;
 }
 
@@ -149,7 +145,6 @@ body {
     color: #011;       
     font-weight: 500;
     font-size: clamp(12px, 1.3vw, 16px);
-
 }
 
 .top-nav a:hover {

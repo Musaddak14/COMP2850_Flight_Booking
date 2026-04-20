@@ -216,6 +216,10 @@ fun Application.configureRouting() {
             )
         }
 
+        get("/support") {
+            call.respondFile(File("src/main/resources/static/user/support/support.html"))
+        }
+
 
 
 
