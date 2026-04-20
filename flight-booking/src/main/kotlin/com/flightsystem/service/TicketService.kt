@@ -11,6 +11,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import java.time.LocalDateTime
 
+
 class TicketService {
 
     fun createTicket(request: CreateTicketRequest): TicketResponse {
@@ -69,6 +70,9 @@ class TicketService {
         return transaction {
             val now = LocalDateTime.now().toString()
 
+            // reuse existing booking logic 
+            val bookingService = BookingService()
+
             val row = SupportTickets.selectAll().firstOrNull { resultRow ->
                 resultRow[SupportTickets.suppTickId] == ticketId
             }
@@ -76,11 +80,29 @@ class TicketService {
             if (row == null) {
                 null
             } else {
+                if(
+                    request.status == TicketStatus.RESOLVED &&
+                    row[SupportTickets.requestType] == "CHANGE_BOOKING"
+                ) {
+                    val managerNote = request.managerNote ?: ""
+                    val newSeatNumbers = managerNote
+                        .split(",")
+                        .map { it.trim() }
+                        .filter { it.isNotBlank() }
+
+                    val bookingUpdated = bookingService.updateBookingSeats(
+                        bookingId = row[SupportTickets.bookingId],
+                        newSeatNumbers = newSeatNumbers
+                    )
+                    if (!bookingUpdated) {
+                        return@transaction null
+                    }
+                }
                 SupportTickets.update({ SupportTickets.suppTickId eq ticketId }) {
                     it[status] = request.status
                     it[updatedAt] = now
                     it[managerNote] = request.managerNote
-                }
+                }   
 
                 TicketResponse(
                     id = row[SupportTickets.suppTickId],
