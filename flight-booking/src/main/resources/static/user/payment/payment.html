@@ -117,6 +117,25 @@
                 <label>Total</label>
                 <p id="summary-total">To be confirmed</p>
             </div>
+
+            <div class="user_input_box">
+                <label>Your loyalty points</label>
+                <p id="points-balance">Not available</p>
+            </div>
+
+            <div class="user_input_box">
+                <label>
+                    <input type="checkbox" id="use-points-checkbox">
+                    Use points to reduce the price
+                </label>
+            </div>
+
+            <div class="user_input_box" id="points-section" style="display: none;">
+                <label>Points to use</label>
+                <input type="number" id="points-to-redeem" min="0" value="0" step="1">
+                <p id="points-discount">Discount: £0.00</p>
+                <p id="final-total">Final total: To be confirmed</p>
+            </div>
         </div>
 
     </div>
@@ -126,8 +145,15 @@
     const pendingBookingRequestRaw = sessionStorage.getItem("pendingBookingRequest");
     const bookingDraftRaw = sessionStorage.getItem("bookingDraft");
     let bookingData = null;
+    let loyaltyPoints = 0;
     const message = document.getElementById("payment-message");
     const payButton = document.getElementById("pay-btn");
+    const pointsBalance = document.getElementById("points-balance");
+    const usePointsCheckbox = document.getElementById("use-points-checkbox");
+    const pointsSection = document.getElementById("points-section");
+    const pointsInput = document.getElementById("points-to-redeem");
+    const pointsDiscount = document.getElementById("points-discount");
+    const finalTotal = document.getElementById("final-total");
 
     try {
         bookingData = pendingBookingRequestRaw
@@ -208,6 +234,52 @@
         return selections.length > 0 ? selections.join(", ") : "No add-ons selected";
     }
 
+    function getCurrentUserId() {
+        const rawUserId = sessionStorage.getItem("userId");
+        const parsedUserId = Number(rawUserId);
+        return Number.isFinite(parsedUserId) ? parsedUserId : null;
+    }
+
+    function calculateDiscount(points) {
+        return points / 10;
+    }
+
+    function updateLoyaltyDisplay() {
+        const totalPrice = Number(bookingData?.totalPrice) || 0;
+
+        if (!usePointsCheckbox.checked) {
+            pointsSection.style.display = "none";
+            pointsDiscount.textContent = "Discount: £0.00";
+            finalTotal.textContent = `Final total: ${formatCurrency(totalPrice)}`;
+            return;
+        }
+
+        pointsSection.style.display = "block";
+
+        let pointsToRedeem = Number(pointsInput.value) || 0;
+
+        if (pointsToRedeem < 0) {
+            pointsToRedeem = 0;
+        }
+
+        if (pointsToRedeem > loyaltyPoints) {
+            pointsToRedeem = loyaltyPoints;
+        }
+
+        const maxUsefulPoints = Math.floor(totalPrice * 10);
+        if (pointsToRedeem > maxUsefulPoints) {
+            pointsToRedeem = maxUsefulPoints;
+        }
+
+        pointsInput.value = pointsToRedeem;
+
+        const discount = calculateDiscount(pointsToRedeem);
+        const updatedTotal = Math.max(0, totalPrice - discount);
+
+        pointsDiscount.textContent = `Discount: ${formatCurrency(discount)}`;
+        finalTotal.textContent = `Final total: ${formatCurrency(updatedTotal)}`;
+    }
+
     document.getElementById("summary-route").textContent = bookingData?.from && bookingData?.to
         ? `${bookingData.from} → ${bookingData.to}`
         : "Not available";
@@ -216,6 +288,52 @@
     document.getElementById("summary-seat").textContent = getSeatSummary(bookingData);
     document.getElementById("summary-loyalty").textContent = getAddOnSummary(bookingData);
     document.getElementById("summary-total").textContent = formatCurrency(Number(bookingData?.totalPrice));
+
+    finalTotal.textContent = `Final total: ${formatCurrency(Number(bookingData?.totalPrice))}`;
+
+    async function loadLoyaltyBalance() {
+        const userId = getCurrentUserId();
+
+        if (!userId) {
+            pointsBalance.textContent = "Log in to use loyalty points";
+            usePointsCheckbox.disabled = true;
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/loyalty/${userId}`);
+            const text = await response.text();
+
+            let account = null;
+            try {
+                account = text ? JSON.parse(text) : null;
+            } catch {
+                account = null;
+            }
+
+            if (!response.ok || !account) {
+                pointsBalance.textContent = "No loyalty account found";
+                usePointsCheckbox.disabled = true;
+                return;
+            }
+
+            loyaltyPoints = account.loyaltyPoints ?? 0;
+            pointsBalance.textContent = `${loyaltyPoints} points`;
+            pointsInput.max = loyaltyPoints.toString();
+
+            if (loyaltyPoints <= 0) {
+                usePointsCheckbox.disabled = true;
+            }
+        } catch {
+            pointsBalance.textContent = "Unable to load points";
+            usePointsCheckbox.disabled = true;
+        }
+    }
+
+    usePointsCheckbox.addEventListener("change", updateLoyaltyDisplay);
+    pointsInput.addEventListener("input", updateLoyaltyDisplay);
+
+    loadLoyaltyBalance();
 
     if (!bookingData?.holdId) {
         message.textContent = "Your booking hold is missing. Return to seat selection and try again.";
@@ -254,7 +372,7 @@
                     expiryYear: year,
                     cvv: cvv,
                     billingAddress: address,
-                    pointsToRedeem: 0
+                    pointsToRedeem: usePointsCheckbox.checked ? Number(pointsInput.value) || 0 : 0
                 })
             });
 
