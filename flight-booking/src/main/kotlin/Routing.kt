@@ -647,6 +647,23 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/user/loyalty/loyaltypage.html"))
         }
 
+        get("/api/loyalty/{userId}") {
+            val userId = call.parameters["userId"]?.toIntOrNull()
+            if (userId == null) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid user ID")
+                return@get
+            }
+
+            val loyaltyService = LoyaltyService()
+            val loyaltyAccount = loyaltyService.getLoyaltyAccount(userId)
+
+            if (loyaltyAccount == null) {
+                call.respond(HttpStatusCode.NotFound, "No loyalty account found")
+            } else {
+                call.respond(HttpStatusCode.OK, loyaltyAccount)
+            }
+        }
+
         get("/checkout") {
             call.respondFile(File("src/main/resources/static/user/payment/payment.html"))
         }
