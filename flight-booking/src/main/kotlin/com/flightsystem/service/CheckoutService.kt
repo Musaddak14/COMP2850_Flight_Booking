@@ -23,9 +23,9 @@ class CheckoutService(
     private val emailService = EmailService(
         smtpHost = "smtp.gmail.com",
         smtpPort = "587",
-        smtpUsername = "",
-        smtpPassword = "",
-        fromEmail = "YOUR_EMAIL@gmail.com"
+        smtpUsername = System.getenv("SMTP_USERNAME") ?: error("SMTP_USERNAME not defined"),
+        smtpPassword = System.getenv("SMTP_PASSWORD") ?: error("SMTP_PASSWORD not defined"),
+        fromEmail = System.getenv("SMTP_USERNAME") ?: error("FROM_SMTP_USERNAME not defined"),
     )
 
     private fun getUserEmailAndName(userId: Int): Pair<String, String>? {
@@ -173,6 +173,8 @@ class CheckoutService(
                 val date = flightDetails?.second ?: "Date unavailable"
                 val timeRange = flightDetails?.third ?: "Time unavailable"
 
+                
+
                 val ticketPdf = ticketPdfService.generateTicketPdf(
                     bookingId = booking.bookingId.toString(),
                     passengerName = fullName,
@@ -192,8 +194,11 @@ class CheckoutService(
                     total = finalAmount,
                     ticketPdfBytes = ticketPdf
                 )
+
+                println("Booking confirmed!")
             }
         } catch (e: Exception) {
+            e.printStackTrace()
             println("Booking email failed to send: ${e.message}")
         }
 
