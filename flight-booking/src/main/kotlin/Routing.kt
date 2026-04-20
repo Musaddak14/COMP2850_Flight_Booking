@@ -423,6 +423,10 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/manager/home/manager_home.html"))
         }
 
+        get("/manager/support") {
+            call.respondFile(File("src/main/resources/static/manager/support/support.html"))
+        }
+
         post("/checkout") {
             val request = call.receive<CheckoutRequest>()
 
