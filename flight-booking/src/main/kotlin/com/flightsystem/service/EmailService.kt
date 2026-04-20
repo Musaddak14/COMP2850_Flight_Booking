@@ -47,7 +47,7 @@ class EmailService(
         val message = MimeMessage(session)
         message.setFrom(InternetAddress(fromEmail))
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail))
-        message.subject = "Booking Confirmation - $bookingId"
+        message.subject = "Astraeus Airways Booking Confirmation - $bookingId"
 
         val textPart = MimeBodyPart()
         textPart.setText(
