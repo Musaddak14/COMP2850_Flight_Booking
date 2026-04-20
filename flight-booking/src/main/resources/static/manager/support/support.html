@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Support Tickets</title>
+</head>
+<body>
+    <h1>Support Tickets</h1>
+
+    <button onclick="loadTickets()">Refresh Tickets</button>
+    <br><br>
+
+    <div id="ticketList"></div>
+
+    <script>
+        async function loadTickets() {
+            const response = await fetch("/api/tickets");
+            const tickets = await response.json();
+
+            const ticketList = document.getElementById("ticketList");
+            ticketList.innerHTML = "";
+
+            if (tickets.length === 0) {
+                ticketList.innerHTML = "<p>No tickets found.</p>";
+                return;
+            }
+
+            tickets.forEach(ticket => {
+                const ticketDiv = document.createElement("div");
+                ticketDiv.style.border = "1px solid black";
+                ticketDiv.style.padding = "10px";
+                ticketDiv.style.marginBottom = "10px";
+
+                ticketDiv.innerHTML = `
+                    <p><strong>Ticket ID:</strong> ${ticket.id}</p>
+                    <p><strong>Booking ID:</strong> ${ticket.bookingId}</p>
+                    <p><strong>Name:</strong> ${ticket.customerName}</p>
+                    <p><strong>Email:</strong> ${ticket.customerEmail}</p>
+                    <p><strong>Request Type:</strong> ${ticket.requestType}</p>
+                    <p><strong>Message:</strong> ${ticket.message}</p>
+                    <p><strong>Current Status:</strong> ${ticket.status}</p>
+
+                    <label>Update Status:</label>
+                    <select id="status-${ticket.id}">
+                        <option value="OPEN">OPEN</option>
+                        <option value="IN_PROGRESS">IN_PROGRESS</option>
+                        <option value="RESOLVED">RESOLVED</option>
+                        <option value="REJECTED">REJECTED</option>
+                    </select>
+                    <br><br>
+
+                    <label>Manager Note:</label><br>
+                    <textarea id="note-${ticket.id}" rows="3" cols="40">${ticket.managerNote ?? ""}</textarea>
+                    <br><br>
+
+                    <button onclick="updateTicket(${ticket.id})">Update Ticket</button>
+                    <p id="result-${ticket.id}"></p>
+                `;
+
+                ticketList.appendChild(ticketDiv);
+
+                document.getElementById(`status-${ticket.id}`).value = ticket.status;
+            });
+        }
+
+        async function updateTicket(ticketId) {
+            const status = document.getElementById(`status-${ticketId}`).value;
+            const managerNote = document.getElementById(`note-${ticketId}`).value;
+
+            const response = await fetch(`/api/tickets/${ticketId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    status: status,
+                    managerNote: managerNote
+                })
+            });
+
+            const result = document.getElementById(`result-${ticketId}`);
+
+            if (response.ok) {
+                result.textContent = "Ticket updated successfully.";
+                loadTickets();
+            } else {
+                result.textContent = "Failed to update ticket.";
+            }
+        }
+
+        loadTickets();
+    </script>
+</body>
+</html>
