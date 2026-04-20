@@ -133,6 +133,10 @@
     const backButton = document.querySelector(".btnb");
     const handoffMessage = document.getElementById("handoff-message");
 
+    if (bookingDraft && typeof bookingDraft.baseFareTotal !== "number") {
+        bookingDraft.baseFareTotal = Number(bookingDraft.totalPrice) || Number(bookingDraft.price) || 0;
+    }
+
     function getPassengerOneName() {
         if (!bookingDraft || !Array.isArray(bookingDraft.passengers) || bookingDraft.passengers.length === 0) {
             return "Guest";
@@ -255,7 +259,7 @@
     }
 
     function calculateLiveTotal() {
-        const baseFare = Number(bookingDraft?.totalPrice) || 0;
+        const baseFare = Number(bookingDraft?.baseFareTotal) || 0;
         const baggagePrice = getSelectedRadioPrice("bag");
         const mealPrice = getSelectedRadioPrice("meal");
         const insurancePrice = getSelectedRadioPrice("ins");
@@ -269,7 +273,7 @@
 
     function updateLiveTotalDisplay() {
         const total = calculateLiveTotal();
-        const baseFare = Number(bookingDraft?.totalPrice) || 0;
+        const baseFare = Number(bookingDraft?.baseFareTotal) || 0;
 
         const sumBaseEl = document.getElementById("sum-base");
         const totalEl = document.getElementById("tot");
@@ -459,7 +463,7 @@
 
         const passengers = Array.isArray(bookingDraft.passengers) ? bookingDraft.passengers : [];
         const seatNumbers = Array.isArray(bookingDraft.seatNumbers) ? bookingDraft.seatNumbers : [];
-        const parsedTotalPrice = Number(bookingDraft.totalPrice);
+        const baseFareTotal = Number(bookingDraft.baseFareTotal) || Number(bookingDraft.totalPrice) || Number(bookingDraft.price) || 0;
 
         bookingDraft = {
             ...bookingDraft,
@@ -472,6 +476,7 @@
             cabin: bookingDraft.cabin ?? "Economy",
             passengers,
             seatNumbers,
+            baseFareTotal,
             baggage: getSelectedOption("bag"),
             meal: getSelectedOption("meal"),
             insurance: getSelectedOption("ins"),
@@ -492,7 +497,7 @@
 
         bookingDraft.holdId = bookingDraft.holdId ?? null;
         bookingDraft.holdExpiryTime = bookingDraft.holdExpiryTime ?? null;
-        bookingDraft.totalPrice = Number.isFinite(parsedTotalPrice) ? parsedTotalPrice : null;
+        bookingDraft.totalPrice = calculateLiveTotal();
 
         sessionStorage.setItem("bookingDraft", JSON.stringify(bookingDraft));
         sessionStorage.setItem("pendingBookingRequest", JSON.stringify(buildBookingHandoff(bookingDraft)));
