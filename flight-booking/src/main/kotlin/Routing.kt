@@ -11,6 +11,7 @@ import com.flightsystem.model.PaymentRequest
 import com.flightsystem.model.PriceHold
 import com.flightsystem.model.PriceHoldSeats
 import com.flightsystem.model.PriceHolds
+import com.flightsystem.model.Users
 import com.flightsystem.service.AuthenticationService
 import com.flightsystem.service.CheckoutService
 import com.flightsystem.service.LoyaltyService
@@ -155,7 +156,7 @@ data class CreateBookingRequest(
 
 @Serializable
 data class CreateHoldRequest(
-    val userId: Int,
+    val userId: Int?,
     val flightId: String,
     val seatNumbers: List<String>
 )
@@ -169,6 +170,18 @@ data class CreateHoldResponse(
     val totalPrice: Double,
     val expiryTime: String
 )
+
+
+@Serializable
+data class AccountSummary (
+    val userId: Int,
+    val firstName: String,
+    val lastName: String,
+    val membershipNumber: String,
+    val membershipTier: String,
+    val loyaltyPoints: Int
+)
+
 
 fun Application.configureRouting() {
     val authenticationService = AuthenticationService()
@@ -205,6 +218,7 @@ fun Application.configureRouting() {
         staticResources("/log_in", "static/user/log_in")
         staticResources("/home", "static/user/home")
         staticResources("/images", "static/Images")
+        staticResources("/loyalty", "static/user/loyalty")
         staticResources("/manager/flight_view", "static/manager/flight_view")
         staticResources("/manager/home", "static/manager/home")
         staticResources("/manager/support", "static/manager/support")
@@ -225,6 +239,10 @@ fun Application.configureRouting() {
             )
         }
 
+        get("/payment") {
+            call.respondFile(File("src/main/resources/static/user/payment/payment.html"))
+        }
+
 
 
 
@@ -240,6 +258,51 @@ fun Application.configureRouting() {
                 }
             }
             call.respond(airportData)
+        }
+
+        get("/api/account-summary") {
+            val userIdParam = call.request.queryParameters["userId"]
+
+            if (userIdParam.isNullOrBlank()) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse("Missing userId")
+                )
+                return@get
+            }
+
+            val userId = userIdParam.toIntOrNull()
+            if (userId == null) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse("Invalid userId")
+                )
+                return@get
+            }
+
+            val user = authenticationService.findById(userId)
+            if (user == null) {
+                call.respond(
+                    HttpStatusCode.NotFound,
+                    ErrorResponse("User not found")
+                )
+                return@get
+            }
+
+            val loyaltyAccount = LoyaltyService().getLoyaltyAccount(userId)
+            val points = loyaltyAccount?.loyaltyPoints ?: 0
+
+            call.respond(
+                HttpStatusCode.OK,
+                AccountSummary(
+                    userId = user.userId,
+                    firstName = user.firstName,
+                    lastName = user.lastName,
+                    membershipNumber = "BA-${user.userId}",
+                    membershipTier = "Member",
+                    loyaltyPoints = points
+                )
+            )
         }
 
 
@@ -649,7 +712,28 @@ fun Application.configureRouting() {
                 val request = call.receive<CreateHoldRequest>()
                 val priceHoldService = PriceHoldService()
 
-                var userId = request.userId
+                var userId = request.userId ?: transaction {
+                    val guestEmail = "guest@astraeus.local"
+                    val existingGuest = Users.selectAll().where {
+                        Users.email eq guestEmail
+                    }.singleOrNull()
+
+                    if (existingGuest != null) {
+                        existingGuest[Users.userId]
+                    } else {
+                        val insertedGuest = Users.insert {
+                            it[firstName] = "Guest"
+                            it[lastName] = "Customer"
+                            it[dateOfBirth] = "1900-01-01"
+                            it[email] = guestEmail
+                            it[passwordHash] = "guest"
+                            it[salt] = "guest"
+                            it[role] = "USER"
+                        }
+
+                        insertedGuest[Users.userId]
+                    }
+                }
                 var flightId = request.flightId
                 val seatNumbers = request.seatNumbers
 
@@ -667,6 +751,8 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.BadRequest, "Error while creating hold")
             }
         }
+        get("/addons") {
+            call.respondFile(File("src/main/resources/static/user/loyalty/addons.html"))
+        }
     }
 }
-
