@@ -1,8 +1,10 @@
 package com.flightsystem.model
 
 import org.jetbrains.exposed.sql.Table
+import kotlinx.serialization.Serializable
 
 // one loyalty account per user with a current points balance 
+@Serializable
 data class LoyaltyAccount(
     val userId: Int,
     val loyaltyPoints: Int

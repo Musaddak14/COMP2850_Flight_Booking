@@ -6,6 +6,151 @@
     <title>Select Seats</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../home/styles/style.css">
+
+<style>
+    .seat-page {
+        max-width: 760px;
+        margin: 40px auto;
+        padding: 30px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    #seat-map {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+        margin-bottom: 24px;
+    }
+
+    .cabin-section-header {
+        text-align: center;
+        font-weight: 600;
+        font-size: 15px;
+        color: #333;
+        margin: 14px 0 6px;
+    }
+
+    .seat-row {
+        display: grid;
+        grid-template-columns: repeat(3, 42px) 50px repeat(3, 42px);
+        justify-content: center;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .col-labels {
+        display: grid;
+        grid-template-columns: repeat(3, 42px) 50px repeat(3, 42px);
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        font-weight: 600;
+        color: #555;
+    }
+
+    .col-label,
+    .row-num {
+        text-align: center;
+    }
+
+    .seat {
+        width: 42px;
+        height: 42px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .seat.available {
+        background: #4CAF50;
+    }
+
+    .seat.business-zone.available {
+        background: #d4af37;
+    }
+
+    .seat.premium-zone.available {
+        background: #2aa198;
+    }
+
+    .seat.economy-zone.available {
+        background: #4CAF50;
+    }
+
+    .seat.taken,
+    .seat.business-zone.taken,
+    .seat.premium-zone.taken,
+    .seat.economy-zone.taken {
+        background: #bdbdbd;
+        cursor: not-allowed;
+    }
+
+    .seat.selected,
+    .seat.business-zone.selected,
+    .seat.premium-zone.selected,
+    .seat.economy-zone.selected {
+        background: #2196F3;
+    }
+
+    .seat.exit-seat {
+        background: #f44336;
+        cursor: not-allowed;
+    }
+
+    .seat.wrong-cabin {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    .key {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin: 22px 0 16px;
+        font-size: 14px;
+    }
+
+    .key-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .key-box {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+    }
+
+    .key-box.business {
+        background: #d4af37;
+    }
+
+    .key-box.premium {
+        background: #2aa198;
+    }
+
+    .key-box.economy {
+        background: #4CAF50;
+    }
+
+    .key-box.taken {
+        background: #bdbdbd;
+    }
+
+    .key-box.selected {
+        background: #2196F3;
+    }
+
+    .key-box.exit {
+        background: #f44336;
+    }
+</style>
+
 </head>
 <body>
 
@@ -52,11 +197,10 @@
 
     <!-- colour key -->
     <div class="key">
-        <div class="key-item><div class="key-box business"></div>Business</div>
-        <div class="key-item><div class="key-box premium"></div>Premium Economy</div>
-        <div class="key-item><div class="key-box economy"></div>Economy</div>
+        <div class="key-item"><div class="key-box business"></div>Business</div>
+        <div class="key-item"><div class="key-box premium"></div>Premium Economy</div>
+        <div class="key-item"><div class="key-box economy"></div>Economy</div>
         <div class="key-item"><div class="key-box taken"></div>Taken</div>
-        <div class="key-item"><div class="key-box available"></div>Available</div>
         <div class="key-item"><div class="key-box selected"></div>Selected</div>
         <div class="key-item"><div class="key-box exit"></div>Exit row</div>
     </div>
@@ -271,6 +415,7 @@
                 seatMap.append(sectionHeader);
             }
 
+
             const rowDiv = document.createElement("div");
             rowDiv.className = "seat-row";
 
@@ -308,8 +453,9 @@
                 } else if (cabin === "premium") {
                     seatButton.classList.add("premium-zone");
                 } else if (cabin === "economy") {
-                    seatButton.classList.add("economy-zone")
+                    seatButton.classList.add("economy-zone");
                 }
+
 
                 const isWrongCabin = selectedCabin && cabin !== selectedCabin;
 
@@ -411,7 +557,7 @@
             bookingDraft.holdExpiryTime &&
             seatListsMatch(seatNumbers, bookingDraft.seatNumbers ?? [])
         ) {
-            bookingDraft.userId = userId;
+            bookingDraft.userId = isSignedIn ? loggedInUserId : null;
             persistBookingDraft();
             window.location.href = "/loyaltypage";
             return;
