@@ -216,6 +216,14 @@ fun Application.configureRouting() {
 
         staticResources("/manager", "static/manager")
 
+        get("/lounges") {
+            call.respondFile(File("src/main/resources/static/user/home/lounges.html"))
+        }
+
+        get("/dubai") {
+            call.respondFile(File("src/main/resources/static/user/home/dubai.html"))
+        }
+
         get("/") {
             call.respondFile(File("src/main/resources/static/user/home/index.html"))
         }
