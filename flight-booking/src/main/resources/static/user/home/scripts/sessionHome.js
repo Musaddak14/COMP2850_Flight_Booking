@@ -4,6 +4,7 @@
     const welcomeMessage = document.getElementById("welcome-message");
     const loginLink = document.getElementById("login-link");
     const logoutButton = document.getElementById("logout-button");
+    const supportLink = document.getElementById("support-link");
 
     const sessionId = sessionStorage.getItem("sessionId");
     const firstName = sessionStorage.getItem("firstName");
@@ -19,6 +20,15 @@
 
         if (logoutButton) {
             logoutButton.style.display = "inline-block";
+        }
+
+        const role = sessionStorage.getItem("role");
+        if (supportLink) {
+            if (role === "MANAGER") {
+                supportLink.style.display = "inline-block";
+            } else {
+                supportLink.style.display = "none";
+            }
         }
     }
 
@@ -43,6 +53,10 @@
             sessionStorage.removeItem("role");
             sessionStorage.removeItem("holdId");
             sessionStorage.removeItem("bookingId");
+
+            if (supportLink) {
+                supportLink.style.display = "none";
+            }
 
             window.location.href = "/log_in";
         });

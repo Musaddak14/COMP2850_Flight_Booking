@@ -15,6 +15,9 @@ import com.flightsystem.model.PassengerInput
 import com.flightsystem.service.LoyaltyService
 import com.flightsystem.service.PaymentService
 import com.flightsystem.service.PriceHoldService
+import com.flightsystem.service.TicketService
+import model.CreateTicketRequest
+import model.UpdateTicketRequest
 
 
 import io.ktor.server.request.receive
@@ -201,6 +204,7 @@ data class UpdateSeatsRequest(
 
 fun Application.configureRouting() {
     val authenticationService = AuthenticationService()
+    val ticketService = TicketService()
 
     routing {
 
@@ -253,6 +257,10 @@ fun Application.configureRouting() {
 
         get("/payment") {
             call.respondFile(File("src/main/resources/static/user/payment/payment.html"))
+        }
+
+        get("/support") {
+            call.respondFile(File("src/main/resources/static/user/support/support.html"))
         }
 
 
@@ -420,6 +428,38 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.Created, savedPassengers)
         }
 
+        route("/api/tickets") {
+            post {
+                val request = call.receive<CreateTicketRequest>()
+                val createdTicket = ticketService.createTicket(request)
+                call.respond(HttpStatusCode.Created, createdTicket)
+            }
+
+            get {
+                val tickets = ticketService.getAllTickets()
+                call.respond(HttpStatusCode.OK, tickets)
+            }
+
+            put("/{id}") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                if (id == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid ticket ID")
+                    return@put
+                }
+
+                val request = call.receive<UpdateTicketRequest>()
+                val updatedTicket = ticketService.updateTicket(id, request)
+
+                if (updatedTicket == null) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        "Ticket update failed. Ticket may not exist, or booking change could not be processed")
+                } else {
+                    call.respond(HttpStatusCode.OK, updatedTicket)
+                }
+            }
+        }
+
         get("/api/manager/flights") {
             //TODO:
             //Add manager only access - requires manager log-in key.
@@ -475,6 +515,10 @@ fun Application.configureRouting() {
 
         get("/manager") {
             call.respondFile(File("src/main/resources/static/manager/home/manager_home.html"))
+        }
+
+        get("/manager/support") {
+            call.respondFile(File("src/main/resources/static/manager/support/support.html"))
         }
 
         post("/checkout") {
@@ -624,7 +668,7 @@ fun Application.configureRouting() {
             ))
         }
 
-
+        /*
         post("/api/auth/login") {
             val request = call.receive<LoginRequest>()
             val authenticationService = AuthenticationService()
@@ -655,6 +699,7 @@ fun Application.configureRouting() {
                 )
             }
         }
+        */
 
         post("/api/auth/register") {
             val request = call.receive<RegisterRequest>()
@@ -688,6 +733,23 @@ fun Application.configureRouting() {
 
         get("/loyaltypage") {
             call.respondFile(File("src/main/resources/static/user/loyalty/loyaltypage.html"))
+        }
+
+        get("/api/loyalty/{userId}") {
+            val userId = call.parameters["userId"]?.toIntOrNull()
+            if (userId == null) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid user ID")
+                return@get
+            }
+
+            val loyaltyService = LoyaltyService()
+            val loyaltyAccount = loyaltyService.getLoyaltyAccount(userId)
+
+            if (loyaltyAccount == null) {
+                call.respond(HttpStatusCode.NotFound, "No loyalty account found")
+            } else {
+                call.respond(HttpStatusCode.OK, loyaltyAccount)
+            }
         }
 
         get("/checkout") {

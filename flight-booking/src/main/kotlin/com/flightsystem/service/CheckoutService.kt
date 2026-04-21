@@ -161,6 +161,7 @@ class CheckoutService(
 
         val pointsEarned = finalAmount.toInt()
         loyaltyService.addPoints(hold.userId, pointsEarned)
+        val updatedLoyaltyAccount = loyaltyService.getLoyaltyAccount(hold.userId)
 
         try {
             val userDetails = getUserEmailAndName(hold.userId)
@@ -206,7 +207,11 @@ class CheckoutService(
             success = true,
             message = "Payment successful and booking confirmed",
             paymentId = payment.paymentID,
-            bookingId = booking.bookingId
+            bookingId = booking.bookingId,
+            pointsEarned = pointsEarned,
+            pointsUsed = pointsToRedeem,
+            updatedPointsTotal = updatedLoyaltyAccount?.loyaltyPoints,
+            finalAmountPaid = finalAmount
         )
     }
 }
