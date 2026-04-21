@@ -28,6 +28,8 @@ fun Application.configureDatabases() {
     transaction {
         addLogger(StdOutSqlLogger)
 
+
+
         SchemaUtils.create(
             Airports,
             Users,
