@@ -7,6 +7,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import com.flightsystem.model.PaymentResponse
+import com.flightsystem.AppEnv
 import java.time.LocalDateTime
 
 class CheckoutService(
@@ -23,9 +24,9 @@ class CheckoutService(
     private val emailService = EmailService(
         smtpHost = "smtp.gmail.com",
         smtpPort = "587",
-        smtpUsername = System.getenv("SMTP_USERNAME") ?: error("SMTP_USERNAME not defined"),
-        smtpPassword = System.getenv("SMTP_PASSWORD") ?: error("SMTP_PASSWORD not defined"),
-        fromEmail = System.getenv("SMTP_USERNAME") ?: error("FROM_SMTP_USERNAME not defined"),
+        smtpUsername = AppEnv.require("SMTP_USERNAME"),
+        smtpPassword = AppEnv.require("SMTP_PASSWORD"),
+        fromEmail = AppEnv.require("SMTP_USERNAME")
     )
 
     private fun getUserEmailAndName(userId: Int): Pair<String, String>? {
