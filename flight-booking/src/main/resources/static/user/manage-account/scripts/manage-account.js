@@ -26,7 +26,6 @@
         document.getElementById("lastName").value = data.lastName;
         document.getElementById("dateOfBirth").value = data.dateOfBirth;
         document.getElementById("email").value = data.email;
-        document.getElementById("seatPreference").value = data.seatPreference;
     }
 
     loadAccountData();
@@ -47,7 +46,6 @@
             lastName: document.getElementById("lastName").value.trim(),
             dateOfBirth: document.getElementById("dateOfBirth").value,
             email: document.getElementById("email").value.trim(),
-            seatPreference: document.getElementById("seatPreference").value
         };
 
         try {

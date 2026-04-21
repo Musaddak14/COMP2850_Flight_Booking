@@ -73,7 +73,6 @@ data class UpdateUserRequest(
     val lastName: String,
     val dateOfBirth: String,
     val email: String,
-    val seatPreference: String
 )
 
 @Serializable
@@ -984,7 +983,6 @@ fun Application.configureRouting() {
             val lastName = userRow[Users.lastName]
             val dateOfBirth = userRow[Users.dateOfBirth]
             val email = userRow[Users.email]
-            val seatPreference = userRow[Users.seatPreference]
 
             // send the user details back as a response
             call.respond(HttpStatusCode.OK, mapOf(
@@ -992,7 +990,6 @@ fun Application.configureRouting() {
                 "lastName" to lastName,
                 "dateOfBirth" to dateOfBirth,
                 "email" to email,
-                "seatPreference" to seatPreference
             ))
         }
 
@@ -1008,7 +1005,7 @@ fun Application.configureRouting() {
                     it[Users.lastName] = request.lastName
                     it[Users.dateOfBirth] = request.dateOfBirth
                     it[Users.email] = request.email
-                    it[Users.seatPreference] = request.seatPreference
+
                 }
             }
 
