@@ -9,6 +9,8 @@ import com.flightsystem.model.PaymentRequest
 import com.flightsystem.service.AuthenticationService
 import com.flightsystem.service.CheckoutService
 import com.flightsystem.model.PassengerInput
+import com.flightsystem.AppEnv
+import com.flightsystem.service.EmailService
 
 
 
@@ -233,7 +235,16 @@ data class UpdateSeatsRequest(
 
 fun Application.configureRouting() {
     val authenticationService = AuthenticationService()
-    val ticketService = TicketService()
+
+    val emailService = EmailService(
+        smtpHost = "smtp.gmail.com",
+        smtpPort = "587",
+        smtpUsername = AppEnv.require("SMTP_USERNAME"),
+        smtpPassword = AppEnv.require("SMTP_PASSWORD"),
+        fromEmail = AppEnv.require("SMTP_USERNAME")
+    )
+
+    val ticketService = TicketService(emailService)
     val promoCodeService = PromoCodeService()
 
     routing {
