@@ -16,6 +16,7 @@ import com.flightsystem.service.LoyaltyService
 import com.flightsystem.service.PaymentService
 import com.flightsystem.service.PriceHoldService
 import com.flightsystem.service.TicketService
+import com.flightsystem.service.PromoCodeService
 import model.CreateTicketRequest
 import model.UpdateTicketRequest
 
@@ -121,6 +122,34 @@ data class RegisterResponse(
 )
 
 
+@Serializable
+data class ApplyPromoCodeRequest(
+    val code: String,
+    val originalAmount: Double
+)
+
+@Serializable
+data class ApplyPromoCodeResponse(
+    val success: Boolean,
+    val code: String? = null,
+    val originalAmount: Double,
+    val discountedAmount: Double? = null,
+    val message: String
+)
+
+@Serializable
+data class CreatePromoCodeRequest(
+    val code: String,
+    val discountType: String,
+    val discountValue: Double
+)
+
+@Serializable
+data class CreatePromoCodeResponse(
+    val success: Boolean,
+    val message: String
+)
+
 
 @Serializable
 data class LoginRequest(
@@ -205,6 +234,7 @@ data class UpdateSeatsRequest(
 fun Application.configureRouting() {
     val authenticationService = AuthenticationService()
     val ticketService = TicketService()
+    val promoCodeService = PromoCodeService()
 
     routing {
 
@@ -527,7 +557,8 @@ fun Application.configureRouting() {
             val checkoutService = CheckoutService(
                 priceHoldService = PriceHoldService(),
                 paymentService = PaymentService(),
-                loyaltyService = LoyaltyService()
+                loyaltyService = LoyaltyService(),
+                promoCodeService = PromoCodeService()
             )
 
             val paymentRequest = PaymentRequest(
@@ -542,7 +573,8 @@ fun Application.configureRouting() {
             val response = checkoutService.checkout(
                 holdId = request.holdId,
                 request = paymentRequest,
-                pointsToRedeem = request.pointsToRedeem
+                pointsToRedeem = request.pointsToRedeem,
+                promoCode = request.promoCode
             )
 
             if (response.success) {
@@ -846,6 +878,67 @@ fun Application.configureRouting() {
                     passengers = passengerNames
                 )
             )
+        }
+
+        post("/api/promo/apply") {
+            val request = call.receive<ApplyPromoCodeRequest>()
+
+            val result = promoCodeService.applyPromoCode(
+                codeValue = request.code,
+                originalAmount = request.originalAmount
+            )
+
+            if (result.isSuccess) {
+                call.respond(
+                    HttpStatusCode.OK,
+                    ApplyPromoCodeResponse(
+                        success = true,
+                        code = request.code.uppercase(),
+                        originalAmount = request.originalAmount,
+                        discountedAmount = result.getOrNull(),
+                        message = "Promo code applied successfully"
+                    )
+                )
+            } else {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApplyPromoCodeResponse(
+                        success = false,
+                        code = request.code.uppercase(),
+                        originalAmount = request.originalAmount,
+                        discountedAmount = null,
+                        message = result.exceptionOrNull()?.message ?: "Invalid promo code"
+                    )
+                )
+            }
+        }
+
+        post("/api/manager/promo-codes") {
+            val request = call.receive<CreatePromoCodeRequest>()
+
+            val result = promoCodeService.createPromoCode(
+                codeValue = request.code,
+                discountType = request.discountType.uppercase(),
+                discountValue = request.discountValue
+            )
+
+            if (result.isSuccess) {
+                call.respond(
+                    HttpStatusCode.Created,
+                    CreatePromoCodeResponse(
+                        success = true,
+                        message = "Promo code created successfully"
+                    )
+                )
+            } else {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    CreatePromoCodeResponse(
+                        success = false,
+                        message = result.exceptionOrNull()?.message ?: "Unable to create promo code"
+                    )
+                )
+            }
         }
 
 // serves the view booking html page
