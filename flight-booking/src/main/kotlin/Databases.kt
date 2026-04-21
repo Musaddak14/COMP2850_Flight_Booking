@@ -11,6 +11,7 @@ import io.ktor.server.routing.*
 import io.pebbletemplates.pebble.loader.ClasspathLoader
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import com.flightsystem.service.PromoCodeService
 import kotlinx.serialization.json.*
 import java.io.File
 import model.*
@@ -43,8 +44,11 @@ fun Application.configureDatabases() {
             PriceHoldSeats,
             Passengers,
             LoyaltyAccounts,
+            PromoCodes,
             SupportTickets
         )
+
+        PromoCodeService().makeDefaultPromoCodes()
 
         val columns = listOf("A","B","C","D","E","F")
         val flights = Flights.selectAll().map { it[Flights.flightId] }
