@@ -744,12 +744,9 @@ fun Application.configureRouting() {
 
             val loyaltyService = LoyaltyService()
             val loyaltyAccount = loyaltyService.getLoyaltyAccount(userId)
+                ?: loyaltyService.createLoyaltyAccount(userId)
 
-            if (loyaltyAccount == null) {
-                call.respond(HttpStatusCode.NotFound, "No loyalty account found")
-            } else {
-                call.respond(HttpStatusCode.OK, loyaltyAccount)
-            }
+            call.respond(HttpStatusCode.OK, loyaltyAccount)
         }
 
         get("/checkout") {
