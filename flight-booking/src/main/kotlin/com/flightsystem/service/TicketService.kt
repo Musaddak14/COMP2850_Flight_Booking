@@ -12,7 +12,13 @@ import org.jetbrains.exposed.sql.update
 import java.time.LocalDateTime
 
 
-class TicketService {
+class TicketService (
+
+    private val emailService: EmailService
+
+) {
+
+
 
     fun createTicket(request: CreateTicketRequest): TicketResponse {
         return transaction {
@@ -102,7 +108,41 @@ class TicketService {
                     it[status] = request.status
                     it[updatedAt] = now
                     it[managerNote] = request.managerNote
-                }   
+                }
+
+                if (request.status == TicketStatus.RESOLVED || request.status == TicketStatus.REJECTED) {
+                    val email = row[SupportTickets.customerEmail]
+                    val name = row[SupportTickets.customerName]
+                    val note = request.managerNote ?: "No additional information provided."
+
+                    val subject = "Update on your Astraeus support ticket #$ticketId"
+
+                    val body = """
+        Hello $name,
+
+        Your support ticket (ID: $ticketId) has been updated.
+
+        New status: ${request.status}
+
+        Manager message:
+        $note
+
+        If you need any further help, please contact Astraeus Support again.
+
+        Kind regards,
+        Astraeus Support
+    """.trimIndent()
+
+                    try {
+                        emailService.sendEmail(
+                            toEmail = email,
+                            subject = subject,
+                            body = body
+                        )
+                    } catch (e: Exception) {
+                        println("Failed to send support ticket email: ${e.message}")
+                    }
+                }
 
                 TicketResponse(
                     id = row[SupportTickets.suppTickId],
