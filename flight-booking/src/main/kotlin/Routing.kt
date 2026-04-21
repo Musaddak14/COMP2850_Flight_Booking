@@ -215,6 +215,9 @@ fun Application.configureRouting() {
         staticResources("/log_in/scripts", "static/user/log_in/scripts")
 
         staticResources("/manager", "static/manager")
+        staticResources("/manage-account/styles", "static/user/manage-account/styles")
+        staticResources("/manage-account/scripts", "static/user/manage-account/scripts")
+
 
         get("/") {
             call.respondFile(File("src/main/resources/static/user/home/index.html"))
@@ -229,6 +232,12 @@ fun Application.configureRouting() {
         }
         val passengerService = PassengerService()
         val bookingService = BookingService()
+
+
+
+        get("/manage") {
+            call.respondFile(File("src/main/resources/static/user/manage-account/index.html"))
+        }
 
 
         staticResources("/", "static/user/home")
