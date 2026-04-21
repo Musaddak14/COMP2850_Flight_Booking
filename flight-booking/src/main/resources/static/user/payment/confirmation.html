@@ -44,6 +44,10 @@
         <p id="greeting"></p>
         <p id="booking-id-line"></p>
         <p id="email-line"></p>
+        <p id="final-amount-line"></p>
+        <p id="points-used-line"></p>
+        <p id="points-earned-line"></p>
+        <p id="updated-points-line"></p>
         <!-- return home -->
         <a href="/" class="continue-btn">return to home</a>
     </div>
@@ -51,14 +55,25 @@
 
 <script>
     let checkout = null;
-    let user = null;
 
-    try { checkout = JSON.parse(sessionStorage.getItem("latestCheckoutResponse")); } catch {}
-    try { user = JSON.parse(sessionStorage.getItem("user")); } catch {}
+    try {
+        checkout = JSON.parse(sessionStorage.getItem("latestCheckoutResponse"));
+    } catch {
+        checkout = null;
+    }
 
     const firstName = sessionStorage.getItem("firstName") ?? "there";
     const email = sessionStorage.getItem("userEmail") ?? null;
     const bookingId = checkout?.bookingId ?? null;
+    const role = sessionStorage.getItem("role");
+    const isLoggedIn = !!sessionStorage.getItem("sessionId");
+
+    function formatCurrency(amount) {
+        if (typeof amount !== "number" || !Number.isFinite(amount)) {
+            return "";
+        }
+        return `£${amount.toFixed(2)}`;
+    }
 
     document.getElementById("greeting").textContent =
         `Hello ${firstName}, your booking is confirmed!`;
@@ -68,6 +83,32 @@
 
     document.getElementById("email-line").textContent =
         email ? `We've sent a booking confirmation to ${email}` : "";
+
+    const finalAmountLine = document.getElementById("final-amount-line");
+    const pointsUsedLine = document.getElementById("points-used-line");
+    const pointsEarnedLine = document.getElementById("points-earned-line");
+    const updatedPointsLine = document.getElementById("updated-points-line");
+
+    if (checkout?.finalAmountPaid != null) {
+        finalAmountLine.textContent = `Final amount paid: ${formatCurrency(checkout.finalAmountPaid)}`;
+    } else {
+        finalAmountLine.textContent = "";
+    }
+
+    if (isLoggedIn) {
+        pointsUsedLine.textContent =
+            checkout?.pointsUsed != null ? `Points used: ${checkout.pointsUsed}` : "";
+
+        pointsEarnedLine.textContent =
+            checkout?.pointsEarned != null ? `Points earned from this booking: ${checkout.pointsEarned}` : "";
+
+        updatedPointsLine.textContent =
+            checkout?.updatedPointsTotal != null ? `Updated loyalty points total: ${checkout.updatedPointsTotal}` : "";
+    } else {
+        pointsUsedLine.textContent = "";
+        pointsEarnedLine.textContent = "";
+        updatedPointsLine.textContent = "";
+    }
 </script>
 
 </body>

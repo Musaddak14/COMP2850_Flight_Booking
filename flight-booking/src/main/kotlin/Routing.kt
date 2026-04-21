@@ -9,6 +9,9 @@ import com.flightsystem.model.PaymentRequest
 import com.flightsystem.service.AuthenticationService
 import com.flightsystem.service.CheckoutService
 import com.flightsystem.model.PassengerInput
+import com.flightsystem.model.Users
+
+
 
 
 
@@ -62,6 +65,16 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import com.flightsystem.model.BookingDetails
 import com.flightsystem.model.Passenger
+
+@Serializable
+data class UpdateUserRequest(
+    val userId: Int,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: String,
+    val email: String,
+    val seatPreference: String
+)
 
 @Serializable
 data class FlightResponse(
@@ -753,12 +766,9 @@ fun Application.configureRouting() {
 
             val loyaltyService = LoyaltyService()
             val loyaltyAccount = loyaltyService.getLoyaltyAccount(userId)
+                ?: loyaltyService.createLoyaltyAccount(userId)
 
-            if (loyaltyAccount == null) {
-                call.respond(HttpStatusCode.NotFound, "No loyalty account found")
-            } else {
-                call.respond(HttpStatusCode.OK, loyaltyAccount)
-            }
+            call.respond(HttpStatusCode.OK, loyaltyAccount)
         }
 
         get("/checkout") {
@@ -943,6 +953,72 @@ fun Application.configureRouting() {
         get("/api/debug/passengers") {
             val all = passengerService.getPassengersByBooking(161)
             call.respond(all)
+        }
+
+        // used for the manage account page so user can view their details
+        get("/api/user/details") {
+
+            // get the user id
+            val userIdText = call.request.queryParameters["userId"]
+            val userId = userIdText?.toIntOrNull()
+
+            // if no valid user id was given, return an error
+            if (userId == null) {
+                call.respond(HttpStatusCode.BadRequest, ErrorResponse("Invalid userId"))
+                return@get
+            }
+
+            // search the database for a user with this id
+            val userRow = transaction {
+                Users.selectAll().where { Users.userId eq userId }.singleOrNull()
+            }
+
+            // if no user was found, return an error
+            if (userRow == null) {
+                call.respond(HttpStatusCode.NotFound, ErrorResponse("User not found"))
+                return@get
+            }
+
+            // pull each piece of info out of the database row
+            val firstName = userRow[Users.firstName]
+            val lastName = userRow[Users.lastName]
+            val dateOfBirth = userRow[Users.dateOfBirth]
+            val email = userRow[Users.email]
+            val seatPreference = userRow[Users.seatPreference]
+
+            // send the user details back as a response
+            call.respond(HttpStatusCode.OK, mapOf(
+                "firstName" to firstName,
+                "lastName" to lastName,
+                "dateOfBirth" to dateOfBirth,
+                "email" to email,
+                "seatPreference" to seatPreference
+            ))
+        }
+
+        put("/api/user/update") {
+
+            // read the new user details
+            val request = call.receive<UpdateUserRequest>()
+
+            // update the user in the database
+            val numberOfRowsUpdated = transaction {
+                Users.update({ Users.userId eq request.userId }) {
+                    it[Users.firstName] = request.firstName
+                    it[Users.lastName] = request.lastName
+                    it[Users.dateOfBirth] = request.dateOfBirth
+                    it[Users.email] = request.email
+                    it[Users.seatPreference] = request.seatPreference
+                }
+            }
+
+            // if no rows were updated, the user was not found
+            if (numberOfRowsUpdated == 0) {
+                call.respond(HttpStatusCode.NotFound, ErrorResponse("User not found"))
+            } else {
+                // otherwise the update worked
+                call.respond(HttpStatusCode.OK, mapOf("message" to "Updated successfully"))
+            }
         }
 
 
