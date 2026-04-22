@@ -7,12 +7,14 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import com.flightsystem.model.PaymentResponse
+import com.flightsystem.AppEnv
 import java.time.LocalDateTime
 
 class CheckoutService(
     private val priceHoldService: PriceHoldService,
     private val paymentService: PaymentService,
     private val loyaltyService: LoyaltyService,
+    private val promoCodeService: PromoCodeService
 
 
 
@@ -23,9 +25,9 @@ class CheckoutService(
     private val emailService = EmailService(
         smtpHost = "smtp.gmail.com",
         smtpPort = "587",
-        smtpUsername = "",
-        smtpPassword = "",
-        fromEmail = "YOUR_EMAIL@gmail.com"
+        smtpUsername = AppEnv.require("SMTP_USERNAME"),
+        smtpPassword = AppEnv.require("SMTP_PASSWORD"),
+        fromEmail = AppEnv.require("SMTP_USERNAME")
     )
 
     private fun getUserEmailAndName(userId: Int): Pair<String, String>? {
@@ -56,7 +58,8 @@ class CheckoutService(
     fun checkout(
         holdId: Int,
         request: PaymentRequest,
-        pointsToRedeem: Int = 0
+        pointsToRedeem: Int = 0,
+        promoCode: String? = null
     ): PaymentResponse {
 
         val holdDetails = priceHoldService.getHoldDetails(holdId)
@@ -125,6 +128,24 @@ class CheckoutService(
             )
         }
 
+        if (!promoCode.isNullOrBlank()) {
+            val promoResult = promoCodeService.applyPromoCode(
+                codeValue = promoCode,
+                originalAmount = finalAmount
+            )
+
+            if (promoResult.isFailure) {
+                return PaymentResponse(
+                    success = false,
+                    message = promoResult.exceptionOrNull()?.message ?: "Invalid promo code",
+                    paymentId = null,
+                    bookingId = null
+                )
+            }
+
+            finalAmount = promoResult.getOrNull()!!
+        }
+
         val paymentResult = paymentService.processPayment(
             bookingID = "HOLD-$holdId",
             userID = hold.userId,
@@ -161,6 +182,7 @@ class CheckoutService(
 
         val pointsEarned = finalAmount.toInt()
         loyaltyService.addPoints(hold.userId, pointsEarned)
+        val updatedLoyaltyAccount = loyaltyService.getLoyaltyAccount(hold.userId)
 
         try {
             val userDetails = getUserEmailAndName(hold.userId)
@@ -172,6 +194,8 @@ class CheckoutService(
                 val route = flightDetails?.first ?: hold.flightId
                 val date = flightDetails?.second ?: "Date unavailable"
                 val timeRange = flightDetails?.third ?: "Time unavailable"
+
+                
 
                 val ticketPdf = ticketPdfService.generateTicketPdf(
                     bookingId = booking.bookingId.toString(),
@@ -192,8 +216,11 @@ class CheckoutService(
                     total = finalAmount,
                     ticketPdfBytes = ticketPdf
                 )
+
+                println("Booking confirmed!")
             }
         } catch (e: Exception) {
+            e.printStackTrace()
             println("Booking email failed to send: ${e.message}")
         }
 
@@ -201,7 +228,11 @@ class CheckoutService(
             success = true,
             message = "Payment successful and booking confirmed",
             paymentId = payment.paymentID,
-            bookingId = booking.bookingId
+            bookingId = booking.bookingId,
+            pointsEarned = pointsEarned,
+            pointsUsed = pointsToRedeem,
+            updatedPointsTotal = updatedLoyaltyAccount?.loyaltyPoints,
+            finalAmountPaid = finalAmount
         )
     }
 }
