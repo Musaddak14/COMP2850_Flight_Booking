@@ -278,6 +278,46 @@ class BookingService {
         }
     }
 
+    fun getBookingDetailsByUser(userId: Int): List<Map<String, String>> {
+
+        val result = transaction {
+
+            // grab all bookings for this user
+            val bookingRows = Bookings
+                .selectAll()
+                .where { Bookings.userId eq userId }
+
+            val resultList = mutableListOf<Map<String, String>>()
+
+            // loop thru each booking and get the flight info seperately
+            for (bookingRow in bookingRows) {
+
+                val flightId = bookingRow[Bookings.flightId]
+
+                // find the flight
+                val flightRow = Flights
+                    .selectAll()
+                    .where { Flights.flightId eq flightId }
+                    .single()
+
+                // map and add 2 list
+                resultList.add(mapOf(
+                    "bookingId"        to bookingRow[Bookings.bookingId].toString(),
+                    "flightId"         to flightId,
+                    "departureAirport" to flightRow[Flights.departureAirport],
+                    "arrivalAirport"   to flightRow[Flights.arrivalAirport],
+                    "date"             to flightRow[Flights.date],
+                    "departureTime"    to flightRow[Flights.departureTime],
+                    "arrivalTime"      to flightRow[Flights.arrivalTime]
+                ))
+            }
+
+            resultList
+        }
+
+        return result
+    }
+
     //  function gets bookings from the database and returns list
     fun getAllBookings(): List<BookingDetails> {
 

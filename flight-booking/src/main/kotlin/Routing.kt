@@ -993,6 +993,24 @@ fun Application.configureRouting() {
             ))
         }
 
+        get("/api/user/bookings") {
+
+            // get userid
+            val userId = call.request.queryParameters["userId"]?.toIntOrNull()
+
+            // if nulll send error
+            if (userId == null) {
+                call.respond(HttpStatusCode.BadRequest, ErrorResponse("Invalid userId"))
+                return@get
+            }
+
+            // call the service to get the bookings for this user
+            val bookings = bookingService.getBookingDetailsByUser(userId)
+
+            // send the bookings back
+            call.respond(HttpStatusCode.OK, bookings)
+        }
+
         put("/api/user/update") {
 
             // read the new user details

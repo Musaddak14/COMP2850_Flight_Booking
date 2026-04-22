@@ -157,6 +157,85 @@ body {
 }
 
 /* for links insidee navbar */
+
+.footer-divider {
+    height: 20px;
+    background: white;
+    width: 100%;
+    border-top: 1px solid #eee;
+}
+
+/* main footer */
+footer {
+    background: white;
+    border-top: 1px solid #ddd;
+    padding: 20px clamp(15px, 5vw, 40px);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* right text */
+.footer-right {
+    color: #777;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.footer-left {
+    text-decoration: none;
+    color: #111;
+    font-weight: 500;
+}
+
+.footer-left:hover {
+    color: #00a1de;
+}
+
+/* center logos */
+.footer-logos {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+/* award images */
+.footer-logos img {
+    height: 50px;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+/* subtle hover effect */
+.footer-logos img:hover {
+    transform: translateY(-3px);
+}
+
+.footer-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-info,
+.footer-trust,
+.footer-location,
+.footer-tagline {
+    font-size: 12px;
+    color: #888;
+    margin: 0;
+    text-align: center;
+}
+
+/* make tagline slightly stronger */
+.footer-tagline {
+    color: #555;
+    font-weight: 500;
+}
+
+
 /* USED GPT 5.3 FOR ASSISTANCE WITH THE HOVER EFFECT*/
 
 
