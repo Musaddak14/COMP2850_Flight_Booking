@@ -17,6 +17,8 @@ import java.io.File
 import model.*
 
 import com.flightsystem.model.*
+import com.flightsystem.service.AuthenticationService
+import java.time.LocalDate
 
 fun Application.configureDatabases() {
     val database = Database.connect(
@@ -46,6 +48,16 @@ fun Application.configureDatabases() {
             LoyaltyAccounts,
             PromoCodes,
             SupportTickets
+        )
+
+        val authservice = AuthenticationService()
+
+        authservice.setDefaultManager(
+            firstName = "Admin",
+            lastName = "User",
+            dateOfBirth = "1990-01-01",
+            email = "manager@astraeus.com",
+            rawPassword = "password123"
         )
 
         PromoCodeService().makeDefaultPromoCodes()
