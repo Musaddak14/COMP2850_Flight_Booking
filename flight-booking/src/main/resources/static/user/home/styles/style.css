@@ -151,6 +151,83 @@ body {
     border-bottom: 2px solid #00a1de;
 }
 
+.footer-divider {
+    height: 20px;
+    background: white;
+    width: 100%;
+    border-top: 1px solid #eee;
+}
+
+/* main footer */
+footer {
+    background: white;
+    border-top: 1px solid #ddd;
+    padding: 20px clamp(15px, 5vw, 40px);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* right text */
+.footer-right {
+    color: #777;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.footer-left {
+    text-decoration: none;
+    color: #111;
+    font-weight: 500;
+}
+
+.footer-left:hover {
+    color: #00a1de;
+}
+
+/* center logos */
+.footer-logos {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+/* award images */
+.footer-logos img {
+    height: 50px;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+/* subtle hover effect */
+.footer-logos img:hover {
+    transform: translateY(-3px);
+}
+
+.footer-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-info,
+.footer-trust,
+.footer-location,
+.footer-tagline {
+    font-size: 12px;
+    color: #888;
+    margin: 0;
+    text-align: center;
+}
+
+/* make tagline slightly stronger */
+.footer-tagline {
+    color: #555;
+    font-weight: 500;
+}
+
 /* for links insidee navbar */
 /* USED GPT 5.3 FOR ASSISTANCE WITH THE HOVER EFFECT*/
 
@@ -372,6 +449,8 @@ body {
 
 /*text under image*/
 
+
+
 /* -----------------------------  */
 /* Manage Account Section */
 /* -----------------------------  */
@@ -491,11 +570,83 @@ body {
 /*underline on hover*/
 
 
-.white-box{
-    background-color: #fafafa;
-    padding: 120px 20px;
-    margin: 1px auto;
 
+/* SUPPORT BANNER */
+
+.support-banner {
+    background: linear-gradient(135deg, #C1161C 0%, #C1161C 100%);
+    color: white;
+    padding: 60px 20px;
+    margin-top: 20px;
+}
+
+.support-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+.support-text {
+    max-width: 550px;
+}
+
+.support-text h1 {
+    font-size: 48px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.support-text p {
+    font-size: 18px;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.support-items {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.support-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.support-item span {
+    font-size: 22px;
+}
+
+.support-item p {
+    margin: 2px 0 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.support-btn {
+    background: white;
+    color: #d71920;
+    padding: 12px 22px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.2s;
+}
+
+.support-btn:hover {
+    background: #f2f2f2;
+    transform: translateY(-2px);
+}
+
+.support-logo img {
+    max-width: 450px;
+    width: 100%;
 }
 
 /*white under blue box to add footer of website later*/
@@ -1418,7 +1569,7 @@ label.row input {
 }
 
 
-* booking confirmation page */
+/* booking confirmation page */
 
 .booking-confirmation { max-width:700px; width:100%; margin:40px auto; padding:0 20px; box-sizing:border-box; }
 
