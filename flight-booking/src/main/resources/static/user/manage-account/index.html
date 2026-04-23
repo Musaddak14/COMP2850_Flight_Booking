@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Account</title>
+    <link rel="stylesheet" href="/manage-account/styles/style.css">
+    <script src="/scripts/sessionHome.js" defer></script>
+    <script src="/manage-account/scripts/manage-account.js" defer></script>
+</head>
+<body>
+
+<header class="header">
+    <nav class="top-nav">
+        <div class="left-nav">
+            <div class="logo">
+                <img src="/images/Logo.png" class="Airline_Logo">
+                <img src="/images/Star_Alliance.jpg" class="Star_Alliance">
+            </div>
+        </div>
+        <div class="center-nav">
+            <a href="/">Home</a>
+            <a href="/recommendations">Recommendations</a>
+            <a href="/book">Book</a>
+            <a href="/manage">Manage</a>
+            <a href="/support">Help</a>
+            <a href="/manager/support/support.html" id="support-link" style="display: none;">Support</a>
+        </div>
+        <div class="right-nav">
+            <span class="lang">United Kingdom - EN</span>
+            <span id="welcome-message"></span>
+            <a href="/log_in" id="login-link">Log In</a>
+            <button id="logout-button" type="button" style="display: none;">Log Out</button>
+        </div>
+    </nav>
+</header>
+
+<main class="manage-page">
+
+    <div class="account-overview">
+        <h2>Your Account</h2>
+        <div class="overview-grid">
+            <div class="overview-item">
+                <span class="overview-label">Membership Number</span>
+                <span class="overview-value" id="membership-number">—</span>
+            </div>
+            <div class="overview-item">
+                <span class="overview-label">Membership Tier</span>
+                <span class="overview-value" id="membership-tier">—</span>
+            </div>
+            <div class="overview-item">
+                <span class="overview-label">Loyalty Points</span>
+                <span class="overview-value" id="loyalty-points">—</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="edit-card">
+        <div class="edit-header">
+            <h2>Edit Details</h2>
+            <p>Update your personal information below</p>
+        </div>
+
+        <form class="login-form" id="edit-form">
+            <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName" name="firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input type="text" id="lastName" name="lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="dateOfBirth">Date of Birth</label>
+                <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <p id="save-message" class="form-message"></p>
+            <button type="submit" class="login-btn">Save Changes</button>
+        </form>
+    </div>
+
+</main>
+</body>
+</html>

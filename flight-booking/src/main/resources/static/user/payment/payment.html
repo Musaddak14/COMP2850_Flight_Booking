@@ -81,9 +81,19 @@
                 <input type="text" id="billing-address">
             </div>
 
+            <div class="user_input_box">
+                <label>Promo code</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="promo-code" placeholder="Enter promo code" style="flex: 1;">
+                    <button type="button" id="apply-promo-btn" style="padding: 10px 16px;">Apply</button>
+                </div>
+            </div>
+
+            <p id="promo-message" style="margin-top: 10px; font-weight: 600;"></p>
             <p id="payment-message" style="margin-top: 10px; font-weight: 600;"></p>
 
             <button class="continue-btn" id="pay-btn">Pay now</button>
+
         </div>
 
         <!-- BOOKING SUMMARY -->
@@ -119,6 +129,25 @@
                 <label>Total</label>
                 <p id="summary-total">To be confirmed</p>
             </div>
+
+            <div class="user_input_box">
+                <label>Your loyalty points</label>
+                <p id="points-balance">Not available</p>
+            </div>
+
+            <div class="user_input_box">
+                <label>
+                    <input type="checkbox" id="use-points-checkbox">
+                    Use points to reduce the price
+                </label>
+            </div>
+
+            <div class="user_input_box" id="points-section" style="display: none;">
+                <label>Points to use</label>
+                <input type="number" id="points-to-redeem" min="0" value="0" step="1">
+                <p id="points-discount">Discount: £0.00</p>
+                <p id="final-total">Final total: To be confirmed</p>
+            </div>
         </div>
 
     </div>
@@ -128,8 +157,20 @@
     const pendingBookingRequestRaw = sessionStorage.getItem("pendingBookingRequest");
     const bookingDraftRaw = sessionStorage.getItem("bookingDraft");
     let bookingData = null;
+    let loyaltyPoints = 0;
     const message = document.getElementById("payment-message");
+    const promoMessage = document.getElementById("promo-message");
     const payButton = document.getElementById("pay-btn");
+    const applyPromoButton = document.getElementById("apply-promo-btn");
+    const promoCodeInput = document.getElementById("promo-code");
+    let appliedPromoCode = null;
+    let discountedTotal = null;
+    const pointsBalance = document.getElementById("points-balance");
+    const usePointsCheckbox = document.getElementById("use-points-checkbox");
+    const pointsSection = document.getElementById("points-section");
+    const pointsInput = document.getElementById("points-to-redeem");
+    const pointsDiscount = document.getElementById("points-discount");
+    const finalTotal = document.getElementById("final-total");
 
     const sessionId = sessionStorage.getItem("sessionId");
     const firstName = sessionStorage.getItem("firstName");
@@ -248,6 +289,90 @@
         return selections.length > 0 ? selections.join(", ") : "No add-ons selected";
     }
 
+    function getCurrentUserId() {
+        const rawUserId = sessionStorage.getItem("userId");
+        const parsedUserId = Number(rawUserId);
+        return Number.isFinite(parsedUserId) ? parsedUserId : null;
+    }
+
+    function getCurrentCheckoutBaseTotal() {
+        const totalPrice = Number(bookingData?.totalPrice) || 0;
+
+        if (!usePointsCheckbox.checked) {
+            return totalPrice;
+        }
+
+        let pointsToRedeem = Number(pointsInput.value) || 0;
+
+        if (pointsToRedeem < 0) {
+            pointsToRedeem = 0;
+        }
+
+        if (pointsToRedeem > loyaltyPoints) {
+            pointsToRedeem = loyaltyPoints;
+        }
+
+        const maxUsefulPoints = Math.floor(totalPrice * 10);
+        if (pointsToRedeem > maxUsefulPoints) {
+            pointsToRedeem = maxUsefulPoints;
+        }
+
+        const discount = calculateDiscount(pointsToRedeem);
+        return Math.max(0, totalPrice - discount);
+    }
+
+    function updateDisplayedTotalWithPromo() {
+        const baseTotal = getCurrentCheckoutBaseTotal();
+        const finalAmount = discountedTotal !== null ? discountedTotal : baseTotal;
+
+        document.getElementById("summary-total").textContent = formatCurrency(finalAmount);
+        finalTotal.textContent = `Final total: ${formatCurrency(finalAmount)}`;
+    }
+
+    function calculateDiscount(points) {
+        return points / 10;
+    }
+
+    function updateLoyaltyDisplay() {
+        const totalPrice = Number(bookingData?.totalPrice) || 0;
+
+        if (!usePointsCheckbox.checked) {
+            pointsSection.style.display = "none";
+            pointsDiscount.textContent = "Discount: £0.00";
+            discountedTotal = appliedPromoCode ? discountedTotal : null;
+            updateDisplayedTotalWithPromo();
+            return;
+        }
+
+        pointsSection.style.display = "block";
+
+        let pointsToRedeem = Number(pointsInput.value) || 0;
+
+        if (pointsToRedeem < 0) {
+            pointsToRedeem = 0;
+        }
+
+        if (pointsToRedeem > loyaltyPoints) {
+            pointsToRedeem = loyaltyPoints;
+        }
+
+        const maxUsefulPoints = Math.floor(totalPrice * 10);
+        if (pointsToRedeem > maxUsefulPoints) {
+            pointsToRedeem = maxUsefulPoints;
+        }
+
+        pointsInput.value = pointsToRedeem;
+
+        const discount = calculateDiscount(pointsToRedeem);
+        const updatedTotal = Math.max(0, totalPrice - discount);
+
+        pointsDiscount.textContent = `Discount: ${formatCurrency(discount)}`;
+        if (!appliedPromoCode) {
+            discountedTotal = null;
+        }
+        updateDisplayedTotalWithPromo()
+    }
+
     document.getElementById("summary-route").textContent = bookingData?.from && bookingData?.to
         ? `${bookingData.from} → ${bookingData.to}`
         : "Not available";
@@ -257,10 +382,111 @@
     document.getElementById("summary-loyalty").textContent = getAddOnSummary(bookingData);
     document.getElementById("summary-total").textContent = formatCurrency(Number(bookingData?.totalPrice));
 
+    finalTotal.textContent = `Final total: ${formatCurrency(Number(bookingData?.totalPrice))}`;
+
+    async function loadLoyaltyBalance() {
+        const userId = getCurrentUserId();
+
+        if (!userId) {
+            pointsBalance.textContent = "Log in to use loyalty points";
+            usePointsCheckbox.disabled = true;
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/loyalty/${userId}`);
+            const text = await response.text();
+
+            let account = null;
+            try {
+                account = text ? JSON.parse(text) : null;
+            } catch {
+                account = null;
+            }
+
+            if (!response.ok || !account) {
+                pointsBalance.textContent = "No loyalty account found";
+                usePointsCheckbox.disabled = true;
+                return;
+            }
+
+            loyaltyPoints = account.loyaltyPoints ?? 0;
+            pointsBalance.textContent = `${loyaltyPoints} points`;
+            pointsInput.max = loyaltyPoints.toString();
+
+            if (loyaltyPoints <= 0) {
+                usePointsCheckbox.disabled = true;
+            }
+        } catch {
+            pointsBalance.textContent = "Unable to load points";
+            usePointsCheckbox.disabled = true;
+        }
+    }
+
+    usePointsCheckbox.addEventListener("change", updateLoyaltyDisplay);
+    pointsInput.addEventListener("input", updateLoyaltyDisplay);
+
+    loadLoyaltyBalance();
+    updateDisplayedTotalWithPromo();
+
     if (!bookingData?.holdId) {
         message.textContent = "Your booking hold is missing. Return to seat selection and try again.";
         payButton.disabled = true;
     }
+
+    applyPromoButton.addEventListener("click", async function () {
+        const promoCode = promoCodeInput.value.trim();
+
+        promoMessage.textContent = "";
+        appliedPromoCode = null;
+        discountedTotal = null;
+
+        if (promoCode === "") {
+            promoMessage.textContent = "Enter a promo code first.";
+            updateDisplayedTotalWithPromo();
+            return;
+        }
+
+        try {
+            applyPromoButton.disabled = true;
+
+            const baseTotal = getCurrentCheckoutBaseTotal();
+
+            const res = await fetch("/api/promo/apply", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    code: promoCode,
+                    originalAmount: baseTotal
+                })
+            });
+
+            const text = await res.text();
+            let result = null;
+
+            try {
+                result = text ? JSON.parse(text) : null;
+            } catch {
+                result = null;
+            }
+
+            if (!res.ok || !result?.success) {
+                promoMessage.textContent = result?.message ?? text ?? "Unable to apply promo code.";
+                updateDisplayedTotalWithPromo();
+                return;
+            }
+
+            appliedPromoCode = promoCode;
+            discountedTotal = Number(result.discountedAmount);
+            promoMessage.textContent = `Promo code applied. New total: ${formatCurrency(discountedTotal)}`;
+            updateDisplayedTotalWithPromo();
+        } catch {
+            promoMessage.textContent = "Unable to apply promo code right now.";
+            updateDisplayedTotalWithPromo();
+        } finally {
+            applyPromoButton.disabled = false;
+        }
+    });
 
     payButton.addEventListener("click", async function () {
         const name = document.getElementById("cardholder-name").value.trim();
@@ -269,8 +495,10 @@
         const year = parseInt(document.getElementById("expiry-year").value);
         const cvv = document.getElementById("cvv").value.trim();
         const address = document.getElementById("billing-address").value.trim();
+        const promoCode = appliedPromoCode;
 
         message.textContent = "";
+        promoMessage.textContent = "";
 
         if (!bookingData?.holdId) { message.textContent = "Your booking hold is missing. Return to seat selection and try again."; return; }
         if (name === "") { message.textContent = "Enter cardholder name."; return; }
@@ -294,7 +522,8 @@
                     expiryYear: year,
                     cvv: cvv,
                     billingAddress: address,
-                    pointsToRedeem: 0
+                    pointsToRedeem: usePointsCheckbox.checked ? Number(pointsInput.value) || 0 : 0,
+                    promoCode: promoCode === "" ? null : promoCode
                 })
             });
 
@@ -308,11 +537,30 @@
             }
 
             if (!res.ok || !result?.success) {
-                message.textContent = result?.message ?? text ?? "Payment failed. Try again.";
+                const errorMessage = result?.message ?? text ?? "Payment failed. Try again.";
+
+                if (promoCode) {
+                    promoMessage.textContent = errorMessage;
+                } else {
+                    message.textContent = errorMessage;
+                }
+
                 return;
             } else {
-                message.textContent = result.message ?? "Payment successful.";
                 sessionStorage.setItem("latestCheckoutResponse", JSON.stringify(result));
+
+// save passengers to DB
+                const draft = JSON.parse(sessionStorage.getItem("bookingDraft") || "{}");
+                await fetch("/api/passengers", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        bookingId: result.bookingId,
+                        passengers: draft.passengers
+                    })
+                });
+
+                window.location.href = "/confirmation";
             }
         } catch {
             message.textContent = "Payment failed. Try again.";

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Request</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            color: #111;
+        }
+
+        .page-container {
+            max-width: 700px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            background: #1f3c88;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #162d66;
+        }
+
+        #result {
+            margin-top: 18px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <h1>Create Support Request</h1>
+        <p>Submit a request for help with your booking. A manager will review it.</p>
+
+        <form id="ticketForm">
+            <label for="bookingId">Booking ID</label>
+            <input type="number" id="bookingId" required>
+
+            <label for="customerName">Name</label>
+            <input type="text" id="customerName" required>
+
+            <label for="customerEmail">Email</label>
+            <input type="email" id="customerEmail" required>
+
+            <label for="requestType">Request Type</label>
+            <select id="requestType" required>
+                <option value="CHANGE_BOOKING">Change Booking</option>
+                <option value="REFUND">Refund</option>
+                <option value="OTHER">Other</option>
+            </select>
+
+            <label for="message">Message</label>
+            <textarea id="message" required></textarea>
+
+            <button type="submit">Submit Request</button>
+        </form>
+
+        <p id="result"></p>
+    </div>
+
+    <script>
+        async function createTicket(event) {
+            event.preventDefault();
+
+            const ticketData = {
+                bookingId: parseInt(document.getElementById("bookingId").value),
+                customerName: document.getElementById("customerName").value,
+                customerEmail: document.getElementById("customerEmail").value,
+                requestType: document.getElementById("requestType").value,
+                message: document.getElementById("message").value
+            };
+
+            const response = await fetch("/api/tickets", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(ticketData)
+            });
+
+            const result = document.getElementById("result");
+            const responseText = await response.text();
+
+            if (response.ok) {
+                result.textContent = "Support request submitted successfully.";
+                document.getElementById("ticketForm").reset();
+            } else {
+                result.textContent = responseText || "Failed to submit support request.";
+            }
+        }
+
+        document.getElementById("ticketForm").addEventListener("submit", createTicket);
+    </script>
+</body>
+</html>

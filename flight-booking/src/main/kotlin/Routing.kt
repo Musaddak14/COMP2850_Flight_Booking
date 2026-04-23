@@ -1,5 +1,6 @@
 package com.example.com
 
+import com.example.com.service.ManagerAnalyticsService
 import com.flightsystem.model.Airport
 import com.flightsystem.model.Airports
 import com.flightsystem.model.Bookings
@@ -14,9 +15,19 @@ import com.flightsystem.model.PriceHolds
 import com.flightsystem.model.Users
 import com.flightsystem.service.AuthenticationService
 import com.flightsystem.service.CheckoutService
+import com.flightsystem.model.PassengerInput
+import com.flightsystem.AppEnv
+import com.flightsystem.service.EmailService
+
+
+
 import com.flightsystem.service.LoyaltyService
 import com.flightsystem.service.PaymentService
 import com.flightsystem.service.PriceHoldService
+import com.flightsystem.service.TicketService
+import com.flightsystem.service.PromoCodeService
+import model.CreateTicketRequest
+import model.UpdateTicketRequest
 
 
 import io.ktor.server.request.receive
@@ -61,6 +72,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
+import com.flightsystem.model.BookingDetails
+import com.flightsystem.model.Passenger
 
 @Serializable
 data class FlightResponse(
@@ -72,6 +85,12 @@ data class FlightResponse(
     val departureTime: String,
     val arrivalTime: String,
     val length: Double
+)
+
+@Serializable
+data class ManagerBookingDetailResponse(
+    val booking: BookingDetails?,
+    val passengers: List<Passenger>
 )
 
 @Serializable
@@ -113,6 +132,34 @@ data class RegisterResponse(
     val message: String
 )
 
+
+@Serializable
+data class ApplyPromoCodeRequest(
+    val code: String,
+    val originalAmount: Double
+)
+
+@Serializable
+data class ApplyPromoCodeResponse(
+    val success: Boolean,
+    val code: String? = null,
+    val originalAmount: Double,
+    val discountedAmount: Double? = null,
+    val message: String
+)
+
+@Serializable
+data class CreatePromoCodeRequest(
+    val code: String,
+    val discountType: String,
+    val discountValue: Double
+)
+
+@Serializable
+data class CreatePromoCodeResponse(
+    val success: Boolean,
+    val message: String
+)
 
 
 @Serializable
@@ -183,8 +230,41 @@ data class AccountSummary (
 )
 
 
+@Serializable
+data class BookingLookupResponse(
+    val bookingId: Int,
+    val flightId: String,
+    val seats: List<String>,
+    val passengers: List<String>
+)
+
+@Serializable
+data class UpdateSeatsRequest(
+    val seats: List<String>
+)
+
+@Serializable
+data class ManagerAnalyticsResponse(
+    val totalBookings: Int,
+    val upcomingFlights: Int,
+    val openTickets: Int,
+    val mostPopularRoute: String?,
+    val peakBookingTime: String?
+)
+
 fun Application.configureRouting() {
     val authenticationService = AuthenticationService()
+
+    val emailService = EmailService(
+        smtpHost = "smtp.gmail.com",
+        smtpPort = "587",
+        smtpUsername = AppEnv.require("SMTP_USERNAME"),
+        smtpPassword = AppEnv.require("SMTP_PASSWORD"),
+        fromEmail = AppEnv.require("SMTP_USERNAME")
+    )
+
+    val ticketService = TicketService(emailService)
+    val promoCodeService = PromoCodeService()
 
     routing {
 
@@ -195,6 +275,9 @@ fun Application.configureRouting() {
         staticResources("/log_in/scripts", "static/user/log_in/scripts")
 
         staticResources("/manager", "static/manager")
+        staticResources("/manage-account/styles", "static/user/manage-account/styles")
+        staticResources("/manage-account/scripts", "static/user/manage-account/scripts")
+
 
         get("/") {
             call.respondFile(File("src/main/resources/static/user/home/index.html"))
@@ -213,6 +296,14 @@ fun Application.configureRouting() {
         }
 
         val passengerService = PassengerService()
+        val bookingService = BookingService()
+
+
+
+        get("/manage") {
+            call.respondFile(File("src/main/resources/static/user/manage-account/index.html"))
+        }
+
 
         staticResources("/", "static/user/home")
         staticResources("/log_in", "static/user/log_in")
@@ -241,6 +332,10 @@ fun Application.configureRouting() {
 
         get("/payment") {
             call.respondFile(File("src/main/resources/static/user/payment/payment.html"))
+        }
+
+        get("/support") {
+            call.respondFile(File("src/main/resources/static/user/support/support.html"))
         }
 
 
@@ -404,6 +499,38 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.Created, savedPassengers)
         }
 
+        route("/api/tickets") {
+            post {
+                val request = call.receive<CreateTicketRequest>()
+                val createdTicket = ticketService.createTicket(request)
+                call.respond(HttpStatusCode.Created, createdTicket)
+            }
+
+            get {
+                val tickets = ticketService.getAllTickets()
+                call.respond(HttpStatusCode.OK, tickets)
+            }
+
+            put("/{id}") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                if (id == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid ticket ID")
+                    return@put
+                }
+
+                val request = call.receive<UpdateTicketRequest>()
+                val updatedTicket = ticketService.updateTicket(id, request)
+
+                if (updatedTicket == null) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        "Ticket update failed. Ticket may not exist, or booking change could not be processed")
+                } else {
+                    call.respond(HttpStatusCode.OK, updatedTicket)
+                }
+            }
+        }
+
         get("/api/manager/flights") {
             //TODO:
             //Add manager only access - requires manager log-in key.
@@ -487,13 +614,18 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/manager/home/manager_home.html"))
         }
 
+        get("/manager/support") {
+            call.respondFile(File("src/main/resources/static/manager/support/support.html"))
+        }
+
         post("/checkout") {
             val request = call.receive<CheckoutRequest>()
 
             val checkoutService = CheckoutService(
                 priceHoldService = PriceHoldService(),
                 paymentService = PaymentService(),
-                loyaltyService = LoyaltyService()
+                loyaltyService = LoyaltyService(),
+                promoCodeService = PromoCodeService()
             )
 
             val paymentRequest = PaymentRequest(
@@ -508,7 +640,8 @@ fun Application.configureRouting() {
             val response = checkoutService.checkout(
                 holdId = request.holdId,
                 request = paymentRequest,
-                pointsToRedeem = request.pointsToRedeem
+                pointsToRedeem = request.pointsToRedeem,
+                promoCode = request.promoCode
             )
 
             if (response.success) {
@@ -636,7 +769,7 @@ fun Application.configureRouting() {
             )
         }
 
-
+        /*
         post("/api/auth/login") {
             val request = call.receive<LoginRequest>()
             val authenticationService = AuthenticationService()
@@ -667,6 +800,7 @@ fun Application.configureRouting() {
                 )
             }
         }
+        */
 
         post("/api/auth/register") {
             val request = call.receive<RegisterRequest>()
@@ -702,8 +836,29 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/user/loyalty/loyaltypage.html"))
         }
 
+        get("/api/loyalty/{userId}") {
+            val userId = call.parameters["userId"]?.toIntOrNull()
+            if (userId == null) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid user ID")
+                return@get
+            }
+
+            val loyaltyService = LoyaltyService()
+            val loyaltyAccount = loyaltyService.getLoyaltyAccount(userId)
+
+            if (loyaltyAccount == null) {
+                call.respond(HttpStatusCode.NotFound, "No loyalty account found")
+            } else {
+                call.respond(HttpStatusCode.OK, loyaltyAccount)
+            }
+        }
+
         get("/checkout") {
             call.respondFile(File("src/main/resources/static/user/payment/payment.html"))
+        }
+
+        get("/confirmation") {
+            call.respondFile(File("src/main/resources/static/user/payment/confirmation.html"))
         }
 
         post("/api/holds") {
@@ -751,8 +906,233 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.BadRequest, "Error while creating hold")
             }
         }
+        get("/api/bookings/lookup") {
+
+            // get  parameters from the request url
+            val bookingIdParam = call.request.queryParameters["bookingId"]
+            val lastName = call.request.queryParameters["lastName"]?.trim()
+
+            // convert booking id to int, if fails it will be null
+            val bookingId = bookingIdParam?.toIntOrNull()
+
+            // validate both fields are present
+            if (bookingId == null || lastName.isNullOrBlank()) {
+                call.respond(HttpStatusCode.BadRequest, ErrorResponse("Missing bookingId or lastName"))
+                return@get
+            }
+
+            // create services
+            val bookingService = BookingService()
+            val passengerService = PassengerService()
+
+            // look up the booking by id
+            val details = bookingService.getBookingDetails(bookingId)
+
+            // if no booking found return 404
+            if (details == null) {
+                call.respond(HttpStatusCode.NotFound, ErrorResponse("Booking not found"))
+                return@get
+            }
+
+            // get all passengers on this booking
+            val passengers = passengerService.getPassengersByBooking(bookingId)
+
+            // check if any passenger last name matches what was entered (not case sensitive)
+            var lastNameMatches = false
+            for (passenger in passengers) {
+                if (passenger.lastName.equals(lastName, ignoreCase = true)) {
+                    lastNameMatches = true
+                    break
+                }
+            }
+
+            // if no name match, return 404 (same message to avoid exposing booking exists)
+            if (lastNameMatches == false) {
+                call.respond(HttpStatusCode.NotFound, ErrorResponse("Booking not found"))
+                return@get
+            }
+
+            // build list of passenger full names
+            val passengerNames = mutableListOf<String>()
+            for (passenger in passengers) {
+                passengerNames.add("${passenger.firstName} ${passenger.lastName}")
+            }
+
+            // return the booking details
+            call.respond(
+                HttpStatusCode.OK,
+                BookingLookupResponse(
+                    bookingId  = details.booking.bookingId,
+                    flightId   = details.booking.flightId,
+                    seats      = details.seats,
+                    passengers = passengerNames
+                )
+            )
+        }
+
+        post("/api/promo/apply") {
+            val request = call.receive<ApplyPromoCodeRequest>()
+
+            val result = promoCodeService.applyPromoCode(
+                codeValue = request.code,
+                originalAmount = request.originalAmount
+            )
+
+            if (result.isSuccess) {
+                call.respond(
+                    HttpStatusCode.OK,
+                    ApplyPromoCodeResponse(
+                        success = true,
+                        code = request.code.uppercase(),
+                        originalAmount = request.originalAmount,
+                        discountedAmount = result.getOrNull(),
+                        message = "Promo code applied successfully"
+                    )
+                )
+            } else {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApplyPromoCodeResponse(
+                        success = false,
+                        code = request.code.uppercase(),
+                        originalAmount = request.originalAmount,
+                        discountedAmount = null,
+                        message = result.exceptionOrNull()?.message ?: "Invalid promo code"
+                    )
+                )
+            }
+        }
+
+        post("/api/manager/promo-codes") {
+            val request = call.receive<CreatePromoCodeRequest>()
+
+            val result = promoCodeService.createPromoCode(
+                codeValue = request.code,
+                discountType = request.discountType.uppercase(),
+                discountValue = request.discountValue
+            )
+
+            if (result.isSuccess) {
+                call.respond(
+                    HttpStatusCode.Created,
+                    CreatePromoCodeResponse(
+                        success = true,
+                        message = "Promo code created successfully"
+                    )
+                )
+            } else {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    CreatePromoCodeResponse(
+                        success = false,
+                        message = result.exceptionOrNull()?.message ?: "Unable to create promo code"
+                    )
+                )
+            }
+        }
+
+// serves the view booking html page
+        get("/view-booking") {
+            call.respondFile(File("src/main/resources/static/user/booking/view-booking.html"))
+        }
+
+        get("/api/manager/bookings") {
+            val bookingService = BookingService()
+            val bookings = bookingService.getAllBookings()
+            call.respond(HttpStatusCode.OK, bookings)
+        }
+
+        get("/manager/bookings") {
+            call.respondFile(File("src/main/resources/static/manager/edit_bookings/edit_bookings.html"))
+        }
+
+        // get booking + its passengers
+        get("/api/manager/bookings/{bookingId}") {
+
+            val bookingId = call.parameters["bookingId"]?.toIntOrNull()
+                ?: return@get call.respond(HttpStatusCode.BadRequest, "invalid booking id")
+
+            val booking = bookingService.getBookingDetails(bookingId)
+            val passengers = passengerService.getPassengersByBooking(bookingId)
+
+            call.respond(ManagerBookingDetailResponse(booking = booking, passengers = passengers))
+
+
+        }
+
+        // update a passenger in a booking
+        put("/api/manager/passengers/{passengerId}") {
+
+
+
+        val passengerId = call.parameters["passengerId"]?.toIntOrNull()
+                ?: return@put call.respond(HttpStatusCode.BadRequest, "invalid passenger id")
+
+            val input = call.receive<PassengerInput>()
+
+            passengerService.updatePassenger(passengerId, input)
+
+            call.respond(HttpStatusCode.OK)
+        }
+
+        // update seats on a booking (frees old seats, books new ones)
+        put("/api/manager/bookings/{bookingId}/seats") {
+
+            // get booking id
+            val bookingId = call.parameters["bookingId"]?.toIntOrNull()
+                ?: return@put call.respond(HttpStatusCode.BadRequest, "invalid booking id")
+            // get the new seats list from request body
+            val request = call.receive<UpdateSeatsRequest>()
+            val newSeats = request.seats
+            // try to update the seats
+            val success = bookingService.updateBookingSeats(bookingId, newSeats)
+
+            // send back result
+            if (success) call.respond(HttpStatusCode.OK)
+            else call.respond(HttpStatusCode.BadRequest, "invalid seats")
+
+
+        }
+
+        // Delete entire booking + free seats + delete passengers
+        // cancel a booking (removes passengers, frees seats, deletes booking)
+        delete("/api/manager/bookings/{bookingId}") {
+
+            // get booking id from url
+            val bookingId = call.parameters["bookingId"]?.toIntOrNull()
+                ?: return@delete call.respond(HttpStatusCode.BadRequest, "invalid booking id")
+
+            // remove all passengers on this booking first
+            passengerService.deletePassengersByBooking(bookingId)
+
+            // cancel the booking (frees seats + deletes it)
+            val success = bookingService.cancelBooking(bookingId)
+
+            // send back result
+            if (success) call.respond(HttpStatusCode.OK)
+            else call.respond(HttpStatusCode.NotFound)
+
+        }
+
+        get("/api/debug/passengers") {
+            val all = passengerService.getPassengersByBooking(161)
+            call.respond(all)
+        }
+
+
         get("/addons") {
             call.respondFile(File("src/main/resources/static/user/loyalty/addons.html"))
         }
+
+        get("/manager/analytics") {
+            call.respondFile(File("src/main/resources/static/manager/analytics/analytics.html"))
+        }
+
+
+        get("/api/manager/analytics") {
+            val analytics = ManagerAnalyticsService().getAnalytics()
+            call.respond(analytics)
+        }
     }
 }
+
