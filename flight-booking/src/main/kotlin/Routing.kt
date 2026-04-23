@@ -248,9 +248,40 @@ data class ManagerAnalyticsResponse(
     val totalBookings: Int,
     val upcomingFlights: Int,
     val openTickets: Int,
-    val mostPopularRoute: String?,
-    val peakBookingTime: String?
+    val mostPopularRoute: RouteBookingCount,
+    val bookingsPerHour: List<HourlyBookingCount>,
+    val bookingsPerFlight: List<FlightBookingCount>,
+    val popularRoutes: List<RouteBookingCount>,
+    val bookingsPerRoute: List<RouteBookingCount>
 )
+
+@Serializable
+data class HourlyBookingCount(
+    val hour: Int,
+    val count: Int
+)
+
+@Serializable
+data class FlightBookingCount(
+    val flightId: String,
+    val date: String,
+    val departureAirport: String,
+    val arrivalAirport: String,
+    var bookingCount: Int
+)
+@Serializable
+data class RouteBookingCount(
+    val departureAirport: String,
+    val arrivalAirport: String,
+    val bookingCount: Int
+)
+
+@Serializable
+data class Route(
+    val departureAirport: String,
+    val arrivalAirport: String,
+)
+
 
 fun Application.configureRouting() {
     val authenticationService = AuthenticationService()
