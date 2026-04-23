@@ -210,6 +210,23 @@ data class SendManagerEmailResponse (
 
 
 @Serializable
+data class SendManagerEmailRequest(
+    val toEmail: String,
+    val subject: String,
+    val message: String
+)
+
+
+@Serializable
+data class SendManagerEmailResponse (
+    val success: Boolean,
+    val message: String
+)
+
+
+
+
+@Serializable
 data class CreateBookingRequest(
     val userId: Int,
     val flightId: String,
