@@ -11,11 +11,14 @@ import io.ktor.server.routing.*
 import io.pebbletemplates.pebble.loader.ClasspathLoader
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import com.flightsystem.service.PromoCodeService
 import kotlinx.serialization.json.*
 import java.io.File
 import model.*
 
 import com.flightsystem.model.*
+import com.flightsystem.service.AuthenticationService
+import java.time.LocalDate
 
 fun Application.configureDatabases() {
     val database = Database.connect(
@@ -43,8 +46,21 @@ fun Application.configureDatabases() {
             PriceHoldSeats,
             Passengers,
             LoyaltyAccounts,
+            PromoCodes,
             SupportTickets
         )
+
+        val authservice = AuthenticationService()
+
+        authservice.setDefaultManager(
+            firstName = "Admin",
+            lastName = "User",
+            dateOfBirth = "1990-01-01",
+            email = "manager@astraeus.com",
+            rawPassword = "password123"
+        )
+
+        PromoCodeService().makeDefaultPromoCodes()
 
         val columns = listOf("A","B","C","D","E","F")
         val flights = Flights.selectAll().map { it[Flights.flightId] }

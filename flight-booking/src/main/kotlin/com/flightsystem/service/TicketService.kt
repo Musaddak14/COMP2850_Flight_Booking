@@ -12,7 +12,13 @@ import org.jetbrains.exposed.sql.update
 import java.time.LocalDateTime
 
 
-class TicketService {
+class TicketService (
+
+    private val emailService: EmailService
+
+) {
+
+
 
     fun createTicket(request: CreateTicketRequest): TicketResponse {
         return transaction {
@@ -80,29 +86,72 @@ class TicketService {
             if (row == null) {
                 null
             } else {
-                if(
+                if (
                     request.status == TicketStatus.RESOLVED &&
                     row[SupportTickets.requestType] == "CHANGE_BOOKING"
                 ) {
                     val managerNote = request.managerNote ?: ""
-                    val newSeatNumbers = managerNote
-                        .split(",")
-                        .map { it.trim() }
-                        .filter { it.isNotBlank() }
 
-                    val bookingUpdated = bookingService.updateBookingSeats(
-                        bookingId = row[SupportTickets.bookingId],
-                        newSeatNumbers = newSeatNumbers
-                    )
-                    if (!bookingUpdated) {
-                        return@transaction null
+                    val looksLikeSeatUpdate = Regex("""^\s*\d+[A-F](\s*,\s*\d+[A-F])*\s*$""")
+                        .matches(managerNote)
+
+                    if (looksLikeSeatUpdate) {
+                        val newSeatNumbers = managerNote
+                            .split(",")
+                            .map { it.trim() }
+                            .filter { it.isNotBlank() }
+
+                        val bookingUpdated = bookingService.updateBookingSeats(
+                            bookingId = row[SupportTickets.bookingId],
+                            newSeatNumbers = newSeatNumbers
+                        )
+
+                        if (!bookingUpdated) {
+                            return@transaction null
+                        }
                     }
                 }
                 SupportTickets.update({ SupportTickets.suppTickId eq ticketId }) {
                     it[status] = request.status
                     it[updatedAt] = now
                     it[managerNote] = request.managerNote
-                }   
+                }
+
+
+
+                if (request.status == TicketStatus.RESOLVED || request.status == TicketStatus.REJECTED) {
+                    val email = row[SupportTickets.customerEmail]
+                    val name = row[SupportTickets.customerName]
+                    val note = request.managerNote ?: "No additional information provided."
+
+                    val subject = "Update on your Astraeus support ticket #$ticketId"
+
+                    val body = """
+        Hello $name,
+
+        Your support ticket (ID: $ticketId) has been updated.
+
+        New status: ${request.status}
+
+        Manager message:
+        $note
+
+        If you need any further help, please contact Astraeus Support again.
+
+        Kind regards,
+        Astraeus Support
+    """.trimIndent()
+
+                    try {
+                        emailService.sendEmail(
+                            toEmail = email,
+                            subject = subject,
+                            body = body
+                        )
+                    } catch (e: Exception) {
+                        println("Failed to send support ticket email: ${e.message}")
+                    }
+                }
 
                 TicketResponse(
                     id = row[SupportTickets.suppTickId],

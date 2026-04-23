@@ -556,9 +556,10 @@
             bookingDraft.holdExpiryTime &&
             seatListsMatch(seatNumbers, bookingDraft.seatNumbers ?? [])
         ) {
+            bookingDraft.userId = isSignedIn ? loggedInUserId : bookingDraft.userId;
             bookingDraft.userId = isSignedIn ? loggedInUserId : null;
             persistBookingDraft();
-            window.location.href = "/loyaltypage";
+            window.location.href = isSignedIn ? "/loyaltypage" : "/addons";
             return;
         }
 
@@ -592,18 +593,19 @@
                 return;
             }
 
-            bookingDraft.userId = isSignedIn ? loggedInUserId: null;
+            bookingDraft.userId = result?.userId ?? (isSignedIn ? loggedInUserId : bookingDraft.userId ?? null);
             bookingDraft.seatNumbers = seatNumbers;
             bookingDraft.holdId = result?.holdId ?? null;
             bookingDraft.holdExpiryTime = result?.expiryTime ?? null;
             bookingDraft.totalPrice = result?.totalPrice ?? null;
+            bookingDraft.baseFareTotal = result?.totalPrice ?? null;
             persistBookingDraft();
 
             if (result) {
                 sessionStorage.setItem("holdData", JSON.stringify(result));
             }
 
-            window.location.href = "/loyaltypage";
+            window.location.href = isSignedIn ? "/loyaltypage" : "/addons";
         } catch {
             holdMessage.textContent = "Unable to hold the selected seats right now. Please try again.";
         } finally {

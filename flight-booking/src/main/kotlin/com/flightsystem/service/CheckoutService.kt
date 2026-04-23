@@ -14,6 +14,7 @@ class CheckoutService(
     private val priceHoldService: PriceHoldService,
     private val paymentService: PaymentService,
     private val loyaltyService: LoyaltyService,
+    private val promoCodeService: PromoCodeService
 
 
 
@@ -57,7 +58,8 @@ class CheckoutService(
     fun checkout(
         holdId: Int,
         request: PaymentRequest,
-        pointsToRedeem: Int = 0
+        pointsToRedeem: Int = 0,
+        promoCode: String? = null
     ): PaymentResponse {
 
         val holdDetails = priceHoldService.getHoldDetails(holdId)
@@ -124,6 +126,24 @@ class CheckoutService(
                 originalPrice = hold.totalPrice,
                 pointsToRedeem = pointsToRedeem
             )
+        }
+
+        if (!promoCode.isNullOrBlank()) {
+            val promoResult = promoCodeService.applyPromoCode(
+                codeValue = promoCode,
+                originalAmount = finalAmount
+            )
+
+            if (promoResult.isFailure) {
+                return PaymentResponse(
+                    success = false,
+                    message = promoResult.exceptionOrNull()?.message ?: "Invalid promo code",
+                    paymentId = null,
+                    bookingId = null
+                )
+            }
+
+            finalAmount = promoResult.getOrNull()!!
         }
 
         val paymentResult = paymentService.processPayment(

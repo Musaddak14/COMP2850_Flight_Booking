@@ -11,6 +11,8 @@ import org.jetbrains.exposed.sql.update
 import java.time.LocalDateTime
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.deleteWhere
+import java.time.LocalDate
+import java.time.LocalTime
 
 
 class PriceHoldService {
@@ -197,6 +199,8 @@ class PriceHoldService {
             val inserted = Bookings.insert {
                 it[Bookings.userId] = userId
                 it[Bookings.flightId] = flightId
+                it[Bookings.date] = LocalDate.now().toString()
+                it[Bookings.time] = LocalTime.now().toString()
             }
 
             val newBookingId = inserted[Bookings.bookingId]
@@ -221,11 +225,15 @@ class PriceHoldService {
             }
 
             // ret the new perm booking created from the hold
+            val bookingDate = LocalDate.now().toString()
+            val bookingTime = LocalTime.now().toString()
             Booking(
                 bookingId = newBookingId,
                 userId = userId,
                 flightId = flightId,
-                totalPrice = holdRow[PriceHolds.totalPrice]
+                totalPrice = holdRow[PriceHolds.totalPrice],
+                date = bookingDate,
+                time = bookingTime,
             )
         }
     }
