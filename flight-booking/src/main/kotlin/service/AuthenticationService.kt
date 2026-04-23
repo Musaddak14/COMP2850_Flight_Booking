@@ -374,6 +374,45 @@ class AuthenticationService(
         return true
     }
 
+    fun setDefaultManager(
+        firstName: String,
+        lastName: String,
+        dateOfBirth: String,
+        email: String,
+        rawPassword: String
+    ) {
+        transaction {
+            val existing = Users.selectAll().where {
+                Users.email eq email
+            }.singleOrNull()
+
+            if (existing != null) {
+                return@transaction
+            }
+
+            val salt = EncryptionService.generateSalt()
+            val passwordHash = EncryptionService.hashPassword(rawPassword, salt)
+
+            val inserted = Users.insert {
+                it[Users.firstName] = firstName
+                it[Users.lastName] = lastName
+                it[Users.dateOfBirth] = dateOfBirth
+                it[Users.email] = email
+                it[Users.passwordHash] = passwordHash
+                it[Users.salt] = salt
+                it[Users.seatPreference] = "ANY"
+                it[Users.accountLocked] = false
+                it[Users.failedLoginAttempts] = 0
+                it[Users.lockedAt] = null
+                it[Users.lastLogin] = null
+                it[Users.role] = "MANAGER"
+            }
+
+            val newManagerId = inserted[Users.userId]
+            LoyaltyService().createLoyaltyAccount(newManagerId)
+        }
+    }
+
 
 }
 
