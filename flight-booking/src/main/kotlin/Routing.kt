@@ -229,6 +229,8 @@ fun Application.configureRouting() {
         staticResources("/manager", "static/manager")
         staticResources("/manage-account/styles", "static/user/manage-account/styles")
         staticResources("/manage-account/scripts", "static/user/manage-account/scripts")
+        staticResources("/support/styles", "static/user/support/styles")
+        staticResources("/support/scripts", "static/user/support/scripts")
 
 
         get("/") {
