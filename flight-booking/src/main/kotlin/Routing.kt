@@ -193,6 +193,23 @@ data class ErrorResponse(
 
 
 @Serializable
+data class SendManagerEmailRequest(
+    val toEmail: String,
+    val subject: String,
+    val message: String
+)
+
+
+@Serializable
+data class SendManagerEmailResponse (
+    val success: Boolean,
+    val message: String
+)
+
+
+
+
+@Serializable
 data class CreateBookingRequest(
     val userId: Int,
     val flightId: String,
@@ -965,6 +982,95 @@ fun Application.configureRouting() {
                         originalAmount = request.originalAmount,
                         discountedAmount = null,
                         message = result.exceptionOrNull()?.message ?: "Invalid promo code"
+                    )
+                )
+            }
+        }
+
+        post("/api/manager/send-email") {
+            val sessionId = call.request.queryParameters["sessionId"]
+
+            if (sessionId.isNullOrBlank()) {
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse("Missing sessionId")
+                )
+                return@post
+            }
+
+            val user = authenticationService.validateSession(sessionId)
+
+            if (user == null) {
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse("Invalid session")
+                )
+                return@post
+            }
+
+            if (user !is Manager) {
+                call.respond(
+                    HttpStatusCode.Forbidden,
+                    ErrorResponse("Only managers can send emails")
+                )
+                return@post
+            }
+
+            val request = call.receive<SendManagerEmailRequest>()
+
+            if (request.toEmail.isBlank()) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    SendManagerEmailResponse(
+                        success = false,
+                        message = "Recipient email cannot be blank"
+                    )
+                )
+                return@post
+            }
+
+            if (request.subject.isBlank()) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    SendManagerEmailResponse(
+                        success = false,
+                        message = "Subject cannot be blank"
+                    )
+                )
+                return@post
+            }
+
+            if (request.message.isBlank()) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    SendManagerEmailResponse(
+                        success = false,
+                        message = "Message cannot be blank"
+                    )
+                )
+                return@post
+            }
+
+            try {
+                emailService.sendEmail(
+                    toEmail = request.toEmail,
+                    subject = request.subject,
+                    body = request.message
+                )
+
+                call.respond(
+                    HttpStatusCode.OK,
+                    SendManagerEmailResponse(
+                        success = true,
+                        message = "Email sent successfully"
+                    )
+                )
+            } catch (e: Exception) {
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    SendManagerEmailResponse(
+                        success = false,
+                        message = e.message ?: "Failed to send email"
                     )
                 )
             }
