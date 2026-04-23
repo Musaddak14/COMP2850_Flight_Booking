@@ -4,13 +4,19 @@ import com.flightsystem.model.Airports.code
 import com.flightsystem.model.Users.userId
 import org.jetbrains.exposed.sql.Table
 import kotlinx.serialization.Serializable
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @Serializable
 data class Booking(
     val bookingId: Int,
     val userId: Int,
     val flightId: String,
-    val totalPrice: Double
+    val totalPrice: Double,
+    val date: String,
+    val time: String,
 )
 
 @Serializable
@@ -23,7 +29,8 @@ object Bookings: Table() {
     val bookingId = integer("bookingId").autoIncrement()
     val userId = reference("userId", Users.userId)
     val flightId = reference("flight", Flights.flightId)
-
+    val date = varchar("date", VARCHAR_LENGTH)
+    val time = varchar("time", VARCHAR_LENGTH)
     override val primaryKey = PrimaryKey(bookingId)
 
     init {

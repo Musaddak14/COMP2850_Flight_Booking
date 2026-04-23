@@ -1,17 +1,26 @@
 package com.example.com
 
+import com.example.com.service.ManagerAnalyticsService
 import com.flightsystem.model.Airport
 import com.flightsystem.model.Airports
+import com.flightsystem.model.Bookings
 import com.flightsystem.model.Flights
 import com.flightsystem.model.CheckoutRequest
+import com.flightsystem.model.Layovers
 import com.flightsystem.model.Manager
 import com.flightsystem.model.PaymentRequest
+import com.flightsystem.model.PriceHold
+import com.flightsystem.model.PriceHoldSeats
+import com.flightsystem.model.PriceHolds
+import com.flightsystem.model.Users
 import com.flightsystem.service.AuthenticationService
 import com.flightsystem.service.CheckoutService
 import com.flightsystem.model.PassengerInput
 import com.flightsystem.model.Users
 
 
+import com.flightsystem.AppEnv
+import com.flightsystem.service.EmailService
 
 
 
@@ -19,6 +28,7 @@ import com.flightsystem.service.LoyaltyService
 import com.flightsystem.service.PaymentService
 import com.flightsystem.service.PriceHoldService
 import com.flightsystem.service.TicketService
+import com.flightsystem.service.PromoCodeService
 import model.CreateTicketRequest
 import model.UpdateTicketRequest
 
@@ -32,6 +42,7 @@ import io.ktor.server.routing.post
 import com.sun.org.apache.xalan.internal.lib.ExsltDatetime.time
 import com.flightsystem.service.PassengerService
 import com.flightsystem.model.SavePassengersRequest
+import com.flightsystem.model.Seats
 
 
 import io.ktor.server.request.receive
@@ -56,6 +67,7 @@ import org.jetbrains.exposed.sql.*
 import io.ktor.http.*
 import io.ktor.server.http.content.*
 import org.h2.api.H2Type.row
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 //import org.h2.api.H2Type.row
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -133,6 +145,34 @@ data class RegisterResponse(
 )
 
 
+@Serializable
+data class ApplyPromoCodeRequest(
+    val code: String,
+    val originalAmount: Double
+)
+
+@Serializable
+data class ApplyPromoCodeResponse(
+    val success: Boolean,
+    val code: String? = null,
+    val originalAmount: Double,
+    val discountedAmount: Double? = null,
+    val message: String
+)
+
+@Serializable
+data class CreatePromoCodeRequest(
+    val code: String,
+    val discountType: String,
+    val discountValue: Double
+)
+
+@Serializable
+data class CreatePromoCodeResponse(
+    val success: Boolean,
+    val message: String
+)
+
 
 @Serializable
 data class LoginRequest(
@@ -165,6 +205,22 @@ data class ErrorResponse(
 )
 
 
+
+@Serializable
+data class SendManagerEmailRequest(
+    val toEmail: String,
+    val subject: String,
+    val message: String
+)
+
+
+@Serializable
+data class SendManagerEmailResponse (
+    val success: Boolean,
+    val message: String
+)
+
+
 @Serializable
 data class CreateBookingRequest(
     val userId: Int,
@@ -174,7 +230,7 @@ data class CreateBookingRequest(
 
 @Serializable
 data class CreateHoldRequest(
-    val userId: Int,
+    val userId: Int?,
     val flightId: String,
     val seatNumbers: List<String>
 )
@@ -214,9 +270,59 @@ data class UpdateSeatsRequest(
     val seats: List<String>
 )
 
+@Serializable
+data class ManagerAnalyticsResponse(
+    val totalBookings: Int,
+    val upcomingFlights: Int,
+    val openTickets: Int,
+    val mostPopularRoute: RouteBookingCount,
+    val bookingsPerHour: List<HourlyBookingCount>,
+    val bookingsPerFlight: List<FlightBookingCount>,
+    val popularRoutes: List<RouteBookingCount>,
+    val bookingsPerRoute: List<RouteBookingCount>
+)
+
+@Serializable
+data class HourlyBookingCount(
+    val hour: Int,
+    val count: Int
+)
+
+@Serializable
+data class FlightBookingCount(
+    val flightId: String,
+    val date: String,
+    val departureAirport: String,
+    val arrivalAirport: String,
+    var bookingCount: Int
+)
+@Serializable
+data class RouteBookingCount(
+    val departureAirport: String,
+    val arrivalAirport: String,
+    val bookingCount: Int
+)
+
+@Serializable
+data class Route(
+    val departureAirport: String,
+    val arrivalAirport: String,
+)
+
+
 fun Application.configureRouting() {
     val authenticationService = AuthenticationService()
-    val ticketService = TicketService()
+
+    val emailService = EmailService(
+        smtpHost = "smtp.gmail.com",
+        smtpPort = "587",
+        smtpUsername = AppEnv.require("SMTP_USERNAME"),
+        smtpPassword = AppEnv.require("SMTP_PASSWORD"),
+        fromEmail = AppEnv.require("SMTP_USERNAME")
+    )
+
+    val ticketService = TicketService(emailService)
+    val promoCodeService = PromoCodeService()
 
     routing {
 
@@ -260,6 +366,11 @@ fun Application.configureRouting() {
         get("/log_in/register.html") {
             call.respondFile(File("src/main/resources/static/user/log_in/register.html"))
         }
+
+        get("/confirmation.html") {
+            call.respondFile(File("src/main/resources/static/user/book/confirmation.html"))
+        }
+
         val passengerService = PassengerService()
         val bookingService = BookingService()
 
@@ -274,8 +385,9 @@ fun Application.configureRouting() {
         staticResources("/log_in", "static/user/log_in")
         staticResources("/home", "static/user/home")
         staticResources("/images", "static/Images")
+        staticResources("/loyalty", "static/user/loyalty")
         staticResources("/manager/flight_view", "static/manager/flight_view")
-        staticResources("/manager/home", "static/manager/home" )
+        staticResources("/manager/home", "static/manager/home")
         staticResources("/manager/support", "static/manager/support")
         staticResources("/manager/edit_bookings", "static/manager/edit_bookings")
         staticResources("/manager/bookings", "static/manager/bookings")
@@ -367,7 +479,7 @@ fun Application.configureRouting() {
 
         get("/api/flights") {
             val from = call.request.queryParameters["from"]
-            val to   = call.request.queryParameters["to"]
+            val to = call.request.queryParameters["to"]
             val date = call.request.queryParameters["date"]
             val passengers = call.request.queryParameters["passengers"]
 
@@ -383,9 +495,6 @@ fun Application.configureRouting() {
                     val departure = row[Flights.departureAirport]
                     val arrival = row[Flights.arrivalAirport]
                     val flightDate = row[Flights.date]
-
-
-
 
 
                     //pull data from the database row into simple variable for comparison
@@ -408,8 +517,8 @@ fun Application.configureRouting() {
                     // if the user inputted an arrival airport remove results with different arrival airports
 
 
-                    if (date != "" ) {
-                        if (flightDate != date){
+                    if (date != "") {
+                        if (flightDate != date) {
                             match = false
                         }
                     }
@@ -428,8 +537,7 @@ fun Application.configureRouting() {
                             row[Flights.arrivalTime],
                             row[Flights.length]
                         )
-                    }
-                    else {
+                    } else {
                         null
                         //lables flight as non matching (reject)
                     }
@@ -450,7 +558,7 @@ fun Application.configureRouting() {
             call.respond(seats)
         }
 
-        get ("/api/users")  {
+        get("/api/users") {
             val users = authenticationService.getAllUsers()
             val authenticationService = AuthenticationService()
             call.respond(HttpStatusCode.OK, users)
@@ -505,7 +613,7 @@ fun Application.configureRouting() {
             val upcomingFlightData = transaction {
                 Flights.selectAll().where { Flights.date greaterEq LocalDate.now().toString() }
                     .orderBy(Flights.date to SortOrder.ASC, Flights.departureTime to SortOrder.ASC).map { row ->
-                        UpcomingFlightData (
+                        UpcomingFlightData(
                             flightId = row[Flights.flightId],
                             departureAirport = row[Flights.departureAirport],
                             arrivalAirport = row[Flights.arrivalAirport],
@@ -552,6 +660,32 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.Created)
         }
 
+        delete("/api/manager/flights/{flightId}") {
+            val flightId = call.parameters["flightId"]
+
+            if (flightId.isNullOrBlank()) {
+                call.respond(HttpStatusCode.BadRequest, "flightId required")
+                return@delete
+            }
+            val emptyBookingData = transaction {
+                Bookings.selectAll().where { Bookings.flightId eq flightId }.count() > 0
+            }
+
+            if (emptyBookingData) {
+                call.respond(HttpStatusCode.BadRequest, "flight has existing bookings.")
+            } else {
+                transaction {
+                    PriceHoldSeats.deleteWhere { PriceHoldSeats.flightId eq flightId }
+                    PriceHolds.deleteWhere { PriceHolds.flightId eq flightId }
+                    Seats.deleteWhere { Seats.flightId eq flightId }
+                    Layovers.deleteWhere { Layovers.flightId eq flightId }
+                    Flights.deleteWhere { Flights.flightId eq flightId }
+                }
+
+                call.respond(HttpStatusCode.OK, "Flights successfully deleted.")
+            }
+        }
+
         get("/manager") {
             call.respondFile(File("src/main/resources/static/manager/home/manager_home.html"))
         }
@@ -566,7 +700,8 @@ fun Application.configureRouting() {
             val checkoutService = CheckoutService(
                 priceHoldService = PriceHoldService(),
                 paymentService = PaymentService(),
-                loyaltyService = LoyaltyService()
+                loyaltyService = LoyaltyService(),
+                promoCodeService = PromoCodeService()
             )
 
             val paymentRequest = PaymentRequest(
@@ -581,7 +716,8 @@ fun Application.configureRouting() {
             val response = checkoutService.checkout(
                 holdId = request.holdId,
                 request = paymentRequest,
-                pointsToRedeem = request.pointsToRedeem
+                pointsToRedeem = request.pointsToRedeem,
+                promoCode = request.promoCode
             )
 
             if (response.success) {
@@ -701,10 +837,12 @@ fun Application.configureRouting() {
                 return@post
             }
             authenticationService.logout(sessionId)
-            call.respond(HttpStatusCode.OK, RegisterResponse(
-                success = true,
-                message = "Successfully logged out"
-            ))
+            call.respond(
+                HttpStatusCode.OK, RegisterResponse(
+                    success = true,
+                    message = "Successfully logged out"
+                )
+            )
         }
 
         /*
@@ -802,7 +940,28 @@ fun Application.configureRouting() {
                 val request = call.receive<CreateHoldRequest>()
                 val priceHoldService = PriceHoldService()
 
-                var userId = request.userId
+                var userId = request.userId ?: transaction {
+                    val guestEmail = "guest@astraeus.local"
+                    val existingGuest = Users.selectAll().where {
+                        Users.email eq guestEmail
+                    }.singleOrNull()
+
+                    if (existingGuest != null) {
+                        existingGuest[Users.userId]
+                    } else {
+                        val insertedGuest = Users.insert {
+                            it[firstName] = "Guest"
+                            it[lastName] = "Customer"
+                            it[dateOfBirth] = "1900-01-01"
+                            it[email] = guestEmail
+                            it[passwordHash] = "guest"
+                            it[salt] = "guest"
+                            it[role] = "USER"
+                        }
+
+                        insertedGuest[Users.userId]
+                    }
+                }
                 var flightId = request.flightId
                 val seatNumbers = request.seatNumbers
 
@@ -882,6 +1041,156 @@ fun Application.configureRouting() {
                     passengers = passengerNames
                 )
             )
+        }
+
+        post("/api/promo/apply") {
+            val request = call.receive<ApplyPromoCodeRequest>()
+
+            val result = promoCodeService.applyPromoCode(
+                codeValue = request.code,
+                originalAmount = request.originalAmount
+            )
+
+            if (result.isSuccess) {
+                call.respond(
+                    HttpStatusCode.OK,
+                    ApplyPromoCodeResponse(
+                        success = true,
+                        code = request.code.uppercase(),
+                        originalAmount = request.originalAmount,
+                        discountedAmount = result.getOrNull(),
+                        message = "Promo code applied successfully"
+                    )
+                )
+            } else {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApplyPromoCodeResponse(
+                        success = false,
+                        code = request.code.uppercase(),
+                        originalAmount = request.originalAmount,
+                        discountedAmount = null,
+                        message = result.exceptionOrNull()?.message ?: "Invalid promo code"
+                    )
+                )
+            }
+        }
+
+        post("/api/manager/send-email") {
+            val sessionId = call.request.queryParameters["sessionId"]
+
+            if (sessionId.isNullOrBlank()) {
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse("Missing sessionId")
+                )
+                return@post
+            }
+
+            val user = authenticationService.validateSession(sessionId)
+
+            if (user == null) {
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse("Invalid session")
+                )
+                return@post
+            }
+
+            if (user !is Manager) {
+                call.respond(
+                    HttpStatusCode.Forbidden,
+                    ErrorResponse("Only managers can send emails")
+                )
+                return@post
+            }
+
+            val request = call.receive<SendManagerEmailRequest>()
+
+            if (request.toEmail.isBlank()) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    SendManagerEmailResponse(
+                        success = false,
+                        message = "Recipient email cannot be blank"
+                    )
+                )
+                return@post
+            }
+
+            if (request.subject.isBlank()) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    SendManagerEmailResponse(
+                        success = false,
+                        message = "Subject cannot be blank"
+                    )
+                )
+                return@post
+            }
+
+            if (request.message.isBlank()) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    SendManagerEmailResponse(
+                        success = false,
+                        message = "Message cannot be blank"
+                    )
+                )
+                return@post
+            }
+
+            try {
+                emailService.sendEmail(
+                    toEmail = request.toEmail,
+                    subject = request.subject,
+                    body = request.message
+                )
+
+                call.respond(
+                    HttpStatusCode.OK,
+                    SendManagerEmailResponse(
+                        success = true,
+                        message = "Email sent successfully"
+                    )
+                )
+            } catch (e: Exception) {
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    SendManagerEmailResponse(
+                        success = false,
+                        message = e.message ?: "Failed to send email"
+                    )
+                )
+            }
+        }
+
+        post("/api/manager/promo-codes") {
+            val request = call.receive<CreatePromoCodeRequest>()
+
+            val result = promoCodeService.createPromoCode(
+                codeValue = request.code,
+                discountType = request.discountType.uppercase(),
+                discountValue = request.discountValue
+            )
+
+            if (result.isSuccess) {
+                call.respond(
+                    HttpStatusCode.Created,
+                    CreatePromoCodeResponse(
+                        success = true,
+                        message = "Promo code created successfully"
+                    )
+                )
+            } else {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    CreatePromoCodeResponse(
+                        success = false,
+                        message = result.exceptionOrNull()?.message ?: "Unable to create promo code"
+                    )
+                )
+            }
         }
 
 // serves the view booking html page
@@ -1055,6 +1364,19 @@ fun Application.configureRouting() {
         }
 
 
-    }
+        get("/addons") {
+            call.respondFile(File("src/main/resources/static/user/loyalty/addons.html"))
+        }
 
+        get("/manager/analytics") {
+            call.respondFile(File("src/main/resources/static/manager/analytics/analytics.html"))
+        }
+
+
+        get("/api/manager/analytics") {
+            val analytics = ManagerAnalyticsService().getAnalytics()
+            call.respond(analytics)
+        }
+    }
 }
+

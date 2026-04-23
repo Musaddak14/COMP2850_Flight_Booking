@@ -10,6 +10,9 @@ import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.selectAll
 import com.flightsystem.model.*
+import org.h2.api.H2Type.row
+import java.time.LocalDate
+import java.time.LocalTime
 
 class BookingService {
 
@@ -43,11 +46,14 @@ class BookingService {
             if (unavailableSeat != null) {
                 throw IllegalArgumentException("one or more seats are not available")
             }
-            
+            val bookingDate = LocalDate.now().toString()
+            val bookingTime = LocalTime.now().toString()
             // insert new row in bookings table
             val inserted = Bookings.insert {
                 it[Bookings.userId] = userId
                 it[Bookings.flightId] = flightId
+                it[Bookings.date] = bookingDate
+                it[Bookings.time] = bookingTime
             }
 
             val newBookingId = inserted[Bookings.bookingId]
@@ -68,10 +74,14 @@ class BookingService {
                 it[isAvailable] = false
             }
 
+
             Booking(
                 bookingId = newBookingId,
                 userId = userId,
                 flightId = flightId,
+                date = bookingDate,
+                time = bookingTime,
+
                 totalPrice = 10.0
             )
         }
@@ -128,7 +138,9 @@ class BookingService {
                 bookingId = bookingRow[Bookings.bookingId],
                 userId = bookingRow[Bookings.userId],
                 flightId = bookingRow[Bookings.flightId],
-                totalPrice = 10.0
+                totalPrice = 10.0,
+                date = bookingRow[Bookings.date],
+                time =bookingRow[Bookings.time]
             )
             // load linked seats
             val bookedSeats = BookingSeats.selectAll().where {
@@ -176,7 +188,9 @@ class BookingService {
                     bookingId = row[Bookings.bookingId],
                     userId = row[Bookings.userId],
                     flightId = row[Bookings.flightId],
-                    totalPrice = 10.0
+                    totalPrice = 10.0,
+                    date = row[Bookings.date],
+                    time = row[Bookings.time],
                 )
             }
         }
@@ -338,7 +352,9 @@ class BookingService {
                         bookingId = bookingId,
                         userId    = row[Bookings.userId],
                         flightId  = row[Bookings.flightId],
-                        totalPrice = 10.0
+                        totalPrice = 10.0,
+                        date = row[Bookings.date],
+                        time = row[Bookings.time]
                     )
 
                     BookingDetails(
