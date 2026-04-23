@@ -101,6 +101,14 @@
                 <tr><td colspan="4">Loading...</td></tr>
                 </tbody>
             </table>
+            <div class="report-actions">
+                <button id="bookings-per-flight-show-fewer" class="report-toggle" type="button" hidden>
+                    Show Fewer
+                </button>
+                <button id="bookings-per-flight-show-more" class="report-toggle" type="button" hidden>
+                    Show More
+                </button>
+            </div>
         </article>
 
         <article class="report-card">
@@ -119,24 +127,25 @@
                 <tr><td colspan="2">Loading...</td></tr>
                 </tbody>
             </table>
+            <div class="report-actions">
+                <button id="popular-routes-show-fewer" class="report-toggle" type="button" hidden>
+                    Show Fewer
+                </button>
+                <button id="popular-routes-show-more" class="report-toggle" type="button" hidden>
+                    Show More
+                </button>
+            </div>
         </article>
 
         <article class="report-card report-card-wide">
             <div class="section-heading compact-heading">
-                <h2>Peak Booking Times</h2>
-                <p>Busiest booking hours. Requires booking timestamp data from the backend.</p>
+                <h2>Bookings Per Hour</h2>
+                <p>Confirmed bookings grouped by the hour they were created.</p>
             </div>
-            <table>
-                <thead>
-                <tr>
-                    <th>Hour</th>
-                    <th>Bookings</th>
-                </tr>
-                </thead>
-                <tbody id="peak-booking-times-body">
-                <tr><td colspan="2">Loading...</td></tr>
-                </tbody>
-            </table>
+            <div class="hourly-chart-wrap">
+                <div id="hourly-booking-chart" class="hourly-chart" aria-label="Bookings per hour bar chart"></div>
+                <p id="hourly-booking-empty" class="chart-empty-message">Loading...</p>
+            </div>
         </article>
     </section>
 </main>
