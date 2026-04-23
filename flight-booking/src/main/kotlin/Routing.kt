@@ -233,6 +233,22 @@ fun Application.configureRouting() {
         staticResources("/support/scripts", "static/user/support/scripts")
 
 
+        get("/lounges") {
+            call.respondFile(File("src/main/resources/static/user/home/lounges.html"))
+        }
+
+        get("/dubai") {
+            call.respondFile(File("src/main/resources/static/user/home/dubai.html"))
+        }
+
+        get("/refunds") {
+            call.respondFile(File("src/main/resources/static/user/home/refunds.html"))
+        }
+
+        get("/entertainment") {
+            call.respondFile(File("src/main/resources/static/user/home/entertainment.html"))
+        }
+
         get("/") {
             call.respondFile(File("src/main/resources/static/user/home/index.html"))
         }

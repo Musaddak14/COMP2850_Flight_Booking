@@ -425,10 +425,18 @@ footer {
 /*makes a row for the buttons/pics with spacing between*/
 
 .experience-card {
+    display: block;              
+    text-decoration: none;       
+    color: inherit;              
     border: none;
     background: none;
     cursor: pointer;
     width: 260px;
+    transition: transform 0.2s ease;
+}
+
+.experience-card:hover {
+    transform: translateY(-4px);
 }
 
  /*makes pics clickable*/
