@@ -4,12 +4,36 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Support Request</title>
-    <link rel="stylesheet" href="/support/styles/style.css">
-    <script src="/scripts/sessionHome.js" defer></script>
-    <script src="/support/scripts/script.js" defer></script>
+    <title>Flight Results</title>
+    <link rel="stylesheet" href="../home/styles/style.css">
 </head>
 <body>
+
+<header class="header">
+    <nav class="top-nav">
+        <div class="left-nav">
+            <div class="logo">
+                <img src="/images/Logo.png" class="Airline_Logo">
+                <img src="/images/Star_Alliance.jpg" class="Star_Alliance">
+            </div>
+        </div>
+
+        <div class="center-nav">
+            <a href="/">Home</a>
+            <a href="/support">Help</a>
+            <a href="/manage">Manage</a>
+        </div>
+
+        <div class="right-nav">
+            <span class="lang">United Kingdom - EN</span>
+            <span id="welcome-message"></span>
+            <a href="/log_in" id="login-link">Log In</a>
+            <button id="logout-button" type="button" style="display: none;">Log Out</button>
+        </div>
+    </nav>
+</header>
+
+<!-- main nav bar at top -->
 <div class="page-container">
     <h1>Create Support Request</h1>
     <p>Submit a request for help with your booking. A manager will review it.</p>
@@ -57,6 +81,5 @@
     <div class="footer-right">Astraeus UK</div>
 </footer>
 
-<script src="script.js"></script>
 </body>
 </html>
