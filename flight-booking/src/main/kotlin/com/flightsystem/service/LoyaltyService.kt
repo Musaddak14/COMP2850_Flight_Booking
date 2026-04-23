@@ -101,7 +101,7 @@ class LoyaltyService {
         if (originalPrice < 0.0 || pointsToRedeem < 0) {
             throw IllegalArgumentException("Price and points must not be negative")
         }
-        val discountAmount = pointsToRedeem / 100.0
+        val discountAmount = pointsToRedeem / 10.0
         val discountedPrice = originalPrice - discountAmount
         return if (discountedPrice < 0.0) 0.0 else discountedPrice
     }

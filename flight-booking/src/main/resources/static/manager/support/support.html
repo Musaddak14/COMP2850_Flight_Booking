@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Support Tickets</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+            color: #222;
+        }
+
+        .page-header {
+            background-color: #1f3c88;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .page-header p {
+            margin: 8px 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .page-container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px 40px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .refresh-btn {
+            background-color: #1f3c88;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .refresh-btn:hover {
+            background-color: #162d66;
+        }
+
+        .ticket-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .ticket-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-left: 6px solid #1f3c88;
+        }
+
+        .ticket-card h2 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 20px;
+            color: #1f3c88;
+        }
+
+        .ticket-details p {
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+
+        .ticket-controls {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid #ddd;
+        }
+
+        .ticket-controls label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .ticket-controls select,
+        .ticket-controls textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 14px;
+            box-sizing: border-box;
+        }
+
+        .ticket-controls textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .update-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .update-btn:hover {
+            background-color: #218838;
+        }
+
+        .result-message {
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .empty-message {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>Support Ticket Manager</h1>
+        <p>Review, update, and manage customer support requests.</p>
+    </div>
+
+    <div class="page-container">
+        <div class="top-bar">
+            <h2>All Tickets</h2>
+            <button class="refresh-btn" onclick="loadTickets()">Refresh Tickets</button>
+        </div>
+
+        <div id="ticketList" class="ticket-grid"></div>
+    </div>
+
+    <script>
+        async function loadTickets() {
+            const response = await fetch("/api/tickets");
+            const tickets = await response.json();
+
+            const ticketList = document.getElementById("ticketList");
+            ticketList.innerHTML = "";
+
+            if (tickets.length === 0) {
+                ticketList.innerHTML = `
+                    <div class="empty-message">
+                        <p>No tickets found.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            tickets.forEach(ticket => {
+                const ticketDiv = document.createElement("div");
+                ticketDiv.className = "ticket-card";
+
+                ticketDiv.innerHTML = `
+                    <h2>Ticket #${ticket.id}</h2>
+
+                    <div class="ticket-details">
+                        <p><strong>Booking ID:</strong> ${ticket.bookingId}</p>
+                        <p><strong>Name:</strong> ${ticket.customerName}</p>
+                        <p><strong>Email:</strong> ${ticket.customerEmail}</p>
+                        <p><strong>Request Type:</strong> ${ticket.requestType}</p>
+                        <p><strong>Message:</strong> ${ticket.message}</p>
+                        <p><strong>Status:</strong> ${ticket.status}</p>
+                    </div>
+
+                    <div class="ticket-controls">
+                        <label for="status-${ticket.id}">Update Status</label>
+                        <select id="status-${ticket.id}">
+                            <option value="OPEN">OPEN</option>
+                            <option value="IN_PROGRESS">IN_PROGRESS</option>
+                            <option value="RESOLVED">RESOLVED</option>
+                            <option value="REJECTED">REJECTED</option>
+                        </select>
+
+                        <label for="note-${ticket.id}">Manager Note</label>
+                        <textarea id="note-${ticket.id}">${ticket.managerNote ?? ""}</textarea>
+
+                        <button class="update-btn" onclick="updateTicket(${ticket.id})">Update Ticket</button>
+                        <p id="result-${ticket.id}" class="result-message"></p>
+                    </div>
+                `;
+
+                ticketList.appendChild(ticketDiv);
+
+                document.getElementById(`status-${ticket.id}`).value = ticket.status;
+            });
+        }
+
+        async function updateTicket(ticketId) {
+            const status = document.getElementById(`status-${ticketId}`).value;
+            const managerNote = document.getElementById(`note-${ticketId}`).value;
+
+            const response = await fetch(`/api/tickets/${ticketId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    status: status,
+                    managerNote: managerNote
+                })
+            });
+
+            const result = document.getElementById(`result-${ticketId}`);
+            const responseText = await response.text();
+
+            if (response.ok) {
+                result.textContent = "Ticket updated successfully.";
+                loadTickets();
+            } else {
+                result.textContent = responseText;
+            }
+        }
+
+        loadTickets();
+    </script>
+</body>
+</html>

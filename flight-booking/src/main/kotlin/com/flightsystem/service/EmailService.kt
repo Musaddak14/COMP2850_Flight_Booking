@@ -47,7 +47,7 @@ class EmailService(
         val message = MimeMessage(session)
         message.setFrom(InternetAddress(fromEmail))
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail))
-        message.subject = "Booking Confirmation - $bookingId"
+        message.subject = "Astraeus Airways Booking Confirmation - $bookingId"
 
         val textPart = MimeBodyPart()
         textPart.setText(
@@ -85,6 +85,33 @@ class EmailService(
         multipart.addBodyPart(attachmentPart)
 
         message.setContent(multipart)
+
+        Transport.send(message)
+    }
+
+    fun sendEmail(
+        toEmail: String,
+        subject: String,
+        body: String
+    ) {
+        val props = Properties().apply {
+            put("mail.smtp.auth", "true")
+            put("mail.smtp.starttls.enable", "true")
+            put("mail.smtp.host", smtpHost)
+            put("mail.smtp.port", smtpPort)
+        }
+
+        val session = Session.getInstance(props, object : Authenticator() {
+            override fun getPasswordAuthentication(): PasswordAuthentication {
+                return PasswordAuthentication(smtpUsername, smtpPassword)
+            }
+        })
+
+        val message = MimeMessage(session)
+        message.setFrom(InternetAddress(fromEmail))
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail))
+        message.subject = subject
+        message.setText(body)
 
         Transport.send(message)
     }
