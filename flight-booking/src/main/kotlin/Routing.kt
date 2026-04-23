@@ -12,7 +12,6 @@ import com.flightsystem.model.PaymentRequest
 import com.flightsystem.model.PriceHold
 import com.flightsystem.model.PriceHoldSeats
 import com.flightsystem.model.PriceHolds
-import com.flightsystem.model.Users
 import com.flightsystem.service.AuthenticationService
 import com.flightsystem.service.CheckoutService
 import com.flightsystem.model.PassengerInput
