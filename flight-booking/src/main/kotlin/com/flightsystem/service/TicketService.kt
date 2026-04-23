@@ -86,22 +86,29 @@ class TicketService (
             if (row == null) {
                 null
             } else {
-                if(
+                if (
                     request.status == TicketStatus.RESOLVED &&
                     row[SupportTickets.requestType] == "CHANGE_BOOKING"
                 ) {
                     val managerNote = request.managerNote ?: ""
-                    val newSeatNumbers = managerNote
-                        .split(",")
-                        .map { it.trim() }
-                        .filter { it.isNotBlank() }
 
-                    val bookingUpdated = bookingService.updateBookingSeats(
-                        bookingId = row[SupportTickets.bookingId],
-                        newSeatNumbers = newSeatNumbers
-                    )
-                    if (!bookingUpdated) {
-                        return@transaction null
+                    val looksLikeSeatUpdate = Regex("""^\s*\d+[A-F](\s*,\s*\d+[A-F])*\s*$""")
+                        .matches(managerNote)
+
+                    if (looksLikeSeatUpdate) {
+                        val newSeatNumbers = managerNote
+                            .split(",")
+                            .map { it.trim() }
+                            .filter { it.isNotBlank() }
+
+                        val bookingUpdated = bookingService.updateBookingSeats(
+                            bookingId = row[SupportTickets.bookingId],
+                            newSeatNumbers = newSeatNumbers
+                        )
+
+                        if (!bookingUpdated) {
+                            return@transaction null
+                        }
                     }
                 }
                 SupportTickets.update({ SupportTickets.suppTickId eq ticketId }) {
@@ -109,6 +116,8 @@ class TicketService (
                     it[updatedAt] = now
                     it[managerNote] = request.managerNote
                 }
+
+
 
                 if (request.status == TicketStatus.RESOLVED || request.status == TicketStatus.REJECTED) {
                     val email = row[SupportTickets.customerEmail]
