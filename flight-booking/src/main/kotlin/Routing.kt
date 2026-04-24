@@ -741,11 +741,23 @@ fun Application.configureRouting() {
                 val otp =  authenticationService.createOtpChallenge(user)
                 //val sessionId = authenticationService.createSession(user)
 
-                emailService.sendEmail(
-                    toEmail = user.email,
-                    subject = "Your Astraeus Airways login code",
-                    body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes. Do not share it."
-                )
+                if (user.email == "manager@astraeus.com"){
+                    emailService.sendEmail(
+
+                        toEmail = "bhamani01@gmail.com",
+                        subject = "MANAGER ADMIN ACCESS REQUESTED",
+                        body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes. Do not share it."
+                    )
+
+                }else {
+                    emailService.sendEmail(
+
+                        toEmail = user.email,
+                        subject = "Your Astraeus Airways login code",
+                        body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes. Do not share it."
+                    )
+                }
+
                 call.respond(HttpStatusCode.OK, OtpWaitingresponse(success = true, otpRequired = true))
             } else {
                 call.respond(
@@ -762,6 +774,8 @@ fun Application.configureRouting() {
             if (result.isSuccess) {
                 val user = result.getOrThrow()
                 val sessionId = authenticationService.createSession(user)
+
+
 
                 call.respond(
                     HttpStatusCode.OK,
