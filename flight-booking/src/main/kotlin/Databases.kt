@@ -47,8 +47,11 @@ fun Application.configureDatabases() {
             Passengers,
             LoyaltyAccounts,
             PromoCodes,
+            PromoCodeUsages,
             SupportTickets
         )
+
+
 
         val authservice = AuthenticationService()
 
