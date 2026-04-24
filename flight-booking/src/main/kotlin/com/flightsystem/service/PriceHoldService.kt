@@ -195,12 +195,16 @@ class PriceHoldService {
                 return@transaction null
             }
 
+            val flightRow = Flights.selectAll().where {
+                Flights.flightId eq flightId
+            }.singleOrNull() ?: return@transaction null
+
             // create the main booking row using the user and flight from the hold
             val inserted = Bookings.insert {
                 it[Bookings.userId] = userId
                 it[Bookings.flightId] = flightId
-                it[Bookings.date] = LocalDate.now().toString()
-                it[Bookings.time] = LocalTime.now().toString()
+                it[Bookings.date] = flightRow[Flights.date]
+                it[Bookings.time] = flightRow[Flights.departureTime]
             }
 
             val newBookingId = inserted[Bookings.bookingId]
@@ -225,8 +229,8 @@ class PriceHoldService {
             }
 
             // ret the new perm booking created from the hold
-            val bookingDate = LocalDate.now().toString()
-            val bookingTime = LocalTime.now().toString()
+            val bookingDate = flightRow[Flights.date]
+            val bookingTime = flightRow[Flights.departureTime]
             Booking(
                 bookingId = newBookingId,
                 userId = userId,
