@@ -309,7 +309,7 @@ data class Route(
 )
 
 @Serializable
-data class OtpWaitingresponse(val success: Boolean, val otpRequiered: Boolean)
+data class OtpWaitingresponse(val success: Boolean, val otpRequired: Boolean)
 
 @Serializable
 data class OtpVerifyRequest(val email: String, val otp: String)
@@ -746,7 +746,7 @@ fun Application.configureRouting() {
                     subject = "Your Astraeus Airways login code",
                     body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes. Do not share it."
                 )
-                call.respond(HttpStatusCode.OK, OtpWaitingresponse(success = true, otpRequiered = true))
+                call.respond(HttpStatusCode.OK, OtpWaitingresponse(success = true, otpRequired = true))
             } else {
                 call.respond(
                     HttpStatusCode.Unauthorized,
