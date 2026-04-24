@@ -541,11 +541,18 @@
 
                 if (promoCode) {
                     promoMessage.textContent = errorMessage;
+
+                    // Clear invalid/rejected promo state so the shown total goes back to normal
+                    appliedPromoCode = null;
+                    discountedTotal = null;
+                    promoCodeInput.value = "";
+                    updateDisplayedTotalWithPromo();
                 } else {
                     message.textContent = errorMessage;
                 }
 
                 return;
+
             } else {
                 sessionStorage.setItem("latestCheckoutResponse", JSON.stringify(result));
 
