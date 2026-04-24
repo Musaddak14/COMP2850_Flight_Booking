@@ -7,7 +7,30 @@
     <title>Add Extras</title>
     <link rel="stylesheet" href="/home/styles/style.css">
     <link rel="stylesheet" href="/loyalty/styles/addons.css">
+    <script src="/shared/currency.js"></script>
+
 </head>
+
+<script>
+    const rows = document.querySelectorAll(".row");
+
+    rows.forEach(row => {
+        const input = row.querySelector("input[data-price]");
+        const rp = row.querySelector(".rp");
+
+        if (!input || !rp) {
+            return;
+        }
+
+        if (rp.querySelector("s")) {
+            return;
+        }
+
+        rp.textContent = fmt(parseFloat(input.dataset.price));
+    });
+</script>
+
+
 <body>
 <header class="header">
     <nav class="top-nav">

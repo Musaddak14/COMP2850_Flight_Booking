@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment</title>
     <link rel="stylesheet" href="../home/styles/style.css">
+    <script src="/shared/currency.js"></script>
+
 </head>
 <body>
 
@@ -32,6 +34,15 @@
         </div>
     </nav>
 </header>
+
+<p id="currency-notice" hidden>
+    Indicative prices only — you will be charged in GBP at checkout.
+</p>
+<script>
+    if (getSelectedCurrency() !== "GBP") {
+        document.getElementById("currency-notice").hidden = false;
+    }
+</script>
 
 <section class="flights-overview-header">
     <div class="flights-overview">
@@ -235,7 +246,7 @@
             return "To be confirmed";
         }
 
-        return `£${amount.toFixed(2)}`;
+        return fmt(amount);
     }
 
     function getPassengerSummary(data) {

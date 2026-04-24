@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Confirmed</title>
     <link rel="stylesheet" href="../home/styles/style.css">
+    <script src="/shared/currency.js"></script>
+
 </head>
 <body>
 
@@ -71,7 +73,7 @@
         if (typeof amount !== "number" || !Number.isFinite(amount)) {
             return "";
         }
-        return `£${amount.toFixed(2)}`;
+        return fmt(amount);
     }
 
     document.getElementById("greeting").textContent =

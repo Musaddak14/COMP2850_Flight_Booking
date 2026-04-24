@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flight Results</title>
     <link rel="stylesheet" href="../home/styles/style.css">
+    <script src="/shared/currency.js"></script>
+
 </head>
 <body>
 
@@ -230,17 +232,17 @@
                     <div class="flight-prices">
                         <div class="price-box">
                             <span>Economy</span>
-                            <strong>£${flight.price.toFixed(0)}</strong>
+                            <strong>${fmt(flight.price)}</strong>
                         </div>
 
                         <div class="price-box">
                             <span>Premium Economy</span>
-                            <strong>£${(flight.price * 1.6).toFixed(0)}</strong>
+                            <strong>${fmt(flight.price * 1.6)}</strong>
                         </div>
 
                         <div class="price-box">
                             <span>Business</span>
-                            <strong>£${(flight.price * 3.5).toFixed(0)}</strong>
+                            <strong>${fmt(flight.price * 3.5)}</strong>
                         </div>
                     </div>
 
