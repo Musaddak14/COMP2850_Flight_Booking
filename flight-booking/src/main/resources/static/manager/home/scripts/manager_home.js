@@ -1,5 +1,19 @@
-(() => {
+(async () => {
+    const sessionId = sessionStorage.getItem("sessionId");
+    if (!sessionId) {
+        window.location.href = "/log_in";
+        return;
+    }
+
+    const sessionCheck = await fetch(`/api/auth/session?sessionId=${encodeURIComponent(sessionId)}`);
+    const sessionData = await sessionCheck.json();
+    if (!sessionCheck.ok || sessionData.role !== "MANAGER") {
+        window.location.href = "/log_in";
+        return;
+    }
+
     "use strict";
+
 
     const todayLabel = document.getElementById("today-label");
 

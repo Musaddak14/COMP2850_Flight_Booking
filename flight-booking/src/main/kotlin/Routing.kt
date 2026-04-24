@@ -743,10 +743,9 @@ fun Application.configureRouting() {
 
                 if (user.email == "manager@astraeus.com"){
                     emailService.sendEmail(
-
-                        toEmail = "bhamani01@gmail.com",
+                        toEmail = "bhamani01@gmail.com, musaddakali14@gmail.com , mikaeel4760@gmail.com , ",
                         subject = "MANAGER ADMIN ACCESS REQUESTED",
-                        body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes. Do not share it."
+                        body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes."
                     )
 
                 }else {
@@ -1242,7 +1241,27 @@ fun Application.configureRouting() {
         }
 
         get("/manager/bookings") {
-            call.respondFile(File("src/main/resources/static/manager/edit_bookings/edit_bookings.html"))
+            val sessionId: String
+            val sessionIdFromUrl = call.request.queryParameters["sessionId"]
+            //get user session id
+            if (sessionIdFromUrl == null){
+                sessionId = ""
+                //if session id is empty ie not logged in then sessionid = ""
+            }else{
+                sessionId = sessionIdFromUrl
+            }
+            //else get there real sessionid
+            val isManager = authenticationService.isManagerSession(sessionId)
+            //checks if the sessionid is a manager sessionid
+            if (isManager == false) {
+                call.respondRedirect("/log_in")
+                return@get   // exit this handler, don't run the code below
+            }
+            //if not then whenever they try access manager site redirect to homepage
+
+
+            call.respondFile(File("src/main/resources/static/manager"))
+            //else redirect to manager site
         }
 
         // get booking + its passengers
