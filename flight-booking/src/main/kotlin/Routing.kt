@@ -308,6 +308,11 @@ data class Route(
     val arrivalAirport: String,
 )
 
+@Serializable
+data class OtpWaitingresponse(val success: Boolean, val otpRequiered: Boolean)
+
+@Serializable
+data class OtpVerifyRequest(val email: String, val otp: String)
 
 fun Application.configureRouting() {
     val authenticationService = AuthenticationService()
@@ -733,6 +738,29 @@ fun Application.configureRouting() {
 
             if (result.isSuccess) {
                 val user = result.getOrThrow()
+                val otp =  authenticationService.createOtpChallenge(user)
+                //val sessionId = authenticationService.createSession(user)
+
+                emailService.sendEmail(
+                    toEmail = user.email,
+                    subject = "Your Astraeus Airways login code",
+                    body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes. Do not share it."
+                )
+                call.respond(HttpStatusCode.OK, OtpWaitingresponse(success = true, otpRequiered = true))
+            } else {
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse("Invalid email or password")
+                )
+            }
+        }
+
+        post("/api/auth/verify-otp") {
+            val request = call.receive<OtpVerifyRequest>()
+            val result = authenticationService.verifyOtp(request.email, request.otp)
+
+            if (result.isSuccess) {
+                val user = result.getOrThrow()
                 val sessionId = authenticationService.createSession(user)
 
                 call.respond(
@@ -745,13 +773,9 @@ fun Application.configureRouting() {
                         email = user.email,
                         role = if (user is Manager) "MANAGER" else "USER",
                         sessionId = sessionId
-                    )
-                )
-            } else {
-                call.respond(
-                    HttpStatusCode.Unauthorized,
-                    ErrorResponse("Invalid email or password")
-                )
+                    ))
+            }else{
+                call.respond(HttpStatusCode.Unauthorized, ErrorResponse(result.exceptionOrNull()?.message ?:"Invalid otp"))
             }
         }
 

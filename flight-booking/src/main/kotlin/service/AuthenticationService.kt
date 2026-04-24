@@ -13,6 +13,8 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+
 
 
 
@@ -21,6 +23,14 @@ class AuthenticationService(
 ) {
 
     private val activeSessions: MutableMap<String, SessionData> = mutableMapOf()
+    private data class OtpData(val userId: Int, val otp: String, val expiry: LocalDateTime)
+    // used for the otp maps user to an otp and expiery time
+    private val pendingOtps: MutableMap<String, OtpData> = ConcurrentHashMap()
+    //maps user email to otp
+
+
+
+
 
     companion object {
         private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
@@ -246,6 +256,38 @@ class AuthenticationService(
             lastActivity = LocalDateTime.now()
         )
         return sessionId
+    }
+
+    fun createOtpChallenge(user: User): String {
+        val otp = (100000..999999).random().toString()
+        pendingOtps[user.email] = OtpData(user.userId, otp, LocalDateTime.now().plusMinutes(5))
+        return otp
+    }
+    fun verifyOtp(email: String, otp: String): Result<User> {
+        val data = pendingOtps.remove(email)
+        //remove the email mapping so the otp the user entered is the only thing left
+
+        if (data == null) {
+            return Result.failure(IllegalArgumentException("Invalid or expired OTP"))
+        }
+
+        if (LocalDateTime.now().isAfter(data.expiry)) {
+            return Result.failure(IllegalArgumentException("OTP has expired"))
+        }
+        //if user took more then 5 mins to enter otp
+
+        if (data.otp != otp) {
+            return Result.failure(IllegalArgumentException("Incorrect OTP"))
+        }
+        //if inputted otp doesnt match actual otp
+
+        val user = findById(data.userId)
+
+        if (user == null) {
+            return Result.failure(IllegalArgumentException("User not found"))
+        }
+
+        return Result.success(user)
     }
 
     fun validateSession(sessionId: String): User? {
