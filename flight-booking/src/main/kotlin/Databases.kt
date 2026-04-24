@@ -51,7 +51,17 @@ fun Application.configureDatabases() {
             SupportTickets
         )
 
+        try {
+            exec("""ALTER TABLE BOOKINGS ADD COLUMN "date" VARCHAR(255)""")
+        } catch (e: Exception) {
+            println("date column already exists")
+        }
 
+        try {
+            exec("""ALTER TABLE BOOKINGS ADD COLUMN "time" VARCHAR(255)""")
+        } catch (e: Exception) {
+            println("time column already exists")
+        }
 
         val authservice = AuthenticationService()
 
