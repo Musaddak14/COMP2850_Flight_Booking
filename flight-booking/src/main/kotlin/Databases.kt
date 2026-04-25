@@ -63,6 +63,18 @@ fun Application.configureDatabases() {
             println("time column already exists")
         }
 
+        try {
+            exec("""ALTER TABLE BOOKINGS ADD COLUMN cabin VARCHAR(128)""")
+        } catch (e: Exception) {
+            println("cabin column already exists")
+        }
+
+        try {
+            exec("""ALTER TABLE BOOKINGS ADD COLUMN "addOns" VARCHAR(1000)""")
+        } catch (e: Exception) {
+            println("addOns column already exists")
+        }
+
         val authservice = AuthenticationService()
 
         authservice.setDefaultManager(

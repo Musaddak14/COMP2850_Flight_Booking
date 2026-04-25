@@ -71,6 +71,16 @@
                         <input type="text" value="${data.seats.join(', ')}" disabled>
                     </div>
                 </div>
+
+                <div class="user_input_box">
+                    <label>Cabin Class</label>
+                    <input type="text" value="${data.cabin ?? 'N/A'}" disabled>
+                </div>
+
+                <div class="user_input_box">
+                    <label>Add-ons</label>
+                    <input type="text" value="${data.addOns ?? 'None'}" disabled>
+                </div>
             `);
 
             // one card per passenger

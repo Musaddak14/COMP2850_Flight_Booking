@@ -543,9 +543,9 @@
                     cvv: cvv,
                     billingAddress: address,
                     pointsToRedeem: usePointsCheckbox.checked ? Number(pointsInput.value) || 0 : 0,
-                    promoCode: promoCode === "" ? null : promoCode
+                    promoCode: promoCode === "" ? null : promoCode,
                     cabin: bookingData?.cabin ?? null,
-                    addOns: JSON.stringify(bookingDraft?.addOns ?? {})
+                    addOns: JSON.stringify(bookingData?.addOns ?? {})
                 })
             });
 

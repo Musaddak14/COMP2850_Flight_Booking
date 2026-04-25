@@ -17,6 +17,8 @@ data class Booking(
     val totalPrice: Double,
     val date: String,
     val time: String,
+    val cabin: String? = null,
+    val addOns: String? = null
 )
 
 @Serializable

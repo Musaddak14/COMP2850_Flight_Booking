@@ -58,6 +58,16 @@
                 </div>
 
                 <div class="user_input_box">
+                    <label>Cabin Class</label>
+                    <input type="text" value="${booking.cabin ?? 'N/A'}" disabled>
+                </div>
+
+                <div class="user_input_box">
+                    <label>Add-ons</label>
+                    <input type="text" value="${booking.addOns ?? 'None'}" disabled>
+                </div>
+
+                <div class="user_input_box">
                     <label>Seats (comma separated)</label>
                     <input type="text" id="seats-input" value="${seats.join(', ')}">
                 </div>

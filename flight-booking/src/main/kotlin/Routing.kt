@@ -261,7 +261,9 @@ data class BookingLookupResponse(
     val bookingId: Int,
     val flightId: String,
     val seats: List<String>,
-    val passengers: List<String>
+    val passengers: List<String>,
+    val cabin: String?,
+    val addOns: String?
 )
 
 @Serializable
@@ -1077,7 +1079,9 @@ fun Application.configureRouting() {
                     bookingId  = details.booking.bookingId,
                     flightId   = details.booking.flightId,
                     seats      = details.seats,
-                    passengers = passengerNames
+                    passengers = passengerNames,
+                    cabin = details.booking.cabin,
+                    addOns = details.booking.addOns,
                 )
             )
         }
