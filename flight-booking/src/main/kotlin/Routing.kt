@@ -722,7 +722,9 @@ fun Application.configureRouting() {
                 holdId = request.holdId,
                 request = paymentRequest,
                 pointsToRedeem = request.pointsToRedeem,
-                promoCode = request.promoCode
+                promoCode = request.promoCode,
+                cabin = request.cabin,
+                addOns = request.addOns
             )
 
             if (response.success) {

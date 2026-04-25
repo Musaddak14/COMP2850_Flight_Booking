@@ -172,7 +172,8 @@ class PriceHoldService {
     }
 
     // convert a valid hold into a permanent booking 
-    fun confirmHoldToBooking(holdId: Int): Booking? {
+    fun confirmHoldToBooking(holdId: Int, cabin: String? = null, addOns: String? = null): Booking? {
+
         return transaction {
             // load the main hold row so it can be converted into a booking
             val holdRow = PriceHolds.selectAll().where {
@@ -205,6 +206,8 @@ class PriceHoldService {
                 it[Bookings.flightId] = flightId
                 it[Bookings.date] = flightRow[Flights.date]
                 it[Bookings.time] = flightRow[Flights.departureTime]
+                it[Bookings.cabin] = cabin
+                it[Bookings.addOns] = addOns
             }
 
             val newBookingId = inserted[Bookings.bookingId]
