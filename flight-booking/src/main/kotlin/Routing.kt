@@ -609,6 +609,16 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.OK, updatedTicket)
                 }
             }
+
+            get("/{id}/history") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                if (id == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid ticket ID")
+                    return@get
+                }
+                val history = ticketService.getTicketHistory(id)
+                call.respond(HttpStatusCode.OK, history)
+            }
         }
 
         get("/api/manager/flights") {

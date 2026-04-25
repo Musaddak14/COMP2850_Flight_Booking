@@ -30,3 +30,13 @@ data class TicketResponse(
     val updatedAt: String? = null,
     val managerNote: String? = null
 )
+
+@Serializable
+data class TicketHistoryResponse(
+    val historyId: Int,
+    val ticketId: Int,
+    val oldStatus: TicketStatus,
+    val newStatus: TicketStatus,
+    val managerNote: String? = null,
+    val changedAt: String
+)

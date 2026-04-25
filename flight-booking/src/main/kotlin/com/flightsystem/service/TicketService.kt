@@ -10,6 +10,8 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import java.time.LocalDateTime
+import model.SupportTicketHistory
+import model.TicketHistoryResponse
 
 
 class TicketService (
@@ -86,6 +88,8 @@ class TicketService (
             if (row == null) {
                 null
             } else {
+                val oldStatus = row[SupportTickets.status]
+
                 if (
                     request.status == TicketStatus.RESOLVED &&
                     row[SupportTickets.requestType] == "CHANGE_BOOKING"
@@ -116,7 +120,15 @@ class TicketService (
                     it[updatedAt] = now
                     it[managerNote] = request.managerNote
                 }
-
+                if (oldStatus != request.status || request.managerNote != row[SupportTickets.managerNote]) {
+                    SupportTicketHistory.insert {
+                        it[SupportTicketHistory.ticketId] = ticketId
+                        it[SupportTicketHistory.oldStatus] = oldStatus
+                        it[SupportTicketHistory.newStatus] = request.status
+                        it[SupportTicketHistory.managerNote] = request.managerNote
+                        it[SupportTicketHistory.changedAt] = now
+                    }
+                }
 
 
                 if (request.status == TicketStatus.RESOLVED || request.status == TicketStatus.REJECTED) {
@@ -166,6 +178,21 @@ class TicketService (
                     managerNote = request.managerNote
                 )
             }
+        }
+    }
+    fun getTicketHistory(ticketId: Int): List<TicketHistoryResponse> {
+        return transaction {
+            SupportTicketHistory.selectAll()
+                .where { SupportTicketHistory.ticketId eq ticketId }
+                .map { row ->
+                TicketHistoryResponse(
+                    historyId = row[SupportTicketHistory.historyId],
+                    ticketId = row[SupportTicketHistory.ticketId],
+                    oldStatus = row[SupportTicketHistory.oldStatus],
+                    newStatus = row[SupportTicketHistory.newStatus],
+                    managerNote = row[SupportTicketHistory.managerNote],
+                    changedAt = row[SupportTicketHistory.changedAt]
+                )}
         }
     }
 }

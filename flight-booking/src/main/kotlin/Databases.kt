@@ -48,7 +48,8 @@ fun Application.configureDatabases() {
             LoyaltyAccounts,
             PromoCodes,
             PromoCodeUsages,
-            SupportTickets
+            SupportTickets,
+            SupportTicketHistory
         )
 
         try {
