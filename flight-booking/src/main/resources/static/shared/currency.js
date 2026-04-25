@@ -22,7 +22,7 @@ function setSelectedCurrency(currencyCode) {
 }
 //allows the user to change and set the currency
 
-function formatAmount(amountInGBP) {
+function fmt(amountInGBP) {
     const currency = getSelectedCurrency();
     const rate = EXCHANGE_RATES[currency];
     const convertedAmount = amountInGBP * rate;

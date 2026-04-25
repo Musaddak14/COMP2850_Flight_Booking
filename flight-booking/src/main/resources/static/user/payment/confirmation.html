@@ -26,6 +26,14 @@
         </div>
         <div class="right-nav">
             <span class="lang">United Kingdom - EN</span>
+            <select id="currency-select" onchange="setSelectedCurrency(this.value); location.reload();">
+                <option value="GBP">£ GBP</option>
+                <option value="USD">$ USD</option>
+                <option value="EUR">€ EUR</option>
+                <option value="AUD">A$ AUD</option>
+                <option value="JPY">¥ JPY</option>
+            </select>
+            <script>document.getElementById("currency-select").value = getSelectedCurrency();</script>
             <a href="/log_in">Log In</a>
         </div>
     </nav>

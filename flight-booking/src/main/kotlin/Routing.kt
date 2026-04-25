@@ -341,6 +341,7 @@ fun Application.configureRouting() {
         staticResources("/manage-account/scripts", "static/user/manage-account/scripts")
         staticResources("/support/styles", "static/user/support/styles")
         staticResources("/support/scripts", "static/user/support/scripts")
+        staticResources("/shared", "static/shared")
 
 
         get("/lounges") {
