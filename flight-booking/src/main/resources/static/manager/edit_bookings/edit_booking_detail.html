@@ -64,7 +64,7 @@
 
                 <div class="user_input_box">
                     <label>Add-ons</label>
-                    <input type="text" value="${booking.addOns ?? 'None'}" disabled>
+                    <input type="text" value="${formatAddOns(booking.addOns)}" disabled>
                 </div>
 
                 <div class="user_input_box">
@@ -135,6 +135,15 @@
                 <a href="/manager/bookings" style="color:#132e8e;">← Back to all bookings</a>
             </div>
         `;
+    }
+
+    function formatAddOns(raw) {
+        if (!raw) return 'None';
+        try {
+            const obj = JSON.parse(raw);
+            const items = Object.values(obj).filter(Boolean);
+            return items.length ? items.join(', ') : 'None';
+        } catch { return raw; }
     }
 
     function saveSeats() {

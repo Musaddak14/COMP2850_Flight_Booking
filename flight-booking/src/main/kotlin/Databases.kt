@@ -51,6 +51,8 @@ fun Application.configureDatabases() {
             SupportTickets
         )
 
+
+
         try {
             exec("""ALTER TABLE BOOKINGS ADD COLUMN "date" VARCHAR(255)""")
         } catch (e: Exception) {

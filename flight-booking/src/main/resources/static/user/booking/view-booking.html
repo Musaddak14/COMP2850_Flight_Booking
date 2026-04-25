@@ -70,18 +70,31 @@
                         <label>Seat(s)</label>
                         <input type="text" value="${data.seats.join(', ')}" disabled>
                     </div>
-                </div>
 
-                <div class="user_input_box">
-                    <label>Cabin Class</label>
+                    <div class="user_input_box">
+                        <label>Cabin Class</label>
                     <input type="text" value="${data.cabin ?? 'N/A'}" disabled>
+                    </div>
+
+                    <div class="user_input_box">
+                        <label>Add-ons</label>
+                        <input type="text" value="${formatAddOns(data.addOns)}" disabled>
+                    </div>
+
                 </div>
 
-                <div class="user_input_box">
-                    <label>Add-ons</label>
-                    <input type="text" value="${data.addOns ?? 'None'}" disabled>
-                </div>
+
             `);
+
+            function formatAddOns(raw) {
+                if (!raw) return 'None';
+                try {
+                    const obj = JSON.parse(raw);
+                    const items = Object.values(obj).filter(Boolean);
+                    return items.length ? items.join(', ') : 'None';
+                } catch { return raw; }
+            }
+
 
             // one card per passenger
             data.passengers.forEach((name, i) => {
