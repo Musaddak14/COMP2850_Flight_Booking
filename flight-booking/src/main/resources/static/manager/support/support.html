@@ -138,66 +138,109 @@
 
 <div class="page-container">
     <div class="top-bar">
-        <h2>All Tickets</h2>
-        <button class="refresh-btn" onclick="loadTickets()">Refresh Tickets</button>
+        <h2>Support Tickets</h2>
+
+        <div>
+            <button onclick="setView('active')" id="active-tab" class="refresh-btn">Active</button>
+            <button onclick="setView('archived')" id="archived-tab" class="refresh-btn">Archived</button>
+
+            <input
+                type="text"
+                id="booking-search"
+                placeholder="Search by booking ID"
+                oninput="renderTickets()"
+                style="padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-left: 10px;"
+            >
+
+            <button class="refresh-btn" onclick="loadTickets()">Refresh</button>
+        </div>
     </div>
 
     <div id="ticketList" class="ticket-grid"></div>
 </div>
 
 <script>
+    let allTickets = [];
+    let currentView = "active"; // default
+
     async function loadTickets() {
         const response = await fetch("/api/tickets");
-        const tickets = await response.json();
 
-        const ticketList = document.getElementById("ticketList");
-        ticketList.innerHTML = "";
+        allTickets = await response.json();
 
-        if (tickets.length === 0) {
-            ticketList.innerHTML = "<p>No tickets found.</p>";
-            return;
-        }
-
-        tickets.forEach(ticket => {
-            const ticketDiv = document.createElement("div");
-            ticketDiv.className = "ticket-card";
-
-            ticketDiv.innerHTML = `
-                <h2>Ticket #${ticket.id}</h2>
-
-                <div class="ticket-details">
-                    <p><strong>Booking ID:</strong> ${ticket.bookingId}</p>
-                    <p><strong>Name:</strong> ${ticket.customerName}</p>
-                    <p><strong>Email:</strong> ${ticket.customerEmail}</p>
-                    <p><strong>Request Type:</strong> ${ticket.requestType}</p>
-                    <p><strong>Message:</strong> ${ticket.message}</p>
-                    <p><strong>Status:</strong> ${ticket.status}</p>
-                </div>
-
-                <div class="ticket-controls">
-                    <label>Status</label>
-                    <select id="status-${ticket.id}">
-                        <option value="OPEN">OPEN</option>
-                        <option value="IN_PROGRESS">IN_PROGRESS</option>
-                        <option value="RESOLVED">RESOLVED</option>
-                        <option value="REJECTED">REJECTED</option>
-                    </select>
-
-                    <label>Manager Note</label>
-                    <textarea id="note-${ticket.id}">${ticket.managerNote ?? ""}</textarea>
-
-                    <button class="update-btn" onclick="updateTicket(${ticket.id})">Update Ticket</button>
-                    <button class="history-btn" onclick="loadTicketHistory(${ticket.id})">View History</button>
-
-                    <p id="result-${ticket.id}" class="result-message"></p>
-                    <div id="history-${ticket.id}" class="ticket-history"></div>
-                </div>
-            `;
-
-            ticketList.appendChild(ticketDiv);
-            document.getElementById(`status-${ticket.id}`).value = ticket.status;
-        });
+        renderTickets();
     }
+
+    function setView(view) {
+        currentView = view;
+        renderTickets();
+    }
+
+    function renderTickets() {
+    const searchValue = document.getElementById("booking-search")?.value.trim() ?? "";
+    const ticketList = document.getElementById("ticketList");
+    ticketList.innerHTML = "";
+
+    const filteredTickets = allTickets.filter(ticket => {
+        // tab filter (active vs archived)
+        if (currentView === "active" && ticket.archived) return false;
+        if (currentView === "archived" && !ticket.archived) return false;
+
+        // search filter
+        if (searchValue === "") return true;
+
+        return ticket.bookingId.toString().includes(searchValue);
+    });
+
+    if (filteredTickets.length === 0) {
+        ticketList.innerHTML = "<p>No matching tickets found.</p>";
+        return;
+    }
+
+    filteredTickets.forEach(ticket => {
+        const ticketDiv = document.createElement("div");
+        ticketDiv.className = "ticket-card";
+
+        ticketDiv.innerHTML = `
+            <h2>Ticket #${ticket.id}</h2>
+
+            <div class="ticket-details">
+                <p><strong>Booking ID:</strong> ${ticket.bookingId}</p>
+                <p><strong>Name:</strong> ${ticket.customerName}</p>
+                <p><strong>Email:</strong> ${ticket.customerEmail}</p>
+                <p><strong>Request Type:</strong> ${ticket.requestType}</p>
+                <p><strong>Message:</strong> ${ticket.message}</p>
+                <p><strong>Status:</strong> ${ticket.status}</p>
+            </div>
+
+            <div class="ticket-controls">
+                <label>Status</label>
+                <select id="status-${ticket.id}">
+                    <option value="OPEN">OPEN</option>
+                    <option value="IN_PROGRESS">IN_PROGRESS</option>
+                    <option value="RESOLVED">RESOLVED</option>
+                    <option value="REJECTED">REJECTED</option>
+                </select>
+
+                <label>Manager Note</label>
+                <textarea id="note-${ticket.id}">${ticket.managerNote ?? ""}</textarea>
+
+                <button class="update-btn" onclick="updateTicket(${ticket.id})">Update Ticket</button>
+                <button class="history-btn" onclick="loadTicketHistory(${ticket.id})">View History</button>
+                ${currentView === "active"
+                    ? `<button class="history-btn" onclick="archiveTicket(${ticket.id})">Archive</button>`
+                    : ""
+                }
+
+                <p id="result-${ticket.id}" class="result-message"></p>
+                <div id="history-${ticket.id}" class="ticket-history"></div>
+            </div>
+        `;
+
+        ticketList.appendChild(ticketDiv);
+        document.getElementById(`status-${ticket.id}`).value = ticket.status;
+    });
+}
 
     async function updateTicket(ticketId) {
         const status = document.getElementById(`status-${ticketId}`).value;
@@ -250,6 +293,21 @@
                 <p><strong>Time:</strong> ${h.changedAt}</p>
             </div>
         `).join("");
+    }
+
+    async function archiveTicket(ticketId) {
+        const confirmArchive = confirm("Archive this ticket?");
+        if (!confirmArchive) return;
+
+        const response = await fetch(`/api/tickets/${ticketId}/archive`, {
+            method: "PUT"
+        });
+
+        if (response.ok) {
+            loadTickets();
+        } else {
+            alert("Failed to archive ticket");
+        }
     }
 
     loadTickets();

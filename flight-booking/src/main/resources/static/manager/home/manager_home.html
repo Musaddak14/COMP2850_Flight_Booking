@@ -22,7 +22,7 @@
             <a href="/manager/flight_view">Flight View</a>
             <a href="/manager/edit_bookings/edit_bookings.html">Edit Bookings</a>
             <a href="/manager/analytics">Analytics</a>
-            <a href="/manager/support/support.html">Support</a>
+            <a href="/manager/support">Support</a>
         </div>
 
         <div class="right-nav">
@@ -163,6 +163,20 @@
                 </div>
 
                 <p id="manager-email-status" style="font-weight: 600; margin: 0;"></p>
+                <div style="margin-top: 20px;">
+                    <button id="toggle-email-history-btn" type="button" class="action-card" style="cursor: pointer; border: none;">
+                        Show Email History
+                    </button>
+
+                    <input
+                        type="text"
+                        id="email-history-search"
+                        placeholder="Search by customer email"
+                        style="display: none; width: 100%; padding: 12px; margin-top: 12px;"
+                    >
+
+                    <div id="sent-email-list" style="display: none; margin-top: 20px;"></div>
+                </div>
             </div>
         </div>
     </section>

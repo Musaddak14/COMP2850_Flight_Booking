@@ -28,7 +28,8 @@ data class TicketResponse(
     val status: TicketStatus,
     val createdAt: String,
     val updatedAt: String? = null,
-    val managerNote: String? = null
+    val managerNote: String? = null,
+    val archived: Boolean = false
 )
 
 @Serializable

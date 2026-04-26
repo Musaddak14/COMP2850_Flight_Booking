@@ -20,6 +20,7 @@ object SupportTickets : Table("support_tickets") {
     val createdAt = varchar("created_at", 50)
     val updatedAt = varchar("updated_at", 50).nullable()
     val managerNote = text("manager_note").nullable()
+    val archived = bool("archived").default(false)
 
     override val primaryKey = PrimaryKey(suppTickId)
 }

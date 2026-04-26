@@ -17,6 +17,9 @@ import com.flightsystem.service.CheckoutService
 import com.flightsystem.model.PassengerInput
 import com.flightsystem.model.Users
 
+import model.ManagerSentEmails
+import model.ManagerSentEmailResponse
+
 
 import com.flightsystem.AppEnv
 import com.flightsystem.service.EmailService
@@ -619,6 +622,20 @@ fun Application.configureRouting() {
                 val history = ticketService.getTicketHistory(id)
                 call.respond(HttpStatusCode.OK, history)
             }
+
+            put("/{id}/archive") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                if (id == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid ticket ID")
+                    return@put
+                }
+                val archived = ticketService.archiveTicket(id)
+                if (archived) {
+                    call.respond(HttpStatusCode.OK, "Ticket archived")
+                } else {
+                    call.respond(HttpStatusCode.NotFound, "Ticket not found")
+                }
+            }
         }
 
         get("/api/manager/flights") {
@@ -1193,6 +1210,19 @@ fun Application.configureRouting() {
                     body = request.message
                 )
 
+                val now = LocalDateTime.now().toString()
+
+                transaction{
+                    ManagerSentEmails.insert {
+                        it[ManagerSentEmails.managerId] = user.userId
+                        it[ManagerSentEmails.managerEmail] = user.email
+                        it[ManagerSentEmails.toEmail] = request.toEmail
+                        it[ManagerSentEmails.subject] = request.subject
+                        it[ManagerSentEmails.message] = request.message
+                        it[ManagerSentEmails.sentAt] = now
+                    }
+                }
+
                 call.respond(
                     HttpStatusCode.OK,
                     SendManagerEmailResponse(
@@ -1208,6 +1238,23 @@ fun Application.configureRouting() {
                         message = e.message ?: "Failed to send email"
                     )
                 )
+            }
+
+            get("/api/manager/sent-emails") {
+                val sentEmails = transaction {
+                    ManagerSentEmails.selectAll().map { row -> 
+                        ManagerSentEmailResponse(
+                            emailId = row[ManagerSentEmails.emailId],
+                            managerId = row[ManagerSentEmails.managerId],
+                            managerEmail = row[ManagerSentEmails.managerEmail],
+                            toEmail = row[ManagerSentEmails.toEmail],
+                            subject = row[ManagerSentEmails.subject],
+                            message = row[ManagerSentEmails.message],
+                            sentAt = row[ManagerSentEmails.sentAt]
+                        )
+                    }
+                }
+                call.respond(HttpStatusCode.OK, sentEmails)
             }
         }
 

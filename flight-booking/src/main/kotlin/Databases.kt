@@ -49,7 +49,8 @@ fun Application.configureDatabases() {
             PromoCodes,
             PromoCodeUsages,
             SupportTickets,
-            SupportTicketHistory
+            SupportTicketHistory,
+            ManagerSentEmails
         )
 
         try {
@@ -62,6 +63,12 @@ fun Application.configureDatabases() {
             exec("""ALTER TABLE BOOKINGS ADD COLUMN "time" VARCHAR(255)""")
         } catch (e: Exception) {
             println("time column already exists")
+        }
+
+        try {
+            exec("""ALTER TABLE SUPPORT_TICKETS ADD COLUMN ARCHIVED BOOLEAN DEFAULT FALSE""")
+        } catch (e: Exception) {
+            println("archived column already exists")
         }
 
         val authservice = AuthenticationService()
