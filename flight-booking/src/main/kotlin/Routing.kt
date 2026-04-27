@@ -117,6 +117,18 @@ data class UpcomingFlightData(
 )
 
 @Serializable
+data class HistoricFlightData(
+    val flightId: String,
+    val departureAirport: String,
+    val arrivalAirport: String,
+    val price: Double,
+    val date: String,
+    val departureTime: String,
+    val arrivalTime: String,
+    val length: Double
+)
+
+@Serializable
 data class InsertFlightData(
     val flightId: String,
     val departureAirport: String,
