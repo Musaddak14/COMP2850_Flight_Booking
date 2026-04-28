@@ -2,6 +2,8 @@ package com.flightsystem.service
 
 import com.flightsystem.model.PromoCode
 import com.flightsystem.model.PromoCodes
+import com.flightsystem.model.PromoCodeUsages
+import java.time.LocalDateTime
 import org.jetbrains.exposed.sql.Op
 
 
@@ -9,8 +11,10 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+
 
 class PromoCodeService {
 
@@ -109,6 +113,27 @@ class PromoCodeService {
         }
 
         return Result.success(discountedAmount.coerceAtLeast(0.0))
+    }
+
+    fun hasUserUsedPromoCode(userId: Int, codeValue: String): Boolean {
+        return transaction {
+            PromoCodeUsages.selectAll()
+                .where {
+                    (PromoCodeUsages.userId eq userId) and
+                            (PromoCodeUsages.promoCode eq codeValue.uppercase())
+                }
+                .singleOrNull() != null
+        }
+    }
+
+    fun recordPromoCodeUsage(userId: Int, codeValue: String) {
+        transaction {
+            PromoCodeUsages.insert {
+                it[PromoCodeUsages.userId] = userId
+                it[promoCode] = codeValue.uppercase()
+                it[usedAt] = LocalDateTime.now().toString()
+            }
+        }
     }
 
 }
