@@ -1,5 +1,6 @@
 package com.flightsystem.service
 
+import com.flightsystem.model.AccountStatus
 import com.flightsystem.service.EncryptionService
 import com.flightsystem.service.LoyaltyService
 import com.flightsystem.model.Manager
@@ -33,7 +34,7 @@ class AuthenticationService(
     private data class SessionData(
         val userId: Int,
         val isManager: Boolean,
-        var lastActivity: LocalDateTime = LocalDateTime.now()
+        var lastActivity: LocalDateTime = LocalDateTime.now(),
     )
 
 
@@ -85,6 +86,7 @@ class AuthenticationService(
                 it[Users.lockedAt] = null
                 it[Users.lastLogin] = null
                 it[Users.role] = "USER"
+                it[Users.status] = AccountStatus.ACTIVE
             }
 
             val newUserId = inserted[Users.userId]
@@ -161,6 +163,7 @@ class AuthenticationService(
                 it[Users.lockedAt] = null
                 it[Users.lastLogin] = null
                 it[Users.role] = "MANAGER"
+                it[Users.status] = AccountStatus.ACTIVE
             }
 
             val newManagerId = inserted[Users.userId]
@@ -197,6 +200,12 @@ class AuthenticationService(
                 )
             }
 
+            val status = row[Users.status] ?: AccountStatus.ACTIVE
+
+            if (status != AccountStatus.ACTIVE) {
+                return@transaction Result.failure(IllegalStateException("Account is not Active"))
+            }
+
 
             val storedHash = row[Users.passwordHash]
             val salt = row[Users.salt]
@@ -213,7 +222,6 @@ class AuthenticationService(
                     it[Users.accountLocked] = false
                     it[Users.lockedAt] = null
                     it[Users.lastLogin] = LocalDateTime.now().toString()
-
                 }
 
                 return@transaction Result.success(rowToUser(row))
@@ -243,7 +251,7 @@ class AuthenticationService(
         activeSessions[sessionId] = SessionData(
             userId = user.userId,
             isManager = user is Manager,
-            lastActivity = LocalDateTime.now()
+            lastActivity = LocalDateTime.now(),
         )
         return sessionId
     }
@@ -256,6 +264,22 @@ class AuthenticationService(
             activeSessions.remove(sessionId)
             return null
         }
+
+        val userRow = transaction {
+            Users.selectAll().where { Users.userId eq session.userId }.singleOrNull()
+        }
+
+        if (userRow == null) {
+            activeSessions.remove(sessionId)
+        }
+
+        val status = userRow?.get(Users.status)
+
+        if (status != AccountStatus.ACTIVE) {
+            activeSessions.remove(sessionId)
+            return null
+        }
+
         session.lastActivity = LocalDateTime.now()
         return findById(session.userId)
     }
@@ -406,6 +430,7 @@ class AuthenticationService(
                 it[Users.lockedAt] = null
                 it[Users.lastLogin] = null
                 it[Users.role] = "MANAGER"
+                it[Users.status] = AccountStatus.ACTIVE
             }
 
             val newManagerId = inserted[Users.userId]
