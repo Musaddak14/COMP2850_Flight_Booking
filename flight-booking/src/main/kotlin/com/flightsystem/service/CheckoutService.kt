@@ -59,7 +59,9 @@ class CheckoutService(
         holdId: Int,
         request: PaymentRequest,
         pointsToRedeem: Int = 0,
-        promoCode: String? = null
+        promoCode: String? = null,
+        cabin: String? = null,
+        addOns: String? = null
     ): PaymentResponse {
 
         val holdDetails = priceHoldService.getHoldDetails(holdId)
@@ -183,7 +185,8 @@ class CheckoutService(
             loyaltyService.redeemPoints(hold.userId, pointsToRedeem)
         }
 
-        val booking = priceHoldService.confirmHoldToBooking(holdId)
+        val booking = priceHoldService.confirmHoldToBooking(holdId, cabin, addOns)
+
             ?: return PaymentResponse(
                 success = false,
                 message = "Payment succeeded but booking creation failed",

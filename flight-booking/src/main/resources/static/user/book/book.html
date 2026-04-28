@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flight Results</title>
     <link rel="stylesheet" href="../home/styles/style.css">
+    <script src="/shared/currency.js"></script>
+
 </head>
 <body>
 
@@ -26,6 +28,14 @@
 
         <div class="right-nav">
             <span class="lang">United Kingdom - EN</span>
+            <select id="currency-select" onchange="setSelectedCurrency(this.value); location.reload();">
+                <option value="GBP">£ GBP</option>
+                <option value="USD">$ USD</option>
+                <option value="EUR">€ EUR</option>
+                <option value="AUD">A$ AUD</option>
+                <option value="JPY">¥ JPY</option>
+            </select>
+            <script>document.getElementById("currency-select").value = getSelectedCurrency();</script>
             <span id="welcome-message"></span>
             <a href="/log_in" id="login-link">Log In</a>
             <button id="logout-button" type="button" style="display: none;">Log Out</button>
@@ -192,14 +202,16 @@
                         </div>
 
                         <div class="duration">
+                            <small>${new Date(flight.date).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'})}</small>
                             <small>Direct</small>
                             <div class="line"></div>
                             <small>${hours}h ${minutes}m</small>
                         </div>
 
                         <div class="time-block">
-                            <h2>${flight.arrivalTime}</h2>
-                            <span>${flight.arrivalAirport}</span>
+                            <h2>${flight.departureTime}</h2>
+                            <span>${flight.departureAirport}</span>
+
                         </div>
                     </div>
                 </div>

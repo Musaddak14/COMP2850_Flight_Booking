@@ -692,9 +692,10 @@
             seatListsMatch(outboundSeatNumbers, bookingDraft.outboundSeatNumbers ?? bookingDraft.seatNumbers ?? []) &&
             seatListsMatch(returnSeatNumbers, bookingDraft.returnSeatNumbers ?? [])
         ) {
+            bookingDraft.userId = isSignedIn ? loggedInUserId : bookingDraft.userId;
             bookingDraft.userId = isSignedIn ? loggedInUserId : null;
             persistBookingDraft();
-            window.location.href = getNextPageUrl();
+            window.location.href = isSignedIn ? "/loyaltypage" : "/addons";
             return;
         }
 
@@ -735,9 +736,12 @@
             bookingDraft.outboundSeatNumbers = outboundSeatNumbers;
             bookingDraft.returnFlightId = hasReturnLeg() ? returnFlightId : null;
             bookingDraft.returnSeatNumbers = returnSeatNumbers;
+            bookingDraft.userId = result?.userId ?? (isSignedIn ? loggedInUserId : bookingDraft.userId ?? null);
+            bookingDraft.seatNumbers = seatNumbers;
             bookingDraft.holdId = result?.holdId ?? null;
             bookingDraft.holdExpiryTime = result?.expiryTime ?? null;
             bookingDraft.totalPrice = result?.totalPrice ?? null;
+            bookingDraft.baseFareTotal = result?.totalPrice ?? null;
             persistBookingDraft();
 
             sessionStorage.setItem("holdData", JSON.stringify({
@@ -752,6 +756,7 @@
                 totalPrice: result?.totalPrice ?? bookingDraft.totalPrice
             }));
 
+            window.location.href = isSignedIn ? "/loyaltypage" : "/addons";
             window.location.href = getNextPageUrl();
         } catch {
             holdMessage.textContent = "Unable to hold the selected seats right now. Please try again.";
