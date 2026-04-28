@@ -48,7 +48,9 @@ fun Application.configureDatabases() {
             LoyaltyAccounts,
             PromoCodes,
             PromoCodeUsages,
-            SupportTickets
+            SupportTickets,
+            SupportTicketHistory,
+            ManagerSentEmails
         )
 
 
@@ -75,6 +77,24 @@ fun Application.configureDatabases() {
             exec("""ALTER TABLE BOOKINGS ADD COLUMN "addOns" VARCHAR(1000)""")
         } catch (e: Exception) {
             println("addOns column already exists")
+        }
+
+        try {
+            exec("""ALTER TABLE SUPPORT_TICKETS ADD COLUMN ARCHIVED BOOLEAN DEFAULT FALSE""")
+        } catch (e: Exception) {
+            println("archived column already exists")
+        }
+
+        try {
+            exec("""ALTER TABLE BOOKINGS ADD COLUMN "returnFlightId" VARCHAR(128)""")
+        } catch (e: Exception) {
+            println("returnFlightId column already exists in BOOKINGS")
+        }
+
+        try {
+            exec("""ALTER TABLE PRICEHOLDS ADD COLUMN "returnFlightId" VARCHAR(128)""")
+        } catch (e: Exception) {
+            println("returnFlightId column already exists in PRICEHOLDS")
         }
 
         val authservice = AuthenticationService()

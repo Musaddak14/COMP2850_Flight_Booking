@@ -14,6 +14,7 @@ data class Booking(
     val bookingId: Int,
     val userId: Int,
     val flightId: String,
+    val returnFlightId: String? = null,
     val totalPrice: Double,
     val date: String,
     val time: String,

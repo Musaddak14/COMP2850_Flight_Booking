@@ -17,6 +17,9 @@ import com.flightsystem.service.CheckoutService
 import com.flightsystem.model.PassengerInput
 import com.flightsystem.model.Users
 
+import model.ManagerSentEmails
+import model.ManagerSentEmailResponse
+
 
 import com.flightsystem.AppEnv
 import com.flightsystem.service.EmailService
@@ -169,7 +172,7 @@ data class CreatePromoCodeRequest(
 @Serializable
 data class CreatePromoCodeResponse(
     val success: Boolean,
-    val message: String
+    val message: String? = null,
 )
 
 
@@ -231,7 +234,9 @@ data class CreateBookingRequest(
 data class CreateHoldRequest(
     val userId: Int?,
     val flightId: String,
-    val seatNumbers: List<String>
+    val seatNumbers: List<String>,
+    val returnFlightId: String,
+    val returnSeatNumbers: List<String>
 )
 
 @Serializable
@@ -241,7 +246,9 @@ data class CreateHoldResponse(
     val flightId: String,
     val seatNumbers: List<String>,
     val totalPrice: Double,
-    val expiryTime: String
+    val expiryTime: String,
+    val returnFlightId: String? = null,
+    val returnSeatNumbers: List<String>,
 )
 
 
@@ -260,6 +267,7 @@ data class AccountSummary (
 data class BookingLookupResponse(
     val bookingId: Int,
     val flightId: String,
+    val returnFlightId: String? = null,
     val seats: List<String>,
     val passengers: List<String>,
     val cabin: String?,
@@ -610,6 +618,30 @@ fun Application.configureRouting() {
                         "Ticket update failed. Ticket may not exist, or booking change could not be processed")
                 } else {
                     call.respond(HttpStatusCode.OK, updatedTicket)
+                }
+            }
+
+            get("/{id}/history") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                if (id == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid ticket ID")
+                    return@get
+                }
+                val history = ticketService.getTicketHistory(id)
+                call.respond(HttpStatusCode.OK, history)
+            }
+
+            put("/{id}/archive") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                if (id == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid ticket ID")
+                    return@put
+                }
+                val archived = ticketService.archiveTicket(id)
+                if (archived) {
+                    call.respond(HttpStatusCode.OK, "Ticket archived")
+                } else {
+                    call.respond(HttpStatusCode.NotFound, "Ticket not found")
                 }
             }
         }
@@ -1005,8 +1037,10 @@ fun Application.configureRouting() {
                 }
                 var flightId = request.flightId
                 val seatNumbers = request.seatNumbers
+                val returnFlightId = request.returnFlightId
+                val returnSeatNumbers = request.returnSeatNumbers
+                val hold = priceHoldService.createHold(userId, flightId, seatNumbers, returnFlightId, returnSeatNumbers)
 
-                val hold = priceHoldService.createHold(userId, flightId, seatNumbers)
 
                 val holdId = hold.holdId
                 userId = hold.userId
@@ -1014,7 +1048,7 @@ fun Application.configureRouting() {
                 val expiryTime = hold.expiryTime
                 val totalPrice = hold.totalPrice
 
-                val holdResponse = CreateHoldResponse(holdId, userId, flightId, seatNumbers, totalPrice, expiryTime)
+                val holdResponse = CreateHoldResponse(holdId, userId, flightId, seatNumbers, totalPrice, expiryTime, hold.returnFlightId, returnSeatNumbers)
                 call.respond(HttpStatusCode.Created, holdResponse)
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.BadRequest, "Error while creating hold")
@@ -1078,6 +1112,7 @@ fun Application.configureRouting() {
                 BookingLookupResponse(
                     bookingId  = details.booking.bookingId,
                     flightId   = details.booking.flightId,
+                    returnFlightId = details.booking.returnFlightId,
                     seats      = details.seats,
                     passengers = passengerNames,
                     cabin = details.booking.cabin,
@@ -1190,6 +1225,19 @@ fun Application.configureRouting() {
                     body = request.message
                 )
 
+                val now = LocalDateTime.now().toString()
+
+                transaction{
+                    ManagerSentEmails.insert {
+                        it[ManagerSentEmails.managerId] = user.userId
+                        it[ManagerSentEmails.managerEmail] = user.email
+                        it[ManagerSentEmails.toEmail] = request.toEmail
+                        it[ManagerSentEmails.subject] = request.subject
+                        it[ManagerSentEmails.message] = request.message
+                        it[ManagerSentEmails.sentAt] = now
+                    }
+                }
+
                 call.respond(
                     HttpStatusCode.OK,
                     SendManagerEmailResponse(
@@ -1205,6 +1253,23 @@ fun Application.configureRouting() {
                         message = e.message ?: "Failed to send email"
                     )
                 )
+            }
+
+            get("/api/manager/sent-emails") {
+                val sentEmails = transaction {
+                    ManagerSentEmails.selectAll().map { row -> 
+                        ManagerSentEmailResponse(
+                            emailId = row[ManagerSentEmails.emailId],
+                            managerId = row[ManagerSentEmails.managerId],
+                            managerEmail = row[ManagerSentEmails.managerEmail],
+                            toEmail = row[ManagerSentEmails.toEmail],
+                            subject = row[ManagerSentEmails.subject],
+                            message = row[ManagerSentEmails.message],
+                            sentAt = row[ManagerSentEmails.sentAt]
+                        )
+                    }
+                }
+                call.respond(HttpStatusCode.OK, sentEmails)
             }
         }
 
