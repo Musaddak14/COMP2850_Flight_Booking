@@ -171,6 +171,7 @@
         }
     }
 
+
     function renderFlights(list, flights, onBookClick) {
         list.innerHTML = "";
 
@@ -191,7 +192,7 @@
                         <img src="/images/Logo.png" class="flight-logo">
                         <div class="buttons">
                             <button class="details-btn">Details</button>
-                            <button class="Book_Now-btn">Book Now</button>
+                            <button class="Book_Now-btn">Select Flight</button>
                         </div>
                     </div>
 
@@ -202,16 +203,14 @@
                         </div>
 
                         <div class="duration">
-                            <small>${new Date(flight.date).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'})}</small>
                             <small>Direct</small>
                             <div class="line"></div>
                             <small>${hours}h ${minutes}m</small>
                         </div>
 
                         <div class="time-block">
-                            <h2>${flight.departureTime}</h2>
-                            <span>${flight.departureAirport}</span>
-
+                            <h2>${flight.arrivalTime}</h2>
+                            <span>${flight.arrivalAirport}</span>
                         </div>
                     </div>
                 </div>
@@ -238,26 +237,21 @@
             const flightCard = list.lastElementChild;
             const priceBoxes = flightCard.querySelectorAll(".price-box");
             const bookBtn = flightCard.querySelector(".Book_Now-btn");
+
             bookBtn.disabled = true;
 
-            for (let i = 0; i < priceBoxes.length; i++) {
-                priceBoxes[i].addEventListener("click", function () {
-                    for (let j = 0; j < priceBoxes.length; j++) {
-                        priceBoxes[j].classList.remove("selected");
-                    }
-
+            priceBoxes.forEach(box => {
+                box.addEventListener("click", function () {
+                    priceBoxes.forEach(item => item.classList.remove("selected"));
                     this.classList.add("selected");
                     bookBtn.disabled = false;
                     bookBtn.classList.add("active");
                 });
-            }
+            });
 
             bookBtn.addEventListener("click", () => {
                 const selectedBox = flightCard.querySelector(".price-box.selected");
-
-                if (!selectedBox) {
-                    return;
-                }
+                if (!selectedBox) return;
 
                 const cabin = selectedBox.querySelector("span").textContent.trim();
                 onBookClick(flight, cabin);
@@ -273,6 +267,54 @@
         const returnDate = params.get("returnDate");
         const passengers = params.get("passengers");
         const isReturnTrip = returnDate && returnDate.trim() !== "";
+
+        let selectedOutboundFlight = null;
+        let selectedOutboundCabin = null;
+        let selectedReturnFlight = null;
+        let selectedReturnCabin = null;
+
+        function tryContinueReturnBooking() {
+            if (!selectedOutboundFlight || !selectedReturnFlight) {
+                alert("Please select both an outbound and return flight.");
+                return;
+            }
+
+            clearBookingProgress();
+
+            const nextParams = new URLSearchParams({
+                from: from ?? "",
+                to: to ?? "",
+                date: date ?? "",
+                returnDate: returnDate ?? "",
+                passengers: passengers ?? "1",
+                cabin: selectedOutboundCabin ?? "Economy",
+                returnCabin: selectedReturnCabin ?? "Economy",
+                flightId: selectedOutboundFlight.flightId ?? "",
+                returnFlightId: selectedReturnFlight.flightId ?? ""
+            });
+
+            window.location.href = `/booking-personal?${nextParams.toString()}`;
+        }
+
+        if (isReturnTrip) {
+            const returnSection = document.getElementById("return-section");
+            const returnList = document.getElementById("return-flight-list");
+
+            returnSection.style.display = "block";
+
+            const returnResponse = await fetch(`/api/flights?from=${to}&to=${from}&date=${returnDate}&passengers=${passengers}`);
+            const returnFlights = await returnResponse.json();
+
+            renderFlights(returnList, returnFlights, (flight, cabin) => {
+                selectedReturnFlight = flight;
+                selectedReturnCabin = cabin;
+
+                sessionStorage.setItem("selectedReturnFlightId", flight.flightId ?? "");
+                sessionStorage.setItem("selectedReturnCabin", cabin);
+
+                tryContinueReturnBooking();
+            });
+        }
 
 
         //from the url get the from,to,date parameters
@@ -299,35 +341,29 @@
             // if no flight matches are found then simply write a message saying that
 
             renderFlights(list, flights, (flight, cabin) => {
-                clearBookingProgress();
+                selectedOutboundFlight = flight;
+                selectedOutboundCabin = cabin;
 
-                window.location.href = buildBookingUrl({
-                    from,
-                    to,
-                    date,
-                    passengers,
-                    cabin,
-                    flightId: flight.flightId ?? ""
-                });
+                if (!isReturnTrip) {
+                    clearBookingProgress();
+
+                    window.location.href = buildBookingUrl({
+                        from,
+                        to,
+                        date,
+                        passengers,
+                        cabin,
+                        flightId: flight.flightId ?? ""
+                    });
+
+                    return;
+                }
+
+                sessionStorage.setItem("selectedOutboundFlightId", flight.flightId ?? "");
+                sessionStorage.setItem("selectedOutboundCabin", cabin);
+
+                tryContinueReturnBooking();
             });
-
-            if (isReturnTrip) {
-                const returnSection = document.getElementById("return-section");
-                const returnList = document.getElementById("return-flight-list");
-
-                returnSection.style.display = "block";
-
-                const returnResponse = await fetch(`/api/flights?from=${to}&to=${from}&date=${returnDate}&passengers=${passengers}`);
-                const returnFlights = await returnResponse.json();
-
-                renderFlights(returnList, returnFlights, (flight, cabin) => {
-                    sessionStorage.setItem("returnFlightId", flight.flightId ?? "");
-                    sessionStorage.setItem("returnCabin", cabin);
-                    sessionStorage.setItem("returnDate", returnDate);
-
-                    alert("Return flight selected. Now select your outbound flight.");
-                });
-            }
 
             //catch block is for error handling ie if anything goes wrong then the catchj block runs
 
