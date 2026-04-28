@@ -109,6 +109,12 @@ fun Application.configureDatabases() {
             println("time column already exists")
         }
 
+        try {
+            exec("ALTER TABLE USERS ADD COLUMN STATUS VARCHAR(30) DEFAULT 'ACTIVE'")
+        } catch (e: Exception) {
+            println("status column already exists")
+        }
+
         val authservice = AuthenticationService()
 
         authservice.setDefaultManager(
