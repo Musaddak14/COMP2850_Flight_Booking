@@ -71,6 +71,18 @@ fun Application.configureDatabases() {
             println("archived column already exists")
         }
 
+        try {
+            exec("""ALTER TABLE BOOKINGS ADD COLUMN "returnFlightId" VARCHAR(128)""")
+        } catch (e: Exception) {
+            println("returnFlightId column already exists in BOOKINGS")
+        }
+
+        try {
+            exec("""ALTER TABLE PRICEHOLDS ADD COLUMN "returnFlightId" VARCHAR(128)""")
+        } catch (e: Exception) {
+            println("returnFlightId column already exists in PRICEHOLDS")
+        }
+
         val authservice = AuthenticationService()
 
         authservice.setDefaultManager(

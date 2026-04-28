@@ -172,7 +172,7 @@ data class CreatePromoCodeRequest(
 @Serializable
 data class CreatePromoCodeResponse(
     val success: Boolean,
-    val message: String
+    val message: String? = null,
 )
 
 
@@ -234,7 +234,9 @@ data class CreateBookingRequest(
 data class CreateHoldRequest(
     val userId: Int?,
     val flightId: String,
-    val seatNumbers: List<String>
+    val seatNumbers: List<String>,
+    val returnFlightId: String,
+    val returnSeatNumbers: List<String>
 )
 
 @Serializable
@@ -244,7 +246,9 @@ data class CreateHoldResponse(
     val flightId: String,
     val seatNumbers: List<String>,
     val totalPrice: Double,
-    val expiryTime: String
+    val expiryTime: String,
+    val returnFlightId: String? = null,
+    val returnSeatNumbers: List<String>,
 )
 
 
@@ -263,6 +267,7 @@ data class AccountSummary (
 data class BookingLookupResponse(
     val bookingId: Int,
     val flightId: String,
+    val returnFlightId: String? = null,
     val seats: List<String>,
     val passengers: List<String>
 )
@@ -1027,6 +1032,10 @@ fun Application.configureRouting() {
                 }
                 var flightId = request.flightId
                 val seatNumbers = request.seatNumbers
+                val returnFlightId = request.returnFlightId
+                val returnSeatNumbers = request.returnSeatNumbers
+                val hold = priceHoldService.createHold(userId, flightId, seatNumbers, returnFlightId, returnSeatNumbers)
+
 
                 val hold = priceHoldService.createHold(userId, flightId, seatNumbers)
 
@@ -1036,7 +1045,7 @@ fun Application.configureRouting() {
                 val expiryTime = hold.expiryTime
                 val totalPrice = hold.totalPrice
 
-                val holdResponse = CreateHoldResponse(holdId, userId, flightId, seatNumbers, totalPrice, expiryTime)
+                val holdResponse = CreateHoldResponse(holdId, userId, flightId, seatNumbers, totalPrice, expiryTime, hold.returnFlightId, returnSeatNumbers)
                 call.respond(HttpStatusCode.Created, holdResponse)
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.BadRequest, "Error while creating hold")
@@ -1100,6 +1109,7 @@ fun Application.configureRouting() {
                 BookingLookupResponse(
                     bookingId  = details.booking.bookingId,
                     flightId   = details.booking.flightId,
+                    returnFlightId = details.booking.returnFlightId,
                     seats      = details.seats,
                     passengers = passengerNames
                 )
