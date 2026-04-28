@@ -72,6 +72,8 @@ class CheckoutService(
 
         val hold = holdDetails.hold
 
+
+
         val expiryTime = try {
             LocalDateTime.parse(hold.expiryTime)
         } catch (e: Exception) {
