@@ -28,8 +28,11 @@ class PriceHoldService {
     fun createHold(
         userId: Int,
         flightId: String,
-        seatNumbers: List<String>
+        seatNumbers: List<String>,
+        returnFlightId: String? = null,
+        returnSeatNumbers: List<String> = emptyList()
     ): PriceHold {
+
         return transaction {
             require(seatNumbers.isNotEmpty()) {
                 "At least 1 seat must be selected" 
@@ -60,7 +63,44 @@ class PriceHoldService {
                 totalPrice += basePrice * multiplier
             }
 
+            if (!returnFlightId.isNullOrBlank() && returnSeatNumbers.isNotEmpty()) {
+                val returnSeatsFromDb = Seats.selectAll().where {
+                    (Seats.flightId eq returnFlightId) and
+                    (Seats.seatNumber inList returnSeatNumbers)
+                }.toList()
 
+                val numberOfSeatsFound = returnSeatsFromDb.size
+                val numberOfSeatsRequested = returnSeatNumbers.size
+                if (numberOfSeatsFound != numberOfSeatsRequested) {
+                    throw IllegalArgumentException ("One or more of the seats requeted are not available")
+
+                }
+
+                for (seat in returnSeatsFromDb) {
+                    val isAvailabe = seat[Seats.isAvailable]
+                    if (!isAvailabe){
+                        throw IllegalArgumentException ("One or more of the seats requeted are not available")
+                    }
+                }
+
+                val returnFlightRow = Flights.selectAll().where{
+                    Flights.flightId eq returnFlightId
+                }.singleOrNull()
+
+                if (returnFlightRow == null) {
+                    throw IllegalArgumentException ("return flight doesnt exist")
+                }
+
+                val returnBasePrice = returnFlightRow[Flights.price]
+
+                for (seat in returnSeatsFromDb){
+                    val seatClass = seat[Seats.seatClass]
+                    val multiplier = getSeatMultiplier(seatClass)
+                    val seatPrice = returnBasePrice * multiplier
+                    totalPrice = totalPrice + seatPrice
+                }
+
+            }
             val expiryTime = LocalDateTime.now().plusMinutes(15).toString() // set hold to expire in 15 mins 
             val inserted = PriceHolds.insert {
                 it[PriceHolds.userId] = userId
@@ -172,7 +212,8 @@ class PriceHoldService {
     }
 
     // convert a valid hold into a permanent booking 
-    fun confirmHoldToBooking(holdId: Int): Booking? {
+    fun confirmHoldToBooking(holdId: Int, cabin: String? = null, addOns: String? = null): Booking? {
+
         return transaction {
             // load the main hold row so it can be converted into a booking
             val holdRow = PriceHolds.selectAll().where {
@@ -195,12 +236,18 @@ class PriceHoldService {
                 return@transaction null
             }
 
+            val flightRow = Flights.selectAll().where {
+                Flights.flightId eq flightId
+            }.singleOrNull() ?: return@transaction null
+
             // create the main booking row using the user and flight from the hold
             val inserted = Bookings.insert {
                 it[Bookings.userId] = userId
                 it[Bookings.flightId] = flightId
-                it[Bookings.date] = LocalDate.now().toString()
-                it[Bookings.time] = LocalTime.now().toString()
+                it[Bookings.date] = flightRow[Flights.date]
+                it[Bookings.time] = flightRow[Flights.departureTime]
+                it[Bookings.cabin] = cabin
+                it[Bookings.addOns] = addOns
             }
 
             val newBookingId = inserted[Bookings.bookingId]
@@ -225,8 +272,8 @@ class PriceHoldService {
             }
 
             // ret the new perm booking created from the hold
-            val bookingDate = LocalDate.now().toString()
-            val bookingTime = LocalTime.now().toString()
+            val bookingDate = flightRow[Flights.date]
+            val bookingTime = flightRow[Flights.departureTime]
             Booking(
                 bookingId = newBookingId,
                 userId = userId,

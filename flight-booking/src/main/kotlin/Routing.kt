@@ -17,6 +17,9 @@ import com.flightsystem.service.CheckoutService
 import com.flightsystem.model.PassengerInput
 import com.flightsystem.model.Users
 
+import model.ManagerSentEmails
+import model.ManagerSentEmailResponse
+
 
 import com.flightsystem.AppEnv
 import com.flightsystem.service.EmailService
@@ -169,7 +172,7 @@ data class CreatePromoCodeRequest(
 @Serializable
 data class CreatePromoCodeResponse(
     val success: Boolean,
-    val message: String
+    val message: String? = null,
 )
 
 
@@ -231,7 +234,9 @@ data class CreateBookingRequest(
 data class CreateHoldRequest(
     val userId: Int?,
     val flightId: String,
-    val seatNumbers: List<String>
+    val seatNumbers: List<String>,
+    val returnFlightId: String,
+    val returnSeatNumbers: List<String>
 )
 
 @Serializable
@@ -241,7 +246,9 @@ data class CreateHoldResponse(
     val flightId: String,
     val seatNumbers: List<String>,
     val totalPrice: Double,
-    val expiryTime: String
+    val expiryTime: String,
+    val returnFlightId: String? = null,
+    val returnSeatNumbers: List<String>,
 )
 
 
@@ -260,8 +267,11 @@ data class AccountSummary (
 data class BookingLookupResponse(
     val bookingId: Int,
     val flightId: String,
+    val returnFlightId: String? = null,
     val seats: List<String>,
-    val passengers: List<String>
+    val passengers: List<String>,
+    val cabin: String?,
+    val addOns: String?
 )
 
 @Serializable
@@ -308,6 +318,11 @@ data class Route(
     val arrivalAirport: String,
 )
 
+@Serializable
+data class OtpWaitingresponse(val success: Boolean, val otpRequired: Boolean)
+
+@Serializable
+data class OtpVerifyRequest(val email: String, val otp: String)
 
 fun Application.configureRouting() {
     val authenticationService = AuthenticationService()
@@ -336,6 +351,7 @@ fun Application.configureRouting() {
         staticResources("/manage-account/scripts", "static/user/manage-account/scripts")
         staticResources("/support/styles", "static/user/support/styles")
         staticResources("/support/scripts", "static/user/support/scripts")
+        staticResources("/shared", "static/shared")
 
 
         get("/lounges") {
@@ -604,6 +620,30 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.OK, updatedTicket)
                 }
             }
+
+            get("/{id}/history") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                if (id == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid ticket ID")
+                    return@get
+                }
+                val history = ticketService.getTicketHistory(id)
+                call.respond(HttpStatusCode.OK, history)
+            }
+
+            put("/{id}/archive") {
+                val id = call.parameters["id"]?.toIntOrNull()
+                if (id == null) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid ticket ID")
+                    return@put
+                }
+                val archived = ticketService.archiveTicket(id)
+                if (archived) {
+                    call.respond(HttpStatusCode.OK, "Ticket archived")
+                } else {
+                    call.respond(HttpStatusCode.NotFound, "Ticket not found")
+                }
+            }
         }
 
         get("/api/manager/flights") {
@@ -716,7 +756,9 @@ fun Application.configureRouting() {
                 holdId = request.holdId,
                 request = paymentRequest,
                 pointsToRedeem = request.pointsToRedeem,
-                promoCode = request.promoCode
+                promoCode = request.promoCode,
+                cabin = request.cabin,
+                addOns = request.addOns
             )
 
             if (response.success) {
@@ -733,7 +775,43 @@ fun Application.configureRouting() {
 
             if (result.isSuccess) {
                 val user = result.getOrThrow()
+                val otp =  authenticationService.createOtpChallenge(user)
+                //val sessionId = authenticationService.createSession(user)
+
+                if (user.email == "manager@astraeus.com"){
+                    emailService.sendEmail(
+                        toEmail = "bhamani01@gmail.com, musaddakali14@gmail.com , mikaeel4760@gmail.com , ",
+                        subject = "MANAGER ADMIN ACCESS REQUESTED",
+                        body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes."
+                    )
+
+                }else {
+                    emailService.sendEmail(
+
+                        toEmail = user.email,
+                        subject = "Your Astraeus Airways login code",
+                        body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes. Do not share it."
+                    )
+                }
+
+                call.respond(HttpStatusCode.OK, OtpWaitingresponse(success = true, otpRequired = true))
+            } else {
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse("Invalid email or password")
+                )
+            }
+        }
+
+        post("/api/auth/verify-otp") {
+            val request = call.receive<OtpVerifyRequest>()
+            val result = authenticationService.verifyOtp(request.email, request.otp)
+
+            if (result.isSuccess) {
+                val user = result.getOrThrow()
                 val sessionId = authenticationService.createSession(user)
+
+
 
                 call.respond(
                     HttpStatusCode.OK,
@@ -745,13 +823,9 @@ fun Application.configureRouting() {
                         email = user.email,
                         role = if (user is Manager) "MANAGER" else "USER",
                         sessionId = sessionId
-                    )
-                )
-            } else {
-                call.respond(
-                    HttpStatusCode.Unauthorized,
-                    ErrorResponse("Invalid email or password")
-                )
+                    ))
+            }else{
+                call.respond(HttpStatusCode.Unauthorized, ErrorResponse(result.exceptionOrNull()?.message ?:"Invalid otp"))
             }
         }
 
@@ -963,8 +1037,10 @@ fun Application.configureRouting() {
                 }
                 var flightId = request.flightId
                 val seatNumbers = request.seatNumbers
+                val returnFlightId = request.returnFlightId
+                val returnSeatNumbers = request.returnSeatNumbers
+                val hold = priceHoldService.createHold(userId, flightId, seatNumbers, returnFlightId, returnSeatNumbers)
 
-                val hold = priceHoldService.createHold(userId, flightId, seatNumbers)
 
                 val holdId = hold.holdId
                 userId = hold.userId
@@ -972,7 +1048,7 @@ fun Application.configureRouting() {
                 val expiryTime = hold.expiryTime
                 val totalPrice = hold.totalPrice
 
-                val holdResponse = CreateHoldResponse(holdId, userId, flightId, seatNumbers, totalPrice, expiryTime)
+                val holdResponse = CreateHoldResponse(holdId, userId, flightId, seatNumbers, totalPrice, expiryTime, hold.returnFlightId, returnSeatNumbers)
                 call.respond(HttpStatusCode.Created, holdResponse)
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.BadRequest, "Error while creating hold")
@@ -1036,8 +1112,11 @@ fun Application.configureRouting() {
                 BookingLookupResponse(
                     bookingId  = details.booking.bookingId,
                     flightId   = details.booking.flightId,
+                    returnFlightId = details.booking.returnFlightId,
                     seats      = details.seats,
-                    passengers = passengerNames
+                    passengers = passengerNames,
+                    cabin = details.booking.cabin,
+                    addOns = details.booking.addOns,
                 )
             )
         }
@@ -1146,6 +1225,19 @@ fun Application.configureRouting() {
                     body = request.message
                 )
 
+                val now = LocalDateTime.now().toString()
+
+                transaction{
+                    ManagerSentEmails.insert {
+                        it[ManagerSentEmails.managerId] = user.userId
+                        it[ManagerSentEmails.managerEmail] = user.email
+                        it[ManagerSentEmails.toEmail] = request.toEmail
+                        it[ManagerSentEmails.subject] = request.subject
+                        it[ManagerSentEmails.message] = request.message
+                        it[ManagerSentEmails.sentAt] = now
+                    }
+                }
+
                 call.respond(
                     HttpStatusCode.OK,
                     SendManagerEmailResponse(
@@ -1161,6 +1253,23 @@ fun Application.configureRouting() {
                         message = e.message ?: "Failed to send email"
                     )
                 )
+            }
+
+            get("/api/manager/sent-emails") {
+                val sentEmails = transaction {
+                    ManagerSentEmails.selectAll().map { row -> 
+                        ManagerSentEmailResponse(
+                            emailId = row[ManagerSentEmails.emailId],
+                            managerId = row[ManagerSentEmails.managerId],
+                            managerEmail = row[ManagerSentEmails.managerEmail],
+                            toEmail = row[ManagerSentEmails.toEmail],
+                            subject = row[ManagerSentEmails.subject],
+                            message = row[ManagerSentEmails.message],
+                            sentAt = row[ManagerSentEmails.sentAt]
+                        )
+                    }
+                }
+                call.respond(HttpStatusCode.OK, sentEmails)
             }
         }
 
@@ -1204,7 +1313,27 @@ fun Application.configureRouting() {
         }
 
         get("/manager/bookings") {
-            call.respondFile(File("src/main/resources/static/manager/edit_bookings/edit_bookings.html"))
+            val sessionId: String
+            val sessionIdFromUrl = call.request.queryParameters["sessionId"]
+            //get user session id
+            if (sessionIdFromUrl == null){
+                sessionId = ""
+                //if session id is empty ie not logged in then sessionid = ""
+            }else{
+                sessionId = sessionIdFromUrl
+            }
+            //else get there real sessionid
+            val isManager = authenticationService.isManagerSession(sessionId)
+            //checks if the sessionid is a manager sessionid
+            if (isManager == false) {
+                call.respondRedirect("/log_in")
+                return@get   // exit this handler, don't run the code below
+            }
+            //if not then whenever they try access manager site redirect to homepage
+
+
+            call.respondFile(File("src/main/resources/static/manager"))
+            //else redirect to manager site
         }
 
         // get booking + its passengers

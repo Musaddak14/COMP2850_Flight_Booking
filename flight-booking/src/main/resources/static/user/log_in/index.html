@@ -88,6 +88,15 @@
 
 
         </form>
+        <div class="login-form hidden" id="otp-section">
+            <p style="margin-bottom:16px;color:#555;">A 6-digit code has been sent to your email address.</p>
+            <div class="form-group">
+                <label for="otp-input">One-time code</label>
+                <input type="text" id="otp-input" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+            </div>
+            <p id="otp-message" class="form-message" role="status" aria-live="polite"></p>
+            <button type="button" class="login-btn" id="otp-submit-btn">Verify Code</button>
+        </div>
 
         <div class="divider"><span>or</span></div>
 

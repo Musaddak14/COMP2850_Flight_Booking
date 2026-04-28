@@ -6,7 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flight Results</title>
     <link rel="stylesheet" href="../home/styles/style.css">
+    <script src="/shared/currency.js"></script>
+
 </head>
+
+
+
 <body>
 
 <header class="header">
@@ -26,6 +31,14 @@
 
         <div class="right-nav">
             <span class="lang">United Kingdom - EN</span>
+            <select id="currency-select" onchange="setSelectedCurrency(this.value); location.reload();">
+                <option value="GBP">£ GBP</option>
+                <option value="USD">$ USD</option>
+                <option value="EUR">€ EUR</option>
+                <option value="AUD">A$ AUD</option>
+                <option value="JPY">¥ JPY</option>
+            </select>
+            <script>document.getElementById("currency-select").value = getSelectedCurrency();</script>
             <span id="welcome-message"></span>
             <a href="/log_in" id="login-link">Log In</a>
             <button id="logout-button" type="button" style="display: none;">Log Out</button>
@@ -196,19 +209,19 @@
             }
 
             if (classicMealPriceDisplay) {
-                classicMealPriceDisplay.innerHTML = `<s>£${CLASSIC_MEAL_FULL_PRICE}</s><span class="gld">£${CLASSIC_MEAL_MEMBER_PRICE.toFixed(2)}</span>`;
+                classicMealPriceDisplay.innerHTML = `<s>${fmt(CLASSIC_MEAL_FULL_PRICE)}</s><span class="gld">${fmt(CLASSIC_MEAL_MEMBER_PRICE)}</span>`;
             }
 
             if (premiumMealPriceDisplay) {
-                premiumMealPriceDisplay.innerHTML = `<s>£${PREMIUM_MEAL_FULL_PRICE}</s><span class="gld">£${PREMIUM_MEAL_MEMBER_PRICE.toFixed(2)}</span>`;
+                premiumMealPriceDisplay.innerHTML = `<s>${fmt(PREMIUM_MEAL_FULL_PRICE)}</s><span class="gld">${fmt(PREMIUM_MEAL_MEMBER_PRICE)}</span>`;
             }
         } else {
             if (seatPerkBadge) {
-                seatPerkBadge.textContent = `£${GUEST_SEAT_PRICE}`;
+                seatPerkBadge.textContent = `${fmt(GUEST_SEAT_PRICE)}`;
             }
 
             if (wifiPerkBadge) {
-                wifiPerkBadge.textContent = `£${GUEST_WIFI_PRICE.toFixed(2)}`;
+                wifiPerkBadge.textContent = `${fmt(GUEST_WIFI_PRICE)}`;
             }
 
             if (wifiPerkText) {
@@ -228,11 +241,11 @@
             }
 
             if (classicMealPriceDisplay) {
-                classicMealPriceDisplay.innerHTML = `£${CLASSIC_MEAL_FULL_PRICE.toFixed(2)}`;
+                classicMealPriceDisplay.innerHTML = `${fmt(CLASSIC_MEAL_FULL_PRICE)}`;
             }
 
             if (premiumMealPriceDisplay) {
-                premiumMealPriceDisplay.innerHTML = `£${PREMIUM_MEAL_FULL_PRICE.toFixed(2)}`;
+                premiumMealPriceDisplay.innerHTML = `${fmt(PREMIUM_MEAL_FULL_PRICE)}`;
             }
         }
     }
@@ -278,11 +291,11 @@
         const totalEl = document.getElementById("tot");
 
         if (sumBaseEl) {
-            sumBaseEl.textContent = `£${baseFare.toFixed(2)}`;
+            sumBaseEl.textContent = `${fmt(baseFare)}`;
         }
 
         if (totalEl) {
-            totalEl.textContent = `£${total.toFixed(2)}`;
+            totalEl.textContent = `${fmt(total)}`;
         }
 
         if (bookingDraft) {
@@ -675,6 +688,24 @@
     </div>
     <div class="footer-right">Astraeus UK</div>
 </footer>
+<script>
+    const rows = document.querySelectorAll(".row");
+
+    rows.forEach(row => {
+        const input = row.querySelector("input[data-price]");
+        const rp = row.querySelector(".rp");
+
+        if (!input || !rp) {
+            return;
+        }
+
+        if (rp.querySelector("s")) {
+            return;
+        }
+
+        rp.textContent = fmt(parseFloat(input.dataset.price));
+    });
+</script>
 
 </body>
 </html>

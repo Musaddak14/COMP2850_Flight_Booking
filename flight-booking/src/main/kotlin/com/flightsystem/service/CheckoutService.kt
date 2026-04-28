@@ -59,7 +59,9 @@ class CheckoutService(
         holdId: Int,
         request: PaymentRequest,
         pointsToRedeem: Int = 0,
-        promoCode: String? = null
+        promoCode: String? = null,
+        cabin: String? = null,
+        addOns: String? = null
     ): PaymentResponse {
 
         val holdDetails = priceHoldService.getHoldDetails(holdId)
@@ -129,6 +131,15 @@ class CheckoutService(
         }
 
         if (!promoCode.isNullOrBlank()) {
+            if (promoCodeService.hasUserUsedPromoCode(hold.userId, promoCode)) {
+                return PaymentResponse(
+                    success = false,
+                    message = "You have already used this promo code",
+                    paymentId = null,
+                    bookingId = null
+                )
+            }
+
             val promoResult = promoCodeService.applyPromoCode(
                 codeValue = promoCode,
                 originalAmount = finalAmount
@@ -172,7 +183,8 @@ class CheckoutService(
             loyaltyService.redeemPoints(hold.userId, pointsToRedeem)
         }
 
-        val booking = priceHoldService.confirmHoldToBooking(holdId)
+        val booking = priceHoldService.confirmHoldToBooking(holdId, cabin, addOns)
+
             ?: return PaymentResponse(
                 success = false,
                 message = "Payment succeeded but booking creation failed",
@@ -182,6 +194,15 @@ class CheckoutService(
 
         val pointsEarned = finalAmount.toInt()
         loyaltyService.addPoints(hold.userId, pointsEarned)
+
+        if (!promoCode.isNullOrBlank()) {
+            promoCodeService.recordPromoCodeUsage(
+                userId = hold.userId,
+                codeValue = promoCode,
+            )
+        }
+
+
         val updatedLoyaltyAccount = loyaltyService.getLoyaltyAccount(hold.userId)
 
         try {
