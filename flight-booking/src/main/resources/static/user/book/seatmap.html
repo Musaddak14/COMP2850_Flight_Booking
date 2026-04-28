@@ -692,77 +692,110 @@
             seatListsMatch(outboundSeatNumbers, bookingDraft.outboundSeatNumbers ?? bookingDraft.seatNumbers ?? []) &&
             seatListsMatch(returnSeatNumbers, bookingDraft.returnSeatNumbers ?? [])
         ) {
-            bookingDraft.userId = isSignedIn ? loggedInUserId : bookingDraft.userId;
             bookingDraft.userId = isSignedIn ? loggedInUserId : null;
             persistBookingDraft();
-            window.location.href = isSignedIn ? "/loyaltypage" : "/addons";
+            window.location.href = getNextPageUrl();
             return;
         }
 
         holdMessage.textContent = "";
         continueButton.disabled = true;
 
-        try {
-            const response = await fetch("/api/holds", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    userId: isSignedIn ? loggedInUserId : null,
+          try {
+                const outboundHoldResponse = await fetch("/api/holds", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        userId: isSignedIn ? loggedInUserId : null,
+                        flightId: outboundFlightId,
+                        seatNumbers: outboundSeatNumbers
+                    })
+                });
+
+                const outboundText = await outboundHoldResponse.text();
+                let outboundHold = null;
+
+                try {
+                    outboundHold = outboundText ? JSON.parse(outboundText) : null;
+                } catch {
+                    outboundHold = null;
+                }
+
+                if (!outboundHoldResponse.ok) {
+                    holdMessage.textContent = outboundHold?.error ?? outboundText ?? "Unable to hold the outbound seats.";
+                    return;
+                }
+
+                let returnHold = null;
+
+                if (hasReturnLeg()) {
+                    const returnHoldResponse = await fetch("/api/holds", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            userId: isSignedIn ? loggedInUserId : null,
+                            flightId: returnFlightId,
+                            seatNumbers: returnSeatNumbers
+                        })
+                    });
+
+                    const returnText = await returnHoldResponse.text();
+
+                    try {
+                        returnHold = returnText ? JSON.parse(returnText) : null;
+                    } catch {
+                        returnHold = null;
+                    }
+
+                    if (!returnHoldResponse.ok) {
+                        holdMessage.textContent = returnHold?.error ?? returnText ?? "Unable to hold the return seats.";
+                        return;
+                    }
+                }
+
+                bookingDraft.userId = outboundHold?.userId ?? (isSignedIn ? loggedInUserId : null);
+                bookingDraft.seatNumbers = outboundSeatNumbers;
+                bookingDraft.outboundSeatNumbers = outboundSeatNumbers;
+                bookingDraft.returnFlightId = hasReturnLeg() ? returnFlightId : null;
+                bookingDraft.returnSeatNumbers = returnSeatNumbers;
+
+                bookingDraft.holdId = outboundHold?.holdId ?? null;
+                bookingDraft.returnHoldId = returnHold?.holdId ?? null;
+                bookingDraft.holdExpiryTime = outboundHold?.expiryTime ?? null;
+
+                bookingDraft.totalPrice = hasReturnLeg()
+                    ? (outboundHold?.totalPrice ?? 0) + (returnHold?.totalPrice ?? 0)
+                    : (outboundHold?.totalPrice ?? 0);
+
+                bookingDraft.baseFareTotal = bookingDraft.totalPrice;
+
+                persistBookingDraft();
+
+                sessionStorage.setItem("holdData", JSON.stringify({
+                    holdId: bookingDraft.holdId,
+                    returnHoldId: bookingDraft.returnHoldId,
+                    userId: bookingDraft.userId,
                     flightId: outboundFlightId,
                     seatNumbers: outboundSeatNumbers,
                     returnFlightId: hasReturnLeg() ? returnFlightId : null,
-                    returnSeatNumbers
-                })
-            });
+                    returnSeatNumbers,
+                    expiryTime: bookingDraft.holdExpiryTime,
+                    totalPrice: bookingDraft.totalPrice
+                }));
 
-            const text = await response.text();
-            let result = null;
-
-            try {
-                result = text ? JSON.parse(text) : null;
+                window.location.href = getNextPageUrl();
             } catch {
-                result = null;
+                holdMessage.textContent = "Unable to hold the selected seats right now. Please try again.";
+            } finally {
+                updateUI();
             }
 
-            if (!response.ok) {
-                holdMessage.textContent = result?.error ?? text ?? "Unable to hold the selected seats.";
-                return;
-            }
 
-            bookingDraft.userId = isSignedIn ? loggedInUserId : null;
-            bookingDraft.seatNumbers = outboundSeatNumbers;
-            bookingDraft.outboundSeatNumbers = outboundSeatNumbers;
-            bookingDraft.returnFlightId = hasReturnLeg() ? returnFlightId : null;
-            bookingDraft.returnSeatNumbers = returnSeatNumbers;
-            bookingDraft.userId = result?.userId ?? (isSignedIn ? loggedInUserId : bookingDraft.userId ?? null);
-            bookingDraft.seatNumbers = seatNumbers;
-            bookingDraft.holdId = result?.holdId ?? null;
-            bookingDraft.holdExpiryTime = result?.expiryTime ?? null;
-            bookingDraft.totalPrice = result?.totalPrice ?? null;
-            bookingDraft.baseFareTotal = result?.totalPrice ?? null;
-            persistBookingDraft();
 
-            sessionStorage.setItem("holdData", JSON.stringify({
-                ...(result ?? {}),
-                holdId: result?.holdId ?? bookingDraft.holdId,
-                userId: isSignedIn ? loggedInUserId : null,
-                flightId: outboundFlightId,
-                seatNumbers: outboundSeatNumbers,
-                returnFlightId: hasReturnLeg() ? returnFlightId : null,
-                returnSeatNumbers,
-                expiryTime: result?.expiryTime ?? bookingDraft.holdExpiryTime,
-                totalPrice: result?.totalPrice ?? bookingDraft.totalPrice
-            }));
-
-            window.location.href = isSignedIn ? "/loyaltypage" : "/addons";
-            window.location.href = getNextPageUrl();
-        } catch {
-            holdMessage.textContent = "Unable to hold the selected seats right now. Please try again.";
-        } finally {
-            updateUI();
-        }
     });
 
     updatePageCopy();

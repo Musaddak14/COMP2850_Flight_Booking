@@ -585,6 +585,7 @@
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
                     holdId: bookingData.holdId,
+                    returnHoldId: bookingData.returnHoldId ?? null,
                     cardholderName: name,
                     cardNumber: number,
                     expiryMonth: month,
