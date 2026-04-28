@@ -104,7 +104,8 @@ class BookingService {
 
             // mark those seats avail again
             val seatsByFlight = bookedSeats.groupBy { it[BookingSeats.flightId] }
-            for ((fId, fSeats) in seatsByFlight.flightId) {
+            for ((fId, fSeats) in seatsByFlight) {
+
                 val nums = fSeats.map { it[BookingSeats.seatNumber] }
                 Seats.update({ (Seats.flightId eq fId) and (Seats.seatNumber inList nums) }) {
                     it[isAvailable] = true

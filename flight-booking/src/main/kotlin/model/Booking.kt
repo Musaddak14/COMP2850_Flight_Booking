@@ -36,6 +36,8 @@ object Bookings: Table() {
     val time = varchar("time", VARCHAR_LENGTH)
     val cabin = varchar("cabin", VARCHAR_LENGTH).nullable()
     val addOns = varchar("addOns", 1000).nullable()
+    val returnFlightId = varchar("returnFlightId", 128).nullable()
+
     override val primaryKey = PrimaryKey(bookingId)
 
     init {
