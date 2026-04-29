@@ -11,6 +11,6 @@ data class CheckoutRequest (
     val cvv: String,
     val billingAddress: String,
     val pointsToRedeem: Int = 0,
-    val promoCode: String? = null
-
+    val promoCode: String? = null,
+    val guestEmail: String? = null,
 )

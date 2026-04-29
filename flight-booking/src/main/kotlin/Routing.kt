@@ -748,7 +748,8 @@ fun Application.configureRouting() {
                 holdId = request.holdId,
                 request = paymentRequest,
                 pointsToRedeem = request.pointsToRedeem,
-                promoCode = request.promoCode
+                promoCode = request.promoCode,
+                guestEmail = request.guestEmail
             )
 
             if (response.success) {

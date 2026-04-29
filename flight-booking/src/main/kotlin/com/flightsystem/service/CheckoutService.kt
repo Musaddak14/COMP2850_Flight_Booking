@@ -5,7 +5,6 @@ import com.flightsystem.model.Users
 import com.flightsystem.model.Flights
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import com.flightsystem.model.PaymentResponse
 import com.flightsystem.AppEnv
 import java.time.LocalDateTime
@@ -15,8 +14,6 @@ class CheckoutService(
     private val paymentService: PaymentService,
     private val loyaltyService: LoyaltyService,
     private val promoCodeService: PromoCodeService
-
-
 
 ) {
     private val ticketPdfService = TicketPdfService()
@@ -59,7 +56,9 @@ class CheckoutService(
         holdId: Int,
         request: PaymentRequest,
         pointsToRedeem: Int = 0,
-        promoCode: String? = null
+        promoCode: String? = null,
+        guestEmail: String? = null
+
     ): PaymentResponse {
 
         val holdDetails = priceHoldService.getHoldDetails(holdId)
@@ -71,6 +70,27 @@ class CheckoutService(
             )
 
         val hold = holdDetails.hold
+
+        val userId = hold.userId
+
+        val userRow = transaction {
+            Users.selectAll().where { Users.userId eq userId }.singleOrNull()
+        }
+        if (userRow == null) {
+            return PaymentResponse(
+                success = false,
+                message = "Invalid user ID",
+                paymentId = null,
+                bookingId = null
+            )
+        }
+
+        val userEmail = userRow[Users.email]
+
+        val isGuestBooking = userEmail == "guest@astraeus.local"
+        val trimmedGuestEmail = guestEmail?.trim()
+        val confirmationEmail = if (isGuestBooking) trimmedGuestEmail else userEmail
+
 
         val expiryTime = try {
             LocalDateTime.parse(hold.expiryTime)
@@ -207,7 +227,7 @@ class CheckoutService(
                 )
 
                 emailService.sendBookingConfirmationEmail(
-                    toEmail = email,
+                    toEmail = confirmationEmail,
                     passengerName = fullName,
                     bookingId = booking.bookingId.toString(),
                     route = route,
