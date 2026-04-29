@@ -585,6 +585,7 @@
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
                     holdId: bookingData.holdId,
+                    returnHoldId: bookingData.returnHoldId ?? null,
                     cardholderName: name,
                     cardNumber: number,
                     expiryMonth: month,
@@ -638,7 +639,18 @@
                     })
                 });
 
-                window.location.href = "/confirmation";
+                if (result.returnBookingId) {
+                    await fetch("/api/passengers", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({
+                            bookingId: result.returnBookingId,
+                            passengers: draft.passengers
+                        })
+                    });
+                }
+
+                window.location.href = "confirmation";
             }
         } catch {
             message.textContent = "Payment failed. Try again.";

@@ -249,8 +249,8 @@ data class CreateHoldRequest(
     val userId: Int?,
     val flightId: String,
     val seatNumbers: List<String>,
-    val returnFlightId: String,
-    val returnSeatNumbers: List<String>
+    val returnFlightId: String? = null,
+    val returnSeatNumbers: List<String> = emptyList()
 )
 
 @Serializable
@@ -415,7 +415,7 @@ fun Application.configureRouting() {
         }
 
         get("/confirmation.html") {
-            call.respondFile(File("src/main/resources/static/user/book/confirmation.html"))
+            call.respondFile(File("src/main/resources/static/user/payment/confirmation.html"))
         }
 
         val passengerService = PassengerService()
@@ -787,6 +787,7 @@ fun Application.configureRouting() {
 
             val response = checkoutService.checkout(
                 holdId = request.holdId,
+                returnHoldId = request.returnHoldId,
                 request = paymentRequest,
                 pointsToRedeem = request.pointsToRedeem,
                 promoCode = request.promoCode,
@@ -1100,6 +1101,7 @@ fun Application.configureRouting() {
                 val holdResponse = CreateHoldResponse(holdId, userId, flightId, seatNumbers, totalPrice, expiryTime, hold.returnFlightId, returnSeatNumbers)
                 call.respond(HttpStatusCode.Created, holdResponse)
             } catch (e: Exception) {
+                e.printStackTrace()
                 call.respond(HttpStatusCode.BadRequest, "Error while creating hold")
             }
         }

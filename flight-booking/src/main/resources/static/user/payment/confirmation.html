@@ -159,9 +159,13 @@
         finalAmountLine.textContent = "";
     }
 
-    if (confirmationData?.returnFlightId) {
+    if (confirmationData?.returnFlightId || checkout?.returnBookingId) {
         returnLegConfirmation.style.display = "block";
-        returnBookingIdLine.textContent = checkout?.returnBookingId ? 
+
+        returnBookingIdLine.textContent = checkout?.returnBookingId
+            ? `Return booking ID: ${checkout.returnBookingId}`
+            : "";
+
         returnFlightLine.textContent = `Return flight: ${getReturnRouteSummary(confirmationData)}`;
         returnDateLine.textContent = `Return date: ${formatDisplayDate(confirmationData?.returnDate)}`;
         returnSeatsLine.textContent = `Return seats: ${getReturnSeatSummary(confirmationData)}`;
