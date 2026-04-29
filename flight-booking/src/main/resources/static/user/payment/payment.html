@@ -639,6 +639,17 @@
                     })
                 });
 
+                if (result.returnBookingId) {
+                    await fetch("/api/passengers", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({
+                            bookingId: result.returnBookingId,
+                            passengers: draft.passengers
+                        })
+                    });
+                }
+
                 window.location.href = "/confirmation";
             }
         } catch {

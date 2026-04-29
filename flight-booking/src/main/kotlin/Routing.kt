@@ -787,6 +787,7 @@ fun Application.configureRouting() {
 
             val response = checkoutService.checkout(
                 holdId = request.holdId,
+                returnHoldId = request.returnHoldId,
                 request = paymentRequest,
                 pointsToRedeem = request.pointsToRedeem,
                 promoCode = request.promoCode,
