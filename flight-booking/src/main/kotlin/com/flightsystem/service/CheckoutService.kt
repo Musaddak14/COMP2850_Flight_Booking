@@ -254,7 +254,11 @@ class CheckoutService(
                     date = "$date • $timeRange",
                     seats = holdDetails.seats.joinToString(", "),
                     total = finalAmount,
-                    ticketPdfBytes = ticketPdf
+                    ticketPdfBytes = ticketPdf,
+                    returnBookingId = returnBooking?.bookingId.toString(),
+                    returnRoute = returnHold?.flightId,
+                    returnDate = returnHold?.expiryTime,
+                    returnSeats = returnHoldDetails?.seats?.joinToString(", ")
                 )
 
                 println("Booking confirmed!")
