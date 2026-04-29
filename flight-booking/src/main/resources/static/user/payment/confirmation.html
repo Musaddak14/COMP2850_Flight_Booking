@@ -55,6 +55,7 @@
         <p id="email-line"></p>
         <p id="final-amount-line"></p>
         <div id="return-leg-confirmation" style="display: none; margin: 16px 0;">
+            <p id="return-booking-id-line"></p>
             <p id="return-flight-line"></p>
             <p id="return-date-line"></p>
             <p id="return-seats-line"></p>
@@ -100,6 +101,7 @@
     const returnFlightLine = document.getElementById("return-flight-line");
     const returnDateLine = document.getElementById("return-date-line");
     const returnSeatsLine = document.getElementById("return-seats-line");
+    const returnBookingIdLine = document.getElementById("return-booking-id-line");
 
     function formatCurrency(amount) {
         if (typeof amount !== "number" || !Number.isFinite(amount)) {
@@ -159,6 +161,7 @@
 
     if (confirmationData?.returnFlightId) {
         returnLegConfirmation.style.display = "block";
+        returnBookingIdLine.textContent = checkout?.returnBookingId ? 
         returnFlightLine.textContent = `Return flight: ${getReturnRouteSummary(confirmationData)}`;
         returnDateLine.textContent = `Return date: ${formatDisplayDate(confirmationData?.returnDate)}`;
         returnSeatsLine.textContent = `Return seats: ${getReturnSeatSummary(confirmationData)}`;
