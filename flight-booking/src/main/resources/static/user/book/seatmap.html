@@ -289,6 +289,7 @@
 
     const loggedInUserId = getLoggedInUserId();
     const isSignedIn = !!sessionId && typeof loggedInUserId == "number"
+    const nextBookingPage = isSignedIn ? "/loyaltypage" : "/addons";
 
     const welcomeMessage = document.getElementById("welcome-message");
     const loginLink = document.getElementById("login-link");
@@ -558,7 +559,7 @@
         ) {
             bookingDraft.userId = isSignedIn ? loggedInUserId : null;
             persistBookingDraft();
-            window.location.href = "/loyaltypage";
+            window.location.href = nextBookingPage;
             return;
         }
 
@@ -603,7 +604,7 @@
                 sessionStorage.setItem("holdData", JSON.stringify(result));
             }
 
-            window.location.href = "/loyaltypage";
+            window.location.href = nextBookingPage;
         } catch {
             holdMessage.textContent = "Unable to hold the selected seats right now. Please try again.";
         } finally {
