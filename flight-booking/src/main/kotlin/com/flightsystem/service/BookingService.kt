@@ -54,6 +54,7 @@ class BookingService {
                 it[Bookings.flightId] = flightId
                 it[Bookings.date] = bookingDate
                 it[Bookings.time] = bookingTime
+
             }
 
             val newBookingId = inserted[Bookings.bookingId]
@@ -81,6 +82,8 @@ class BookingService {
                 flightId = flightId,
                 date = bookingDate,
                 time = bookingTime,
+                cabin = null,
+                addOns = null,
 
                 totalPrice = 10.0
             )
@@ -100,13 +103,13 @@ class BookingService {
             }
 
             // mark those seats avail again
-            val flightId = bookedSeats.first()[BookingSeats.flightId]
-            val seatNumbers = bookedSeats.map { it[BookingSeats.seatNumber] }
-            // then update seats
-            Seats.update({
-                (Seats.flightId eq flightId) and (Seats.seatNumber inList seatNumbers)
-            }) {
-                it[isAvailable] = true
+            val seatsByFlight = bookedSeats.groupBy { it[BookingSeats.flightId] }
+            for ((fId, fSeats) in seatsByFlight) {
+
+                val nums = fSeats.map { it[BookingSeats.seatNumber] }
+                Seats.update({ (Seats.flightId eq fId) and (Seats.seatNumber inList nums) }) {
+                    it[isAvailable] = true
+                }
             }
 
             // delete from BookingSeats
@@ -139,8 +142,10 @@ class BookingService {
                 userId = bookingRow[Bookings.userId],
                 flightId = bookingRow[Bookings.flightId],
                 totalPrice = 10.0,
-                date = bookingRow[Bookings.date],
-                time =bookingRow[Bookings.time]
+                date = bookingRow[Bookings.date] ?: "",
+                time = bookingRow[Bookings.time] ?: "",
+                cabin = bookingRow[Bookings.cabin],
+                addOns = bookingRow[Bookings.addOns],
             )
             // load linked seats
             val bookedSeats = BookingSeats.selectAll().where {
@@ -189,8 +194,10 @@ class BookingService {
                     userId = row[Bookings.userId],
                     flightId = row[Bookings.flightId],
                     totalPrice = 10.0,
-                    date = row[Bookings.date],
-                    time = row[Bookings.time],
+                    date = row[Bookings.date] ?: "",
+                    time = row[Bookings.time] ?: "",
+                    cabin = row[Bookings.cabin],
+                    addOns = row[Bookings.addOns],
                 )
             }
         }
@@ -322,7 +329,8 @@ class BookingService {
                     "arrivalAirport"   to flightRow[Flights.arrivalAirport],
                     "date"             to flightRow[Flights.date],
                     "departureTime"    to flightRow[Flights.departureTime],
-                    "arrivalTime"      to flightRow[Flights.arrivalTime]
+                    "arrivalTime"      to flightRow[Flights.arrivalTime],
+                    "returnFlightId"   to (bookingRow[Bookings.returnFlightId] ?: ""),
                 ))
             }
 
@@ -353,8 +361,10 @@ class BookingService {
                         userId    = row[Bookings.userId],
                         flightId  = row[Bookings.flightId],
                         totalPrice = 10.0,
-                        date = row[Bookings.date],
-                        time = row[Bookings.time]
+                        date = row[Bookings.date] ?: "",
+                        time = row[Bookings.time] ?: "",
+                        cabin = row[Bookings.cabin],
+                        addOns = row[Bookings.addOns],
                     )
 
                     BookingDetails(

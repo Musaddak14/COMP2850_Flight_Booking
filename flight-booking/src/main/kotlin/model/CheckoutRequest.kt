@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CheckoutRequest (
     val holdId: Int,
+    val returnHoldId: Int? = null,
     val cardholderName: String,
     val cardNumber: String,
     val expiryMonth: Int,
@@ -13,4 +14,7 @@ data class CheckoutRequest (
     val pointsToRedeem: Int = 0,
     val promoCode: String? = null,
     val guestEmail: String? = null,
+    val cabin: String? = null,
+    val addOns: String? = null
+
 )

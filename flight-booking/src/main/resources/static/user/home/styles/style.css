@@ -482,7 +482,7 @@ footer {
 
 
 .blue-box{
-    background-color: #1e3a5f;
+    background-color: #19345a;
     color: white;
     padding: 60px 20px;
     font-family: 'Inter', sans-serif;
@@ -582,7 +582,7 @@ footer {
 /* SUPPORT BANNER */
 
 .support-banner {
-    background: linear-gradient(135deg, #C1161C 0%, #C1161C 100%);
+    background: linear-gradient(135deg, #c01a1e 0%, #bf191d 100%);
     color: white;
     padding: 60px 20px;
     margin-top: 20px;
@@ -638,7 +638,7 @@ footer {
 
 .support-btn {
     background: white;
-    color: #d71920;
+    color: #bf191d;
     padding: 12px 22px;
     border-radius: 6px;
     font-weight: 600;
@@ -653,7 +653,7 @@ footer {
 }
 
 .support-logo img {
-    max-width: 450px;
+    max-width: 700px;
     width: 100%;
 }
 

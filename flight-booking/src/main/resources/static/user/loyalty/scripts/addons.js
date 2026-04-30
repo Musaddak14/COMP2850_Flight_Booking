@@ -214,8 +214,8 @@
         const baseFare = Number(bookingDraft?.baseFareTotal) || 0;
         const total = calculateLiveTotal();
 
-        document.getElementById("sum-base").textContent = `£${baseFare.toFixed(2)}`;
-        document.getElementById("tot").textContent = `£${total.toFixed(2)}`;
+        document.getElementById("sum-base").textContent = fmt(baseFare);
+        document.getElementById("tot").textContent = fmt(total);
     }
 
     function restoreSavedSelections() {
