@@ -20,7 +20,6 @@ import com.flightsystem.model.Users
 import model.ManagerSentEmails
 import model.ManagerSentEmailResponse
 
-
 import com.flightsystem.AppEnv
 import com.flightsystem.model.AccountStatus
 import com.flightsystem.service.EmailService
@@ -81,6 +80,8 @@ import java.time.LocalDateTime
 import com.flightsystem.model.BookingDetails
 import com.flightsystem.model.LoyaltyAccounts
 import com.flightsystem.model.Passenger
+import com.flightsystem.model.SeatClass
+import createEmptySeatMaps
 
 @Serializable
 data class UpdateUserRequest(
@@ -704,17 +705,10 @@ fun Application.configureRouting() {
 
         get("/manager/flight_view") {
             call.respondFile(File("src/main/resources/static/manager/flight_view/flight_view.html"))
-
-            //TODO:
-            //Add ability to see historic flights
         }
 
         post("/api/manager/flight_view") {
             val request = call.receive<InsertFlightData>()
-
-            //TODO:
-            //validate flights attempted to be inserted
-
 
             transaction {
                 Flights.insert {
@@ -727,6 +721,10 @@ fun Application.configureRouting() {
                     it[length] = request.length
                     it[price] = request.price
                 }
+            }
+            transaction {
+                val flights = Flights.selectAll().map { it[Flights.flightId] }
+                createEmptySeatMaps(flights)
             }
             call.respond(HttpStatusCode.Created)
         }
