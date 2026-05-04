@@ -147,6 +147,14 @@ data class InsertFlightData(
 )
 
 @Serializable
+data class InsertAirportData(
+    val code: String,
+    val name: String,
+    val city: String,
+    val country: String
+)
+
+@Serializable
 data class RegisterRequest(
     val firstName: String,
     val lastName: String,
@@ -725,6 +733,37 @@ fun Application.configureRouting() {
             transaction {
                 val flights = Flights.selectAll().map { it[Flights.flightId] }
                 createEmptySeatMaps(flights)
+            }
+            call.respond(HttpStatusCode.Created)
+        }
+
+        post("/api/manager/airports") {
+            val sessionId: String
+            val sessionIdFromUrl = call.request.queryParameters["sessionId"]
+            //get user session id
+            if (sessionIdFromUrl == null){
+                sessionId = ""
+                //if session id is empty ie not logged in then sessionid = ""
+            }else{
+                sessionId = sessionIdFromUrl
+            }
+            //else get there real sessionid
+            val isManager = authenticationService.isManagerSession(sessionId)
+            //checks if the sessionid is a manager sessionid
+            if (!isManager) {
+                call.respondRedirect("/log_in")
+                return@post   // exit this handler, don't run the code below
+            }
+
+            val request = call.receive<InsertAirportData>()
+
+            transaction {
+                Airports.insert {
+                    it[code] = request.code
+                    it[name] = request.name
+                    it[city] = request.city
+                    it[country] = request.country
+                }
             }
             call.respond(HttpStatusCode.Created)
         }
