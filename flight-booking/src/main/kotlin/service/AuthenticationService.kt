@@ -1,37 +1,35 @@
 package com.flightsystem.service
 
 import com.flightsystem.model.AccountStatus
-import com.flightsystem.service.EncryptionService
-import com.flightsystem.service.LoyaltyService
 import com.flightsystem.model.Manager
 import com.flightsystem.model.User
 import com.flightsystem.model.Users
+import com.flightsystem.service.EncryptionService
+import com.flightsystem.service.LoyaltyService
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-
-
-
 class AuthenticationService(
-    private val sessionTimeout: Long = 30L
+    private val sessionTimeout: Long = 30L,
 ) {
-
     private val activeSessions: MutableMap<String, SessionData> = mutableMapOf()
-    private data class OtpData(val userId: Int, val otp: String, val expiry: LocalDateTime)
+
+    private data class OtpData(
+        val userId: Int,
+        val otp: String,
+        val expiry: LocalDateTime,
+    )
+
     // used for the otp maps user to an otp and expiery time
     private val pendingOtps: MutableMap<String, OtpData> = ConcurrentHashMap()
-    //maps user email to otp
-
-
-
-
+    // maps user email to otp
 
     companion object {
         private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
@@ -40,18 +38,21 @@ class AuthenticationService(
         private const val LOCKOUT_MINUTES = 30L
     }
 
-
     private data class SessionData(
         val userId: Int,
         val isManager: Boolean,
         var lastActivity: LocalDateTime = LocalDateTime.now(),
     )
 
-
-    fun register(firstName: String, lastName: String, dateOfBirth: String, email: String, password: String): Result<User> {
+    fun register(
+        firstName: String,
+        lastName: String,
+        dateOfBirth: String,
+        email: String,
+        password: String,
+    ): Result<User> {
         if (firstName.isBlank()) {
             return Result.failure(IllegalArgumentException(" First Name can not be left blank"))
-
         }
 
         if (lastName.isBlank()) {
@@ -70,34 +71,38 @@ class AuthenticationService(
         }
 
         return transaction {
-            val existing = Users.selectAll().where {
-                Users.email eq email
-            }.singleOrNull()
+            val existing =
+                Users
+                    .selectAll()
+                    .where {
+                        Users.email eq email
+                    }.singleOrNull()
 
             if (existing != null) {
                 return@transaction Result.failure(
-                    IllegalArgumentException("An account with this email already exists")
+                    IllegalArgumentException("An account with this email already exists"),
                 )
             }
 
             val salt = EncryptionService.generateSalt()
             val passwordHash = EncryptionService.hashPassword(password, salt)
 
-            val inserted = Users.insert {
-                it[Users.firstName] = firstName
-                it[Users.lastName] = lastName
-                it[Users.dateOfBirth] = dateOfBirth
-                it[Users.email] = email
-                it[Users.passwordHash] = passwordHash
-                it[Users.salt] = salt
-                it[Users.seatPreference] = "ANY"
-                it[Users.accountLocked] = false
-                it[Users.failedLoginAttempts] = 0
-                it[Users.lockedAt] = null
-                it[Users.lastLogin] = null
-                it[Users.role] = "USER"
-                it[Users.status] = AccountStatus.ACTIVE
-            }
+            val inserted =
+                Users.insert {
+                    it[Users.firstName] = firstName
+                    it[Users.lastName] = lastName
+                    it[Users.dateOfBirth] = dateOfBirth
+                    it[Users.email] = email
+                    it[Users.passwordHash] = passwordHash
+                    it[Users.salt] = salt
+                    it[Users.seatPreference] = "ANY"
+                    it[Users.accountLocked] = false
+                    it[Users.failedLoginAttempts] = 0
+                    it[Users.lockedAt] = null
+                    it[Users.lastLogin] = null
+                    it[Users.role] = "USER"
+                    it[Users.status] = AccountStatus.ACTIVE
+                }
 
             val newUserId = inserted[Users.userId]
 
@@ -111,11 +116,10 @@ class AuthenticationService(
                     dateOfBirth = dateOfBirth,
                     email = email,
                     passwordHash = passwordHash,
-                    salt = salt
-                )
+                    salt = salt,
+                ),
             )
         }
-
     }
 
     fun registerManager(
@@ -123,7 +127,7 @@ class AuthenticationService(
         lastName: String,
         dateOfBirth: String,
         email: String,
-        rawPassword: String
+        rawPassword: String,
     ): Result<Manager> {
         if (firstName.isBlank()) {
             return Result.failure(IllegalArgumentException(" First Name cannot be left blank"))
@@ -145,36 +149,39 @@ class AuthenticationService(
             return Result.failure(IllegalArgumentException("Password must be at least 8 characters"))
         }
 
-
         return transaction {
-            val existing = Users.selectAll().where {
-                Users.email eq email
-            }.singleOrNull()
+            val existing =
+                Users
+                    .selectAll()
+                    .where {
+                        Users.email eq email
+                    }.singleOrNull()
 
             if (existing != null) {
                 return@transaction Result.failure(
-                    IllegalArgumentException("An account with this email already exists")
+                    IllegalArgumentException("An account with this email already exists"),
                 )
             }
 
             val salt = EncryptionService.generateSalt()
             val passwordHash = EncryptionService.hashPassword(rawPassword, salt)
 
-            val inserted = Users.insert {
-                it[Users.firstName] = firstName
-                it[Users.lastName] = lastName
-                it[Users.dateOfBirth] = dateOfBirth
-                it[Users.email] = email
-                it[Users.passwordHash] = passwordHash
-                it[Users.salt] = salt
-                it[Users.seatPreference] = "ANY"
-                it[Users.accountLocked] = false
-                it[Users.failedLoginAttempts] = 0
-                it[Users.lockedAt] = null
-                it[Users.lastLogin] = null
-                it[Users.role] = "MANAGER"
-                it[Users.status] = AccountStatus.ACTIVE
-            }
+            val inserted =
+                Users.insert {
+                    it[Users.firstName] = firstName
+                    it[Users.lastName] = lastName
+                    it[Users.dateOfBirth] = dateOfBirth
+                    it[Users.email] = email
+                    it[Users.passwordHash] = passwordHash
+                    it[Users.salt] = salt
+                    it[Users.seatPreference] = "ANY"
+                    it[Users.accountLocked] = false
+                    it[Users.failedLoginAttempts] = 0
+                    it[Users.lockedAt] = null
+                    it[Users.lastLogin] = null
+                    it[Users.role] = "MANAGER"
+                    it[Users.status] = AccountStatus.ACTIVE
+                }
 
             val newManagerId = inserted[Users.userId]
 
@@ -188,25 +195,30 @@ class AuthenticationService(
                     dateOfBirth = dateOfBirth,
                     email = email,
                     passwordHash = passwordHash,
-                    salt = salt
-                )
+                    salt = salt,
+                ),
             )
         }
     }
 
-
-    fun login(email: String, rawPassword: String): Result<User> {
+    fun login(
+        email: String,
+        rawPassword: String,
+    ): Result<User> {
         return transaction {
-            val row = Users.selectAll().where {
-                Users.email eq email
-            }.singleOrNull()
-                ?: return@transaction Result.failure(
-                    IllegalArgumentException("User not found")
-                )
+            val row =
+                Users
+                    .selectAll()
+                    .where {
+                        Users.email eq email
+                    }.singleOrNull()
+                    ?: return@transaction Result.failure(
+                        IllegalArgumentException("User not found"),
+                    )
 
             if (isLocked(row)) {
                 return@transaction Result.failure(
-                    IllegalStateException("Account is locked. Try again later")
+                    IllegalStateException("Account is locked. Try again later"),
                 )
             }
 
@@ -216,15 +228,15 @@ class AuthenticationService(
                 return@transaction Result.failure(IllegalStateException("Account is not Active"))
             }
 
-
             val storedHash = row[Users.passwordHash]
             val salt = row[Users.salt]
 
-            val isValid = EncryptionService.verifyPassword(
-                inputPassword = rawPassword,
-                storedHash = storedHash,
-                salt = salt
-            )
+            val isValid =
+                EncryptionService.verifyPassword(
+                    inputPassword = rawPassword,
+                    storedHash = storedHash,
+                    salt = salt,
+                )
 
             if (isValid) {
                 Users.update({ Users.userId eq row[Users.userId] }) {
@@ -246,23 +258,21 @@ class AuthenticationService(
                 }
 
                 return@transaction Result.failure(
-                    IllegalArgumentException("Invalid email or password")
+                    IllegalArgumentException("Invalid email or password"),
                 )
-
             }
-
         }
-
     }
 
     // create session
     fun createSession(user: User): String {
         val sessionId = UUID.randomUUID().toString()
-        activeSessions[sessionId] = SessionData(
-            userId = user.userId,
-            isManager = user is Manager,
-            lastActivity = LocalDateTime.now(),
-        )
+        activeSessions[sessionId] =
+            SessionData(
+                userId = user.userId,
+                isManager = user is Manager,
+                lastActivity = LocalDateTime.now(),
+            )
         return sessionId
     }
 
@@ -271,9 +281,13 @@ class AuthenticationService(
         pendingOtps[user.email] = OtpData(user.userId, otp, LocalDateTime.now().plusMinutes(5))
         return otp
     }
-    fun verifyOtp(email: String, otp: String): Result<User> {
+
+    fun verifyOtp(
+        email: String,
+        otp: String,
+    ): Result<User> {
         val data = pendingOtps.remove(email)
-        //remove the email mapping so the otp the user entered is the only thing left
+        // remove the email mapping so the otp the user entered is the only thing left
 
         if (data == null) {
             return Result.failure(IllegalArgumentException("Invalid or expired OTP"))
@@ -282,12 +296,12 @@ class AuthenticationService(
         if (LocalDateTime.now().isAfter(data.expiry)) {
             return Result.failure(IllegalArgumentException("OTP has expired"))
         }
-        //if user took more then 5 mins to enter otp
+        // if user took more then 5 mins to enter otp
 
         if (data.otp != otp) {
             return Result.failure(IllegalArgumentException("Incorrect OTP"))
         }
-        //if inputted otp doesnt match actual otp
+        // if inputted otp doesnt match actual otp
 
         val user = findById(data.userId)
 
@@ -307,9 +321,10 @@ class AuthenticationService(
             return null
         }
 
-        val userRow = transaction {
-            Users.selectAll().where { Users.userId eq session.userId }.singleOrNull()
-        }
+        val userRow =
+            transaction {
+                Users.selectAll().where { Users.userId eq session.userId }.singleOrNull()
+            }
 
         if (userRow == null) {
             activeSessions.remove(sessionId)
@@ -344,7 +359,10 @@ class AuthenticationService(
 
     // end of session stuff
 
-    fun resetPassword(user: User, newRawPassword: String): Result<Unit> {
+    fun resetPassword(
+        user: User,
+        newRawPassword: String,
+    ): Result<Unit> {
         if (newRawPassword.length < MIN_PASSWORD_LENGTH) {
             return Result.failure(IllegalArgumentException("Password must be at least 8 characters"))
         }
@@ -363,27 +381,30 @@ class AuthenticationService(
         }
     }
 
-    fun findByEmail(email: String): User? {
-        return transaction {
-            Users.selectAll().where {
-                Users.email eq email
-            }.singleOrNull()?.let { rowToUser(it) }
+    fun findByEmail(email: String): User? =
+        transaction {
+            Users
+                .selectAll()
+                .where {
+                    Users.email eq email
+                }.singleOrNull()
+                ?.let { rowToUser(it) }
         }
-    }
 
-    fun findById(userId: Int): User? {
-        return transaction {
-            Users.selectAll().where {
-                Users.userId eq userId
-            }.singleOrNull()?.let { rowToUser(it) }
+    fun findById(userId: Int): User? =
+        transaction {
+            Users
+                .selectAll()
+                .where {
+                    Users.userId eq userId
+                }.singleOrNull()
+                ?.let { rowToUser(it) }
         }
-    }
 
-    fun getAllUsers(): List<User> {
-        return transaction {
+    fun getAllUsers(): List<User> =
+        transaction {
             Users.selectAll().map { rowToUser(it) }
         }
-    }
 
     private fun rowToUser(row: ResultRow): User {
         val role = row[Users.role]
@@ -396,7 +417,7 @@ class AuthenticationService(
                 dateOfBirth = row[Users.dateOfBirth],
                 email = row[Users.email],
                 passwordHash = row[Users.passwordHash],
-                salt = row[Users.salt]
+                salt = row[Users.salt],
             )
         } else {
             User(
@@ -406,11 +427,9 @@ class AuthenticationService(
                 dateOfBirth = row[Users.dateOfBirth],
                 email = row[Users.email],
                 passwordHash = row[Users.passwordHash],
-                salt = row[Users.salt]
+                salt = row[Users.salt],
             )
-
         }
-
     }
 
     private fun isLocked(row: ResultRow): Boolean {
@@ -445,12 +464,15 @@ class AuthenticationService(
         lastName: String,
         dateOfBirth: String,
         email: String,
-        rawPassword: String
+        rawPassword: String,
     ) {
         transaction {
-            val existing = Users.selectAll().where {
-                Users.email eq email
-            }.singleOrNull()
+            val existing =
+                Users
+                    .selectAll()
+                    .where {
+                        Users.email eq email
+                    }.singleOrNull()
 
             if (existing != null) {
                 return@transaction
@@ -459,29 +481,25 @@ class AuthenticationService(
             val salt = EncryptionService.generateSalt()
             val passwordHash = EncryptionService.hashPassword(rawPassword, salt)
 
-            val inserted = Users.insert {
-                it[Users.firstName] = firstName
-                it[Users.lastName] = lastName
-                it[Users.dateOfBirth] = dateOfBirth
-                it[Users.email] = email
-                it[Users.passwordHash] = passwordHash
-                it[Users.salt] = salt
-                it[Users.seatPreference] = "ANY"
-                it[Users.accountLocked] = false
-                it[Users.failedLoginAttempts] = 0
-                it[Users.lockedAt] = null
-                it[Users.lastLogin] = null
-                it[Users.role] = "MANAGER"
-                it[Users.status] = AccountStatus.ACTIVE
-            }
+            val inserted =
+                Users.insert {
+                    it[Users.firstName] = firstName
+                    it[Users.lastName] = lastName
+                    it[Users.dateOfBirth] = dateOfBirth
+                    it[Users.email] = email
+                    it[Users.passwordHash] = passwordHash
+                    it[Users.salt] = salt
+                    it[Users.seatPreference] = "ANY"
+                    it[Users.accountLocked] = false
+                    it[Users.failedLoginAttempts] = 0
+                    it[Users.lockedAt] = null
+                    it[Users.lastLogin] = null
+                    it[Users.role] = "MANAGER"
+                    it[Users.status] = AccountStatus.ACTIVE
+                }
 
             val newManagerId = inserted[Users.userId]
             LoyaltyService().createLoyaltyAccount(newManagerId)
         }
     }
-
-
 }
-
-
-

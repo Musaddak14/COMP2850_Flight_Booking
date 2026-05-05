@@ -3,13 +3,12 @@ package com.flightsystem.model
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 
-
 @Serializable
 data class PromoCode(
     val code: String,
     val discountType: String,
     val discountValue: Double,
-    val isActive: Boolean
+    val isActive: Boolean,
 )
 
 object PromoCodes : Table() {

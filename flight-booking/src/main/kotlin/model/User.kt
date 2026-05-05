@@ -1,21 +1,18 @@
 package com.flightsystem.model
 
-import java.time.LocalDateTime
 import kotlinx.serialization.Serializable
+import java.time.LocalDateTime
 
 @Serializable
-
 open class User(
     val userId: Int,
     var firstName: String,
-    var lastName:  String,
+    var lastName: String,
     var dateOfBirth: String,
     var email: String,
     private var passwordHash: String,
-    private var salt: String
+    private var salt: String,
 ) {
-
-
     private var lastLogin: String? = null
     private var accountLocked: Boolean = false
     private var lockedAt: String = "00:00"
@@ -26,32 +23,33 @@ open class User(
         private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
         private const val MAX_FAILED_ATTEMPTS = 5
         private const val LOCKOUT_MINUTES = 30L
-
-
     }
 
-    fun updateDetails(newFirstName: String, newLastName: String, newEmail: String) {
-        require(newFirstName.isNotBlank()) {"First Name cannot be empty"}
-        require(newLastName.isNotBlank()) {"Last Name cannot be empty"}
-        require(EMAIL_REGEX.matches(newEmail)) {"Invalid email format"}
+    fun updateDetails(
+        newFirstName: String,
+        newLastName: String,
+        newEmail: String,
+    ) {
+        require(newFirstName.isNotBlank()) { "First Name cannot be empty" }
+        require(newLastName.isNotBlank()) { "Last Name cannot be empty" }
+        require(EMAIL_REGEX.matches(newEmail)) { "Invalid email format" }
 
         firstName = newFirstName
         lastName = newLastName
         email = newEmail
     }
 
-    fun updatePassword(newPasswordHash: String, newSalt: String) {
+    fun updatePassword(
+        newPasswordHash: String,
+        newSalt: String,
+    ) {
         passwordHash = newPasswordHash
         salt = newSalt
     }
 
-    fun verifyPassword(candidateHash: String): Boolean {
-        return candidateHash == passwordHash
-    }
+    fun verifyPassword(candidateHash: String): Boolean = candidateHash == passwordHash
 
-    fun getSalt(): String {
-        return salt
-    }
+    fun getSalt(): String = salt
 
     fun setSeatPreference(preference: String) {
         seatPreference = preference
@@ -68,7 +66,7 @@ open class User(
 
     fun recordLoginFailure() {
         failedLoginAttempts++
-        if (failedLoginAttempts >= MAX_FAILED_ATTEMPTS ) {
+        if (failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
             accountLocked = true
             lockedAt = LocalDateTime.now().toString()
         }
@@ -91,8 +89,4 @@ open class User(
     }
 
     fun getLastLogin(): LocalDateTime? = lastLogin?.let { LocalDateTime.parse(it) }
-
-
-
 }
-

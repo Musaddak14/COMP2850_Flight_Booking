@@ -6,7 +6,7 @@ enum class TicketStatus {
     OPEN,
     IN_PROGRESS,
     RESOLVED,
-    REJECTED
+    REJECTED,
 }
 
 object SupportTickets : Table("support_tickets") {

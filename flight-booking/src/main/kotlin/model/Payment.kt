@@ -1,17 +1,14 @@
 package com.flightsystem.model
 
-import java.time.LocalDateTime
-
 import org.jetbrains.exposed.sql.Table
-
+import java.time.LocalDateTime
 
 enum class PaymentStatus {
     PENDING,
     SUCCESS,
     FAILED,
-    REFUNDED
+    REFUNDED,
 }
-
 
 data class Payment(
     val paymentID: String,
@@ -22,11 +19,8 @@ data class Payment(
     val cardHolderName: String,
     var status: PaymentStatus = PaymentStatus.PENDING,
     val timestamp: LocalDateTime = LocalDateTime.now(),
-    var refundedAt: LocalDateTime? = null
+    var refundedAt: LocalDateTime? = null,
 ) {
-
-
-
     fun setStatusSuccess() {
         status = PaymentStatus.SUCCESS
     }
@@ -46,23 +40,18 @@ data class Payment(
 
     fun isSuccessful(): Boolean = status == PaymentStatus.SUCCESS
 
-    fun getSummary(): String {
-        return """
-            --- Payment Summary ---
-            Payment ID:   $paymentID
-            Booking ID:   $bookingID
-            Amount:       £${"%.2f".format(amount)}
-            Card:         **** **** **** $lastFourDigits
-            Cardholder:   $cardHolderName
-            Status:       $status
-            Date:         $timestamp
-            ${if (refundedAt != null) "Refunded at: $refundedAt" else ""}
+    fun getSummary(): String =
+        """
+        --- Payment Summary ---
+        Payment ID:   $paymentID
+        Booking ID:   $bookingID
+        Amount:       £${"%.2f".format(amount)}
+        Card:         **** **** **** $lastFourDigits
+        Cardholder:   $cardHolderName
+        Status:       $status
+        Date:         $timestamp
+        ${if (refundedAt != null) "Refunded at: $refundedAt" else ""}
         """.trimIndent()
-            
-    }
-
-
-
 }
 
 object Payments : Table() {

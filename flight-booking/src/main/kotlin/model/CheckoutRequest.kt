@@ -2,7 +2,7 @@ package com.flightsystem.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CheckoutRequest (
+data class CheckoutRequest(
     val holdId: Int,
     val returnHoldId: Int? = null,
     val cardholderName: String,
@@ -15,6 +15,5 @@ data class CheckoutRequest (
     val promoCode: String? = null,
     val guestEmail: String? = null,
     val cabin: String? = null,
-    val addOns: String? = null
-
+    val addOns: String? = null,
 )
