@@ -380,19 +380,29 @@ fun Application.configureRouting() {
     val promoCodeService = PromoCodeService()
 
     routing {
-
+        /*
+        *frontend resources for each page on the webapp, the files for these can be found in src/main/recources
+         */
         staticResources("/styles", "static/user/home/styles")
         staticResources("/scripts", "static/user/home/scripts")
-
         staticResources("/log_in/styles", "static/user/log_in/styles")
         staticResources("/log_in/scripts", "static/user/log_in/scripts")
-
         staticResources("/manager", "static/manager")
         staticResources("/manage-account/styles", "static/user/manage-account/styles")
         staticResources("/manage-account/scripts", "static/user/manage-account/scripts")
         staticResources("/support/styles", "static/user/support/styles")
         staticResources("/support/scripts", "static/user/support/scripts")
         staticResources("/shared", "static/shared")
+        staticResources("/", "static/user/home")
+        staticResources("/log_in", "static/user/log_in")
+        staticResources("/home", "static/user/home")
+        staticResources("/images", "static/Images")
+        staticResources("/loyalty", "static/user/loyalty")
+        staticResources("/manager/flight_view", "static/manager/flight_view")
+        staticResources("/manager/home", "static/manager/home")
+        staticResources("/manager/support", "static/manager/support")
+        staticResources("/manager/edit_bookings", "static/manager/edit_bookings")
+        staticResources("/manager/bookings", "static/manager/bookings")
 
 
         get("/lounges") {
@@ -411,6 +421,9 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/user/home/entertainment.html"))
         }
 
+        /*
+        Homepage, HTML file with relevant stylesheet and scripts that begins the paths to every feature on the website
+         */
         get("/") {
             call.respondFile(File("src/main/resources/static/user/home/index.html"))
         }
@@ -427,6 +440,7 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/user/payment/confirmation.html"))
         }
 
+
         val passengerService = PassengerService()
         val bookingService = BookingService()
 
@@ -436,17 +450,6 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/user/manage-account/index.html"))
         }
 
-
-        staticResources("/", "static/user/home")
-        staticResources("/log_in", "static/user/log_in")
-        staticResources("/home", "static/user/home")
-        staticResources("/images", "static/Images")
-        staticResources("/loyalty", "static/user/loyalty")
-        staticResources("/manager/flight_view", "static/manager/flight_view")
-        staticResources("/manager/home", "static/manager/home")
-        staticResources("/manager/support", "static/manager/support")
-        staticResources("/manager/edit_bookings", "static/manager/edit_bookings")
-        staticResources("/manager/bookings", "static/manager/bookings")
 
         get("/book") {
             call.respondFile(File("src/main/resources/static/user/book/book.html"))
@@ -542,8 +545,6 @@ fun Application.configureRouting() {
             //read user input from the URL so API can filter flights
 
             val flightData = transaction {
-                //TODO:
-                //Remove requirement for date in search
 
                 Flights.selectAll().mapNotNull { row ->
 
