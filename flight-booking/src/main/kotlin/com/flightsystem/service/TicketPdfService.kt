@@ -2,7 +2,21 @@ package com.flightsystem.service
 
 import com.example.com.Route
 
+/**
+Generates a PDF ticket containing booking and passenger details.
+
+@return PDF file content as a ByteArray
+ */
+
 class TicketPdfService {
+
+
+
+    /**
+    Generates a PDF ticket containing booking and passenger details.
+
+    @return PDF file content as a ByteArray
+     */
 
     fun generateTicketPdf(
         bookingId: String,
@@ -102,6 +116,10 @@ class TicketPdfService {
 
         return pdf.toString().toByteArray(Charsets.UTF_8)
     }
+
+    /**
+    Escapes special characters so text can be safely written into a PDF 
+     */
 
     private fun escapePdfText(text: String): String {
         return text

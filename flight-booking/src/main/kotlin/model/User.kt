@@ -5,6 +5,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 
+/**
+Represents a registered user in the system.
+
+Stores personal details, authentication data, and account state such as lockout and login tracking.
+ */
+
 open class User(
     val userId: Int,
     var firstName: String,
@@ -30,6 +36,10 @@ open class User(
 
     }
 
+    /**
+    Updates user details after validating name fields and email format.
+     */
+
     fun updateDetails(newFirstName: String, newLastName: String, newEmail: String) {
         require(newFirstName.isNotBlank()) {"First Name cannot be empty"}
         require(newLastName.isNotBlank()) {"Last Name cannot be empty"}
@@ -40,24 +50,46 @@ open class User(
         email = newEmail
     }
 
+    /**
+    Updates the stored password hash and salt for the user.
+     */
+
     fun updatePassword(newPasswordHash: String, newSalt: String) {
         passwordHash = newPasswordHash
         salt = newSalt
     }
 
+    /**
+    Checks whether a given password hash matches the stored hash.
+
+    @return true if the password is correct
+     */
+
     fun verifyPassword(candidateHash: String): Boolean {
         return candidateHash == passwordHash
     }
 
+    /**
+    Returns the salt associated with the user's password.
+     */
+
     fun getSalt(): String {
         return salt
     }
+
+    /**
+     Sets seat preference for the user (not currently used)
+     */
 
     fun setSeatPreference(preference: String) {
         seatPreference = preference
     }
 
     fun getSeatPreference(): String = seatPreference
+
+    /**
+    Resets failed login attempts and updates last login timestamp.
+     */
 
     fun recordLoginSuccess() {
         failedLoginAttempts = 0
@@ -66,6 +98,10 @@ open class User(
         lastLogin = LocalDateTime.now().toString()
     }
 
+    /**
+    Increments failed login attempts and locks the account if the limit is reached.
+     */
+
     fun recordLoginFailure() {
         failedLoginAttempts++
         if (failedLoginAttempts >= MAX_FAILED_ATTEMPTS ) {
@@ -73,6 +109,10 @@ open class User(
             lockedAt = LocalDateTime.now().toString()
         }
     }
+
+    /**
+    Checks whether the account is locked and unlocks it if the lockout period has expired.
+     */
 
     fun isLocked(): Boolean {
         if (accountLocked && lockedAt != "00:00") {
@@ -83,6 +123,10 @@ open class User(
 
         return accountLocked
     }
+
+    /**
+    Unlocks the account and resets failed login attempts.
+     */
 
     fun unlockAccount() {
         accountLocked = false

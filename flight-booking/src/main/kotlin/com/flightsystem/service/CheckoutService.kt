@@ -9,6 +9,13 @@ import com.flightsystem.model.PaymentResponse
 import com.flightsystem.AppEnv
 import java.time.LocalDateTime
 
+/**
+Coordinates the full checkout process.
+
+Handles hold validation, loyalty points, promo codes,
+payment processing, booking confirmation, and email notification.
+ */
+
 class CheckoutService(
     private val priceHoldService: PriceHoldService,
     private val paymentService: PaymentService,
@@ -27,6 +34,11 @@ class CheckoutService(
         fromEmail = AppEnv.require("SMTP_USERNAME")
     )
 
+    /**
+    Retrieves the user's email and full name from the database.
+     */
+
+
     private fun getUserEmailAndName(userId: Int): Pair<String, String>? {
         return transaction {
             val row = Users.selectAll().where { Users.userId eq userId }.singleOrNull()
@@ -38,6 +50,11 @@ class CheckoutService(
             Pair(email, fullName)
         }
     }
+
+    /**
+    Retrieves formatted flight details for display and email purposes.
+     */
+
 
     private fun getFlightDisplayDetails(flightId: String): Triple<String, String, String>? {
         return transaction {
@@ -51,6 +68,22 @@ class CheckoutService(
             Triple(route, date, timeRange)
         }
     }
+
+    /**
+    Processes a complete checkout request.
+
+    Steps:
+    - validates the price hold
+    - applies loyalty points
+    - applies promo codes
+    - processes payment
+    - confirms booking
+    - updates loyalty points
+    - generates ticket PDF
+    - sends confirmation email
+
+    @return PaymentResponse indicating success or failure
+     */
 
     fun checkout(
         holdId: Int,

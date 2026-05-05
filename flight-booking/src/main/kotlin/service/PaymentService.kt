@@ -4,6 +4,14 @@ import com.flightsystem.model.Payment
 import java.time.LocalDateTime
 import java.util.UUID
 
+/**
+Handles payment processing and validation.
+
+Simulates real-world payment behaviour including validation,
+processing delay, and potential failure.
+ */
+
+
 class PaymentService {
 
     private val payments: MutableList<Payment> = mutableListOf()
@@ -13,6 +21,14 @@ class PaymentService {
         private const val DELAY_MS = 1500L
     }
 
+    /**
+    Processes a payment for a booking.
+
+    Validates card details, simulates processing delay,
+    and returns success or failure.
+
+    @return Result containing the Payment or an error
+     */
 
     fun processPayment(
         bookingID: String,
@@ -63,6 +79,11 @@ class PaymentService {
 
     }
 
+    /**
+    Processes a refund for a completed payment.
+
+    Only successful payments can be refunded.
+     */
 
     fun refundPayment(paymentID: String): Result<Payment> {
         val payment = payments.find {it.paymentID == paymentID}
@@ -77,19 +98,38 @@ class PaymentService {
         return Result.success(payment)
 
     }
+    /**
+    Finds a payment by booking ID.
+     */
+
 
     fun getPaymentbooking(bookingID: String): Payment? {
         return payments.find {it.bookingID == bookingID }
 
     }
 
+    /**
+    Returns all payments made by a specific user.
+     */
+
+
     fun getPaymentuser(userID: Int): List<Payment> {
         return payments.filter {it.userID == userID }
     }
 
+    /**
+    Finds a payment by its ID.
+     */
+
     fun getPaymentid(paymentID: String): Payment? {
         return payments.find {it.paymentID == paymentID}
     }
+
+    /**
+    Validates card details including number, expiry date, and CVV.
+
+    Uses Luhn algorithm to verify card number correctness.
+     */
 
     private fun validateCard(
         cardNumber: String,
@@ -127,6 +167,10 @@ class PaymentService {
 
 
     }
+
+    /**
+    Validates a card number using the Luhn algorithm.
+     */
 
     private fun validatingNumberOnCard(cardNumber: String): Boolean {
         var sum = 0

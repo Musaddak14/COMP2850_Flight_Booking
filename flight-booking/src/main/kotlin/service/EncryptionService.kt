@@ -5,18 +5,23 @@ import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Base64
 
-// Will be used for securely handling user passwords
 
-// First method will generate a random salt
-// Second method will hash passwords using SHA-256
-// Third method will verify passwords during login
+/**
+Provides utilities for password hashing and verification.
 
+Uses SHA-256 with a random salt for security.
+ */
 
 object EncryptionService {
     private const val HASH_ALGORITHM = "SHA-256"
     private const val SALT_LENGTH = 16
 
 
+    /**
+    Generates a random salt for password hashing.
+
+    @return Base64 encoded salt
+     */
 
     fun generateSalt(): String {
         val random = SecureRandom()
@@ -33,6 +38,12 @@ object EncryptionService {
         return Base64.getEncoder().encodeToString(saltBytes)
 
     }
+
+    /**
+    Hashes a password combined with a salt.
+
+    @return SHA-256 hash as a hexadecimal string
+     */
 
     fun hashPassword(password: String, salt: String): String {
 
@@ -51,6 +62,10 @@ object EncryptionService {
 
 
     }
+
+    /**
+    Verifies a password by comparing the computed hash with the stored hash.
+     */
 
     fun verifyPassword(inputPassword: String, storedHash: String, salt: String): Boolean {
 

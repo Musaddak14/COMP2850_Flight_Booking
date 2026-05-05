@@ -15,8 +15,20 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 
+/**
+Handles promo code creation, validation, discount calculation, and usage tracking.
+
+Used during checkout to apply discounts and prevent repeated promo code use.
+ */
+
 
 class PromoCodeService {
+
+    /**
+    Creates default promo codes if they do not already exist.
+
+    Used during database setup to provide test/demo discount codes.
+     */
 
     fun makeDefaultPromoCodes() {
         transaction {
@@ -25,6 +37,10 @@ class PromoCodeService {
             insertPromoCodeIfMissing("SUMMER15", "PERCENTAGE", 15.0)
         }
     }
+
+    /**
+    Inserts a promo code only if it is not already stored in the database.
+     */
 
     private fun insertPromoCodeIfMissing(codeValue: String, discountTypeValue: String, discountValueAmount: Double) {
         val existing = PromoCodes.selectAll()
@@ -40,6 +56,11 @@ class PromoCodeService {
             }
         }
     }
+    /**
+    Finds a promo code by code value.
+
+    @return PromoCode if found, otherwise null
+     */
 
     fun getPromoCode(codeValue: String): PromoCode? {
         return transaction {
@@ -55,6 +76,12 @@ class PromoCodeService {
                 }
         }
     }
+
+    /**
+    Creates a new promo code after validating the code, discount type, and value.
+
+    @return success if the promo code is created, otherwise failure
+     */
 
     fun createPromoCode(codeValue: String, discountType: String, discountValue: Double): Result<Unit> {
         if (codeValue.isBlank()) {
@@ -81,6 +108,10 @@ class PromoCodeService {
         }
     }
 
+    /**
+    Deactivates an existing promo code so it can no longer be used.
+     */
+
     fun deactivatePromoCode(codeValue: String): Boolean {
         return transaction {
             PromoCodes.update({ PromoCodes.code eq codeValue.uppercase()}) {
@@ -88,6 +119,14 @@ class PromoCodeService {
             } > 0
         }
     }
+
+    /**
+    Applies a promo code to an original amount.
+
+    Supports percentage and fixed-value discounts.
+
+    @return discounted amount or an error if the promo code is invalid
+     */
 
     fun applyPromoCode(codeValue: String, originalAmount: Double): Result<Double> {
         val promo =
@@ -115,6 +154,10 @@ class PromoCodeService {
         return Result.success(discountedAmount.coerceAtLeast(0.0))
     }
 
+    /**
+    Checks whether a user has already used a specific promo code.
+     */
+
     fun hasUserUsedPromoCode(userId: Int, codeValue: String): Boolean {
         return transaction {
             PromoCodeUsages.selectAll()
@@ -125,6 +168,12 @@ class PromoCodeService {
                 .singleOrNull() != null
         }
     }
+
+    /**
+    Records that a user has used a promo code.
+
+    Used to prevent repeated use of the same code by the same user.
+     */
 
     fun recordPromoCodeUsage(userId: Int, codeValue: String) {
         transaction {
