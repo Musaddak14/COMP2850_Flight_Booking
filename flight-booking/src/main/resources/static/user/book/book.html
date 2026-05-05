@@ -84,6 +84,8 @@
     <div class="results-list" id="return-flight-list"></div>
 </section>
 
+<p id="flight-selection-message" style="text-align:center; font-weight:600; margin:20px;"></p>
+
 
 
 
@@ -191,7 +193,7 @@
                     <div class="airline-block">
                         <img src="/images/Logo.png" class="flight-logo">
                         <div class="buttons">
-                            <button class="details-btn">Details</button>
+
                             <button class="Book_Now-btn">Select Flight</button>
                         </div>
                     </div>
@@ -218,17 +220,17 @@
                 <div class="flight-prices">
                     <div class="price-box">
                         <span>Economy</span>
-                        <strong>£${flight.price.toFixed(0)}</strong>
+                        <strong>${fmt(flight.price)}</strong>
                     </div>
 
                     <div class="price-box">
                         <span>Premium Economy</span>
-                        <strong>£${(flight.price * 1.6).toFixed(0)}</strong>
+                        <strong>${fmt(flight.price * 1.6)}</strong>
                     </div>
 
                     <div class="price-box">
                         <span>Business</span>
-                        <strong>£${(flight.price * 3.5).toFixed(0)}</strong>
+                        <strong>${fmt(flight.price * 3.5)}</strong>
                     </div>
                 </div>
             </div>
@@ -273,11 +275,25 @@
         let selectedReturnFlight = null;
         let selectedReturnCabin = null;
 
+        const flightSelectionMessage = document.getElementById("flight-selection-message");
+
         function tryContinueReturnBooking() {
-            if (!selectedOutboundFlight || !selectedReturnFlight) {
-                alert("Please select both an outbound and return flight.");
+            if (!selectedOutboundFlight && selectedReturnFlight) {
+                flightSelectionMessage.textContent = "Return flight selected. Now select an outbound flight.";
                 return;
             }
+
+            if (selectedOutboundFlight && !selectedReturnFlight) {
+                flightSelectionMessage.textContent = "Outbound flight selected. Now select a return flight.";
+                return;
+            }
+
+            if (!selectedOutboundFlight || !selectedReturnFlight) {
+                flightSelectionMessage.textContent = "Please select an outbound and return flight.";
+                return;
+            }
+
+            flightSelectionMessage.textContent = "";
 
             clearBookingProgress();
 

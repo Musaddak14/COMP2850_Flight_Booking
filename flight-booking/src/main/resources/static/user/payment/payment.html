@@ -561,6 +561,47 @@
         }
     });
 
+    function isPaymentFormValid() {
+        const name = document.getElementById("cardholder-name").value.trim();
+        const number = document.getElementById("card-number").value.trim();
+        const month = parseInt(document.getElementById("expiry-month").value);
+        const year = parseInt(document.getElementById("expiry-year").value);
+        const cvv = document.getElementById("cvv").value.trim();
+        const address = document.getElementById("billing-address").value.trim();
+
+        return (
+            name !== "" &&
+            /^\d{16}$/.test(number) &&
+            /^\d{3,4}$/.test(cvv) &&
+            month >= 1 &&
+            month <= 12 &&
+            year >= 2026 &&
+            address !== "" &&
+            !!bookingData?.holdId
+        );
+    }
+
+    function updatePayButtonState() {
+        if (isPaymentFormValid()) {
+            payButton.classList.add("active");
+        } else {
+            payButton.classList.remove("active");
+        }
+    }
+
+    [
+        "cardholder-name",
+        "card-number",
+        "expiry-month",
+        "expiry-year",
+        "cvv",
+        "billing-address"
+    ].forEach(id => {
+        document.getElementById(id).addEventListener("input", updatePayButtonState);
+    });
+
+    updatePayButtonState();
+
     payButton.addEventListener("click", async function () {
         const name = document.getElementById("cardholder-name").value.trim();
         const number = document.getElementById("card-number").value.trim();

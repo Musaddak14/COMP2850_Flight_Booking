@@ -178,12 +178,20 @@
 
     function deleteBooking() {
         if (!confirm('Delete this entire booking? This cannot be undone.')) return;
+
+        const sessionId = sessionStorage.getItem("sessionId");
+
         fetch(`/api/manager/bookings/${bookingId}`, { method: 'DELETE' })
             .then(r => {
-                if (r.ok) window.location.href = '/manager/bookings';
-                else document.getElementById('delete-msg').textContent = 'Error deleting booking.';
+                if (r.ok) {
+                    window.location.href = `/manager/bookings?sessionId=${encodeURIComponent(sessionId)}`;
+                } else {
+                    document.getElementById('delete-msg').textContent = 'Error deleting booking.';
+                }
             });
     }
+
+
 </script>
 
 </body>

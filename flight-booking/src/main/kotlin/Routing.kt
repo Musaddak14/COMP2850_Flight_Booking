@@ -1421,7 +1421,7 @@ fun Application.configureRouting() {
             //if not then whenever they try access manager site redirect to homepage
 
 
-            call.respondFile(File("src/main/resources/static/manager"))
+            call.respondFile(File("src/main/resources/static/manager/edit_bookings/edit_bookings.html"))
             //else redirect to manager site
         }
 

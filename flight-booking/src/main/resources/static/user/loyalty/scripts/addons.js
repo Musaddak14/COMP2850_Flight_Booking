@@ -121,14 +121,33 @@
         };
     }
 
+    function getPassengerCount() {
+        const passengers = Array.isArray(bookingDraft?.passengers) ? bookingDraft.passengers : [];
+        const passengerCount = passengers.length > 0
+            ? passengers.length
+            : Math.max(1, Number(bookingDraft?.passengerCount ?? 1));
+
+        return passengerCount;
+    }
+
     function calculateLiveTotal() {
         const baseFare = Number(bookingDraft?.baseFareTotal) || 0;
+        const passengerCount = getPassengerCount();
+
         const baggagePrice = getSelectedRadioPrice("bag");
         const mealPrice = getSelectedRadioPrice("meal");
         const insurancePrice = getSelectedRadioPrice("ins");
         const extrasPrice = getCheckedExtrasTotal();
 
-        return baseFare + baggagePrice + mealPrice + insurancePrice + extrasPrice + GUEST_SEAT_PRICE + GUEST_WIFI_PRICE;
+        const addOnsTotalPerPassenger =
+            baggagePrice +
+            mealPrice +
+            insurancePrice +
+            extrasPrice +
+            GUEST_SEAT_PRICE +
+            GUEST_WIFI_PRICE;
+
+        return baseFare + (addOnsTotalPerPassenger * passengerCount);
     }
 
     function updateSelectionsSummary() {
@@ -215,6 +234,11 @@
         const total = calculateLiveTotal();
 
         document.getElementById("sum-base").textContent = fmt(baseFare);
+        document.getElementById("sum-seat-price").textContent =
+            `${fmt(GUEST_SEAT_PRICE)} × ${getPassengerCount()}`;
+
+        document.getElementById("sum-wifi-price").textContent =
+            `${fmt(GUEST_WIFI_PRICE)} × ${getPassengerCount()}`;
         document.getElementById("tot").textContent = fmt(total);
     }
 

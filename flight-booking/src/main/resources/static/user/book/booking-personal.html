@@ -214,6 +214,8 @@
         <button class="continue-btn" onclick="collectAndContinue()">Continue</button>
     `);
 
+
+
     function collectAndContinue() {
         const forms = document.querySelectorAll('.booking_page_1');
         const passengerData = [];
@@ -279,6 +281,50 @@
             "/seatmap?flightId=" + encodeURIComponent(flightId) +
             "&returnFlightId=" + encodeURIComponent(returnFlightId);
     }
+
+    const continueBtn = document.querySelector(".continue-btn");
+
+    function isPassengerFormValid() {
+        const forms = document.querySelectorAll(".booking_page_1");
+
+        for (let i = 0; i < forms.length; i++) {
+            const inputs = forms[i].querySelectorAll("input");
+            const selects = forms[i].querySelectorAll("select");
+
+            for (let j = 0; j < inputs.length; j++) {
+                if (inputs[j].value.trim() === "") {
+                    return false;
+                }
+            }
+
+            for (let j = 0; j < selects.length; j++) {
+                if (selects[j].value === "") {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    function updateContinueButton() {
+        if (isPassengerFormValid()) {
+            continueBtn.classList.add("active");
+        } else {
+            continueBtn.classList.remove("active");
+        }
+    }
+
+    document.querySelectorAll(".user_input_box input, .user_input_box select").forEach(field => {
+        field.addEventListener("input", updateContinueButton);
+        field.addEventListener("change", updateContinueButton);
+    });
+
+    updateContinueButton();
+
+
+
+
 </script>
 <div class="footer-divider"></div>
 <footer>
