@@ -7,14 +7,29 @@
     <link rel="stylesheet" href="/manager/flight_view/styles/flight_view.css">
 </head>
 <body>
-<header>
-    <div class="header-content">
-        <div>
-            <h1>Manager Flight View</h1>
-            <p>View, add, and remove flights, including past services.</p>
+<header class="header">
+    <nav class="top-nav">
+        <div class="left-nav">
+            <div class="logo">
+                <img src="/images/Logo.png" class="Airline_Logo" alt="Airline logo">
+                <img src="/images/Star_Alliance.jpg" class="Star_Alliance" alt="Star Alliance logo">
+            </div>
         </div>
-        <a class="header-home-link" href="/manager/home/manager_home.html">Back to Manager Home</a>
-    </div>
+
+        <div class="center-nav">
+            <a href="/manager/home/manager_home.html" class="active">Home</a>
+            <a href="/manager/flight_view">Flight View</a>
+            <a href="/manager/edit_bookings/edit_bookings.html">Edit Bookings</a>
+            <a href="/manager/analytics">Analytics</a>
+            <a href="/manager/accounts/accounts.html">Accounts</a>
+            <a href="/manager/support/support.html">Support</a>
+        </div>
+
+        <div class="right-nav">
+            <span class="lang">Operations Console</span>
+            <a href="/">Customer Site</a>
+        </div>
+    </nav>
 </header>
 
 <main>
@@ -76,49 +91,49 @@
             <div>
                 <label for="airport-code">Airport Code</label>
                 <input
-                    id="airport-code"
-                    name="code"
-                    type="text"
-                    maxlength="3"
-                    pattern="[A-Za-z]{3}"
-                    placeholder="LHR"
-                    required
+                        id="airport-code"
+                        name="code"
+                        type="text"
+                        maxlength="3"
+                        pattern="[A-Za-z]{3}"
+                        placeholder="LHR"
+                        required
                 >
             </div>
 
             <div>
                 <label for="airport-name">Airport Name</label>
                 <input
-                    id="airport-name"
-                    name="name"
-                    type="text"
-                    maxlength="128"
-                    placeholder="London Heathrow Airport"
-                    required
+                        id="airport-name"
+                        name="name"
+                        type="text"
+                        maxlength="128"
+                        placeholder="London Heathrow Airport"
+                        required
                 >
             </div>
 
             <div>
                 <label for="airport-city">City</label>
                 <input
-                    id="airport-city"
-                    name="city"
-                    type="text"
-                    maxlength="128"
-                    placeholder="London"
-                    required
+                        id="airport-city"
+                        name="city"
+                        type="text"
+                        maxlength="128"
+                        placeholder="London"
+                        required
                 >
             </div>
 
             <div>
                 <label for="airport-country">Country</label>
                 <input
-                    id="airport-country"
-                    name="country"
-                    type="text"
-                    maxlength="128"
-                    placeholder="United Kingdom"
-                    required
+                        id="airport-country"
+                        name="country"
+                        type="text"
+                        maxlength="128"
+                        placeholder="United Kingdom"
+                        required
                 >
             </div>
 

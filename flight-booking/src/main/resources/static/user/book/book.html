@@ -15,8 +15,8 @@
     <nav class="top-nav">
         <div class="left-nav">
             <div class="logo">
-                <img src="/images/Logo.png" class="Airline_Logo">
-                <img src="/images/Star_Alliance.jpg" class="Star_Alliance">
+                <img src="/images/Logo.png" class="Airline_Logo" alt="Astraeus Airlines">
+                <img src="/images/Star_Alliance.jpg" class="Star_Alliance" alt="Star Alliance member">
             </div>
         </div>
 
@@ -28,7 +28,8 @@
 
         <div class="right-nav">
             <span class="lang">United Kingdom - EN</span>
-            <select id="currency-select" onchange="setSelectedCurrency(this.value); location.reload();">
+            <label for="currency-select" class="sr-only">Select currency</label>
+            <select id="currency-select" aria-label="Select currency" onchange="setSelectedCurrency(this.value); location.reload();">
                 <option value="GBP">£ GBP</option>
                 <option value="USD">$ USD</option>
                 <option value="EUR">€ EUR</option>
@@ -49,9 +50,9 @@
 
 <section class="results-top">
     <div class="filter">
-        <label>Filter by:</label>
+        <label for="filter-select">Filter by:</label>
         <div class="dropdown">
-            <select>
+            <select id="filter-select">
                 <option>All flights</option>
             </select>
         </div>
@@ -64,9 +65,9 @@
     </div>
 
     <div class="sort">
-        <label>Sort by:</label>
+        <label for="sort-select">Sort by:</label>
         <div class="dropdown">
-            <select>
+            <select id="sort-select">
                 <option>Recommended</option>
             </select>
         </div>
@@ -218,19 +219,19 @@
                 </div>
 
                 <div class="flight-prices">
-                    <div class="price-box">
+                    <div class="price-box" role="button" tabindex="0" aria-pressed="false">
                         <span>Economy</span>
-                        <strong>${fmt(flight.price)}</strong>
+                        <strong>£${flight.price.toFixed(0)}</strong>
                     </div>
 
-                    <div class="price-box">
+                    <div class="price-box" role="button" tabindex="0" aria-pressed="false">
                         <span>Premium Economy</span>
-                        <strong>${fmt(flight.price * 1.6)}</strong>
+                        <strong>£${(flight.price * 1.6).toFixed(0)}</strong>
                     </div>
 
-                    <div class="price-box">
+                    <div class="price-box" role="button" tabindex="0" aria-pressed="false">
                         <span>Business</span>
-                        <strong>${fmt(flight.price * 3.5)}</strong>
+                        <strong>£${(flight.price * 3.5).toFixed(0)}</strong>
                     </div>
                 </div>
             </div>
@@ -244,10 +245,17 @@
 
             priceBoxes.forEach(box => {
                 box.addEventListener("click", function () {
-                    priceBoxes.forEach(item => item.classList.remove("selected"));
+                    priceBoxes.forEach(item => { item.classList.remove("selected"); item.setAttribute("aria-pressed","false"); });
                     this.classList.add("selected");
+                    this.setAttribute("aria-pressed", "true");
                     bookBtn.disabled = false;
                     bookBtn.classList.add("active");
+                });
+                box.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        this.click();
+                    }
                 });
             });
 
@@ -400,9 +408,9 @@
 
     <div class="footer-center">
         <div class="footer-logos">
-            <img src="/images/Award_1.png">
-            <img src="/images/Award_2.png">
-            <img src="/images/Award_3.png">
+            <img src="/images/Award_1.png" alt="Skytrax World Airline Award">
+            <img src="/images/Award_2.png" alt="Which? Recommended Provider Award">
+            <img src="/images/Award_3.png" alt="Which? Recommended Provider Award">
         </div>
         <p class="footer-info">
             © 2026 Astraeus Airlines · All rights reserved

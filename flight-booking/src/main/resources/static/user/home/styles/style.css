@@ -35,7 +35,7 @@ body {
     align-items: center;
     background: white;
     padding: 10px clamp(15px, 5vw, 40px);
-    
+
 }
 
 /*Makes a navbar adds spacing between the elements*/
@@ -142,7 +142,7 @@ body {
     padding-bottom: 4px;
     transition: border-color 0.2s ease;
     text-decoration: none;
-    color: #011;       
+    color: #011;
     font-weight: 500;
     font-size: clamp(12px, 1.3vw, 16px);
 }
@@ -343,7 +343,7 @@ footer {
 
 /* Button */
 .search-btn {
-    background: #132e8e; 
+    background: #132e8e;
     color: white;
     border: none;
     padding: 14px 28px;
@@ -425,9 +425,9 @@ footer {
 /*makes a row for the buttons/pics with spacing between*/
 
 .experience-card {
-    display: block;              
-    text-decoration: none;       
-    color: inherit;              
+    display: block;
+    text-decoration: none;
+    color: inherit;
     border: none;
     background: none;
     cursor: pointer;
@@ -439,7 +439,7 @@ footer {
     transform: translateY(-4px);
 }
 
- /*makes pics clickable*/
+/*makes pics clickable*/
 
 .experience-card img {
     width: 100%;
@@ -678,9 +678,9 @@ footer {
 
     background: rgb(249, 249, 249);
     width: 90%;
-    margin: 0 auto; 
+    margin: 0 auto;
     border-radius: 10px;
-    padding: 20px;      
+    padding: 20px;
     min-height: 150px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     position: relative;
@@ -703,7 +703,7 @@ footer {
     margin: 0 auto;
     display: grid;
     grid-template-columns: 200px 1fr 200px;
-     align-items: center;
+    align-items: center;
     padding: 10px 40px;
 }
 
@@ -1632,4 +1632,27 @@ label.row input {
 .details-btn:hover,
 #apply-promo-btn:hover {
     opacity: 0.9;
+}
+
+/* keyboard focus used gpt 5 to help */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid #00a1de;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
 }

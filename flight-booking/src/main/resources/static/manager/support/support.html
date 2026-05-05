@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manager Support Tickets</title>
+    <link rel="stylesheet" href="/manager/home/styles/manager_home.css">
 
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: #f4f6f8;
             margin: 0;
             padding: 0;
@@ -131,10 +133,31 @@
 </head>
 
 <body>
-<div class="page-header">
-    <h1>Support Ticket Manager</h1>
-    <p>Review, update, and manage customer support requests.</p>
-</div>
+
+<header class="header">
+    <nav class="top-nav">
+        <div class="left-nav">
+            <div class="logo">
+                <img src="/images/Logo.png" class="Airline_Logo" alt="Airline logo">
+                <img src="/images/Star_Alliance.jpg" class="Star_Alliance" alt="Star Alliance logo">
+            </div>
+        </div>
+
+        <div class="center-nav">
+            <a href="/manager/home/manager_home.html" class="active">Home</a>
+            <a href="/manager/flight_view">Flight View</a>
+            <a href="/manager/edit_bookings/edit_bookings.html">Edit Bookings</a>
+            <a href="/manager/analytics">Analytics</a>
+            <a href="/manager/accounts/accounts.html">Accounts</a>
+            <a href="/manager/support/support.html">Support</a>
+        </div>
+
+        <div class="right-nav">
+            <span class="lang">Operations Console</span>
+            <a href="/">Customer Site</a>
+        </div>
+    </nav>
+</header>
 
 <div class="page-container">
     <div class="top-bar">
@@ -144,12 +167,13 @@
             <button onclick="setView('active')" id="active-tab" class="refresh-btn">Active</button>
             <button onclick="setView('archived')" id="archived-tab" class="refresh-btn">Archived</button>
 
+            <label for="booking-search" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Search by booking ID</label>
             <input
-                type="text"
-                id="booking-search"
-                placeholder="Search by booking ID"
-                oninput="renderTickets()"
-                style="padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-left: 10px;"
+                    type="text"
+                    id="booking-search"
+                    placeholder="Search by booking ID"
+                    oninput="renderTickets()"
+                    style="padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-left: 10px;"
             >
 
             <button class="refresh-btn" onclick="loadTickets()">Refresh</button>
@@ -177,31 +201,31 @@
     }
 
     function renderTickets() {
-    const searchValue = document.getElementById("booking-search")?.value.trim() ?? "";
-    const ticketList = document.getElementById("ticketList");
-    ticketList.innerHTML = "";
+        const searchValue = document.getElementById("booking-search")?.value.trim() ?? "";
+        const ticketList = document.getElementById("ticketList");
+        ticketList.innerHTML = "";
 
-    const filteredTickets = allTickets.filter(ticket => {
-        // tab filter (active vs archived)
-        if (currentView === "active" && ticket.archived) return false;
-        if (currentView === "archived" && !ticket.archived) return false;
+        const filteredTickets = allTickets.filter(ticket => {
+            // tab filter (active vs archived)
+            if (currentView === "active" && ticket.archived) return false;
+            if (currentView === "archived" && !ticket.archived) return false;
 
-        // search filter
-        if (searchValue === "") return true;
+            // search filter
+            if (searchValue === "") return true;
 
-        return ticket.bookingId.toString().includes(searchValue);
-    });
+            return ticket.bookingId.toString().includes(searchValue);
+        });
 
-    if (filteredTickets.length === 0) {
-        ticketList.innerHTML = "<p>No matching tickets found.</p>";
-        return;
-    }
+        if (filteredTickets.length === 0) {
+            ticketList.innerHTML = "<p>No matching tickets found.</p>";
+            return;
+        }
 
-    filteredTickets.forEach(ticket => {
-        const ticketDiv = document.createElement("div");
-        ticketDiv.className = "ticket-card";
+        filteredTickets.forEach(ticket => {
+            const ticketDiv = document.createElement("div");
+            ticketDiv.className = "ticket-card";
 
-        ticketDiv.innerHTML = `
+            ticketDiv.innerHTML = `
             <h2>Ticket #${ticket.id}</h2>
 
             <div class="ticket-details">
@@ -214,7 +238,7 @@
             </div>
 
             <div class="ticket-controls">
-                <label>Status</label>
+                <label for="status-${ticket.id}">Status</label>
                 <select id="status-${ticket.id}">
                     <option value="OPEN">OPEN</option>
                     <option value="IN_PROGRESS">IN_PROGRESS</option>
@@ -222,25 +246,25 @@
                     <option value="REJECTED">REJECTED</option>
                 </select>
 
-                <label>Manager Note</label>
-                <textarea id="note-${ticket.id}">${ticket.managerNote ?? ""}</textarea>
+                <label for="note-${ticket.id}">Manager Note</label>
+                <textarea id="note-${ticket.id}">
 
                 <button class="update-btn" onclick="updateTicket(${ticket.id})">Update Ticket</button>
                 <button class="history-btn" onclick="loadTicketHistory(${ticket.id})">View History</button>
                 ${currentView === "active"
-                    ? `<button class="history-btn" onclick="archiveTicket(${ticket.id})">Archive</button>`
-                    : ""
-                }
+                ? `<button class="history-btn" onclick="archiveTicket(${ticket.id})">Archive</button>`
+                : ""
+            }
 
                 <p id="result-${ticket.id}" class="result-message"></p>
                 <div id="history-${ticket.id}" class="ticket-history"></div>
             </div>
         `;
 
-        ticketList.appendChild(ticketDiv);
-        document.getElementById(`status-${ticket.id}`).value = ticket.status;
-    });
-}
+            ticketList.appendChild(ticketDiv);
+            document.getElementById(`status-${ticket.id}`).value = ticket.status;
+        });
+    }
 
     async function updateTicket(ticketId) {
         const status = document.getElementById(`status-${ticketId}`).value;

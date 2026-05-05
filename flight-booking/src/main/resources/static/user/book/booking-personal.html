@@ -13,8 +13,8 @@
     <nav class="top-nav">
         <div class="left-nav">
             <div class="logo">
-                <img src="/images/Logo.png" class="Airline_Logo">
-                <img src="/images/Star_Alliance.jpg" class="Star_Alliance">
+                <img src="/images/Logo.png" class="Airline_Logo" alt="Astraeus Airlines">
+                <img src="/images/Star_Alliance.jpg" class="Star_Alliance" alt="Star Alliance member">
             </div>
         </div>
 
@@ -132,78 +132,53 @@
                 <p class="age-label">Age 16+</p>
 
                 <div class="user_input_box">
-                    <label>Title</label>
-                    <select>
-                        <option value="" disabled selected>Select title</option>
-                        <!-- option for user to click there title with placholder text -->
-                        <option>Mr</option>
-                        <option>Mrs</option>
-                        <option>Miss</option>
-                        <option>Ms</option>
-                        <option>Dr</option>
+                    <label for="title-${i}">Title</label>
+                    <select id="title-${i}">
+                        ...
                     </select>
                 </div>
 
-
                 <div class="user_input_box">
-                    <label>First names</label>
+                    <label for="firstname-${i}">First names</label>
                     <small>As shown on document</small>
-                    <input type="text">
+                    <input type="text" id="firstname-${i}">
                 </div>
-                <!-- user input toi enter there first name-->
-
 
                 <div class="user_input_box">
-                    <label>Last name</label>
+                    <label for="lastname-${i}">Last name</label>
                     <small>As shown on document</small>
-                    <input type="text">
+                    <input type="text" id="lastname-${i}">
                 </div>
-                <!-- user input toi enter there last name-->
-
 
                 <div class="user_input_box">
-                    <label>Passport Number</label>
+                    <label for="passport-${i}">Passport Number</label>
                     <small>As shown on document</small>
-                    <input type="text">
+                    <input type="text" id="passport-${i}">
                 </div>
-                <!-- user input toi enter there last name-->
-
 
                 <div class="user_input_box">
-                    <label>Gender</label>
+                    <label for="gender-${i}">Gender</label>
                     <small>As shown on document</small>
-                    <select>
-                        <option value="" disabled selected>Select gender</option>
-                        <option>Male</option>
-                        <option>Female</option>
-                        <option>Other</option>
+                    <select id="gender-${i}">
+                        ...
                     </select>
                 </div>
-                <!-- option for user to click there gender with placholder text -->
-
 
                 <div class="user_input_box">
-                    <!-- used claud sonnet 4.6 to sort fotmatting only -->
-                    <!-- allows user to enter dob -->
                     <label>Date of birth</label>
                     <div class="dob-row">
-
                         <div class="dob-field">
                             <small>DD</small>
-                            <input type="number" min="1" max="31">
+                            <input type="number" min="1" max="31" aria-label="Day of birth">
                         </div>
-
                         <div class="dob-field">
                             <small>MM</small>
-                            <input type="number" min="1" max="12">
+                            <input type="number" min="1" max="12" aria-label="Month of birth">
                         </div>
-
                         <div class="dob-field">
                             <small>YYYY</small>
-                            <input type="number" min="1900" max="2099">
+                            <input type="number" min="1900" max="2099" aria-label="Year of birth">
                         </div>
-
-
                     </div>
                 </div>
             </div>
@@ -332,9 +307,9 @@
 
     <div class="footer-center">
         <div class="footer-logos">
-            <img src="/images/Award_1.png">
-            <img src="/images/Award_2.png">
-            <img src="/images/Award_3.png">
+            <img src="/images/Award_1.png" alt="Skytrax World Airline Award">
+            <img src="/images/Award_2.png" alt="Which? Recommended Provider Award">
+            <img src="/images/Award_3.png" alt="Which? Recommended Provider Award">
         </div>
         <p class="footer-info">
             © 2026 Astraeus Airlines · All rights reserved
