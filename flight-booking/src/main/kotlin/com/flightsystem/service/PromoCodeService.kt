@@ -1,23 +1,17 @@
 package com.flightsystem.service
 
 import com.flightsystem.model.PromoCode
-import com.flightsystem.model.PromoCodes
 import com.flightsystem.model.PromoCodeUsages
-import java.time.LocalDateTime
-import org.jetbrains.exposed.sql.Op
-
-
+import com.flightsystem.model.PromoCodes
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-
+import java.time.LocalDateTime
 
 class PromoCodeService {
-
     fun makeDefaultPromoCodes() {
         transaction {
             insertPromoCodeIfMissing("WELCOME10", "PERCENTAGE", 10.0)
@@ -26,10 +20,16 @@ class PromoCodeService {
         }
     }
 
-    private fun insertPromoCodeIfMissing(codeValue: String, discountTypeValue: String, discountValueAmount: Double) {
-        val existing = PromoCodes.selectAll()
-            .where { PromoCodes.code eq codeValue }
-            .singleOrNull()
+    private fun insertPromoCodeIfMissing(
+        codeValue: String,
+        discountTypeValue: String,
+        discountValueAmount: Double,
+    ) {
+        val existing =
+            PromoCodes
+                .selectAll()
+                .where { PromoCodes.code eq codeValue }
+                .singleOrNull()
 
         if (existing == null) {
             PromoCodes.insert {
@@ -41,22 +41,27 @@ class PromoCodeService {
         }
     }
 
-    fun getPromoCode(codeValue: String): PromoCode? {
-        return transaction {
-            PromoCodes.selectAll().where { PromoCodes.code eq codeValue.uppercase() }
+    fun getPromoCode(codeValue: String): PromoCode? =
+        transaction {
+            PromoCodes
+                .selectAll()
+                .where { PromoCodes.code eq codeValue.uppercase() }
                 .singleOrNull()
                 ?.let {
                     PromoCode(
                         code = it[PromoCodes.code],
                         discountType = it[PromoCodes.discountType],
                         discountValue = it[PromoCodes.discountValue],
-                        isActive = it[PromoCodes.isActive]
+                        isActive = it[PromoCodes.isActive],
                     )
                 }
         }
-    }
 
-    fun createPromoCode(codeValue: String, discountType: String, discountValue: Double): Result<Unit> {
+    fun createPromoCode(
+        codeValue: String,
+        discountType: String,
+        discountValue: Double,
+    ): Result<Unit> {
         if (codeValue.isBlank()) {
             return Result.failure(IllegalArgumentException("PromoCode cannot be empty."))
         }
@@ -65,7 +70,7 @@ class PromoCodeService {
             return Result.failure(IllegalArgumentException("Invalid discount type"))
         }
 
-        if (discountValue <=0) {
+        if (discountValue <= 0) {
             return Result.failure(IllegalArgumentException("Discount value must be 0 or greater"))
         }
 
@@ -77,19 +82,20 @@ class PromoCodeService {
                 it[isActive] = true
             }
             Result.success(Unit)
-
         }
     }
 
-    fun deactivatePromoCode(codeValue: String): Boolean {
-        return transaction {
-            PromoCodes.update({ PromoCodes.code eq codeValue.uppercase()}) {
+    fun deactivatePromoCode(codeValue: String): Boolean =
+        transaction {
+            PromoCodes.update({ PromoCodes.code eq codeValue.uppercase() }) {
                 it[isActive] = false
             } > 0
         }
-    }
 
-    fun applyPromoCode(codeValue: String, originalAmount: Double): Result<Double> {
+    fun applyPromoCode(
+        codeValue: String,
+        originalAmount: Double,
+    ): Result<Double> {
         val promo =
             getPromoCode(codeValue) ?: return Result.failure(IllegalArgumentException("PromoCode cannot be found."))
 
@@ -97,36 +103,42 @@ class PromoCodeService {
             return Result.failure(IllegalArgumentException("PromoCode is not active"))
         }
 
-        val discountedAmount = when (promo.discountType) {
-            "PERCENTAGE" -> {
-                val discount = originalAmount * (promo.discountValue / 100.0)
-                originalAmount - discount
-            }
+        val discountedAmount =
+            when (promo.discountType) {
+                "PERCENTAGE" -> {
+                    val discount = originalAmount * (promo.discountValue / 100.0)
+                    originalAmount - discount
+                }
 
-            "FIXED" -> {
-                originalAmount - promo.discountValue
-            }
+                "FIXED" -> {
+                    originalAmount - promo.discountValue
+                }
 
-            else -> {
-                return Result.failure(IllegalArgumentException("Invalid promo code type"))
+                else -> {
+                    return Result.failure(IllegalArgumentException("Invalid promo code type"))
+                }
             }
-        }
 
         return Result.success(discountedAmount.coerceAtLeast(0.0))
     }
 
-    fun hasUserUsedPromoCode(userId: Int, codeValue: String): Boolean {
-        return transaction {
-            PromoCodeUsages.selectAll()
+    fun hasUserUsedPromoCode(
+        userId: Int,
+        codeValue: String,
+    ): Boolean =
+        transaction {
+            PromoCodeUsages
+                .selectAll()
                 .where {
                     (PromoCodeUsages.userId eq userId) and
-                            (PromoCodeUsages.promoCode eq codeValue.uppercase())
-                }
-                .singleOrNull() != null
+                        (PromoCodeUsages.promoCode eq codeValue.uppercase())
+                }.singleOrNull() != null
         }
-    }
 
-    fun recordPromoCodeUsage(userId: Int, codeValue: String) {
+    fun recordPromoCodeUsage(
+        userId: Int,
+        codeValue: String,
+    ) {
         transaction {
             PromoCodeUsages.insert {
                 it[PromoCodeUsages.userId] = userId
@@ -135,8 +147,4 @@ class PromoCodeService {
             }
         }
     }
-
 }
-
-
-

@@ -1,13 +1,8 @@
 package com.flightsystem.model
 
-import com.flightsystem.model.Airports.code
 import com.flightsystem.model.Users.userId
-import org.jetbrains.exposed.sql.Table
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
+import org.jetbrains.exposed.sql.Table
 
 @Serializable
 data class Booking(
@@ -19,16 +14,16 @@ data class Booking(
     val date: String,
     val time: String,
     val cabin: String? = null,
-    val addOns: String? = null
+    val addOns: String? = null,
 )
 
 @Serializable
 data class BookingDetails(
-    val booking: Booking, 
-    val seats: List<String> 
+    val booking: Booking,
+    val seats: List<String>,
 )
 
-object Bookings: Table() {
+object Bookings : Table() {
     val bookingId = integer("bookingId").autoIncrement()
     val userId = reference("userId", Users.userId)
     val flightId = reference("flight", Flights.flightId)
@@ -41,8 +36,7 @@ object Bookings: Table() {
     override val primaryKey = PrimaryKey(bookingId)
 
     init {
-        uniqueIndex(bookingId, flightId)  //Asked codex to check my tables, it said to add this so BookingSeat can have a unique composite key
+        uniqueIndex(bookingId, flightId)
+        // Asked codex to check my tables, it said to add this so BookingSeat can have a unique composite key
     }
 }
-
-

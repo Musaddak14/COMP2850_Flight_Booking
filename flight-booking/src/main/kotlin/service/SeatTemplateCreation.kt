@@ -1,4 +1,4 @@
-import com.flightsystem.model.Flight
+package service
 import com.flightsystem.model.SeatClass
 import com.flightsystem.model.Seats
 import org.jetbrains.exposed.sql.insert
@@ -12,11 +12,12 @@ fun createEmptySeatMaps(flights: List<String>) {
             val existingSeats = Seats.selectAll().where { Seats.flightId eq flightId }.count()
             if (existingSeats == 0L) {
                 for (row in 1..12) {
-                    val seatClass = when (row) {
-                        1, 2 -> SeatClass.BUSINESS
-                        3, 4, 5 -> SeatClass.PREMIUM_ECONOMY
-                        else -> SeatClass.ECONOMY
-                    }
+                    val seatClass =
+                        when (row) {
+                            1, 2 -> SeatClass.BUSINESS
+                            3, 4, 5 -> SeatClass.PREMIUM_ECONOMY
+                            else -> SeatClass.ECONOMY
+                        }
 
                     for (col in columns) {
                         Seats.insert {

@@ -1,6 +1,5 @@
 package com.flightsystem.model
 
-import model.TicketStatus
 import org.jetbrains.exposed.sql.Table
 
 private const val VARIABLE_LENGTH = 128
@@ -8,7 +7,7 @@ private const val VARIABLE_LENGTH = 128
 enum class AccountStatus {
     ACTIVE,
     FROZEN,
-    DELETED
+    DELETED,
 }
 
 object Users : Table() {
