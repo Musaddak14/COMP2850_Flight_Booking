@@ -302,3 +302,56 @@ main {
         padding: 0;
     }
 }
+
+
+.manager-form-card {
+    max-width: 700px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.manager-form-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.manager-input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border: 1px solid #d6dce5;
+    border-radius: 10px;
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 15px;
+    box-sizing: border-box;
+    background: #ffffff;
+}
+
+.manager-textarea {
+    resize: vertical;
+    min-height: 140px;
+}
+
+.manager-button {
+    width: 100%;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 12px;
+    background: #0b6f9e;
+    color: white;
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.manager-button:hover {
+    background: #09587d;
+    transform: translateY(-1px);
+}
+
+#sent-email-list {
+    width: 100%;
+    box-sizing: border-box;
+}

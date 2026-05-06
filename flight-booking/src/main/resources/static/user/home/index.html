@@ -68,7 +68,7 @@
 
             <input type="date" name="returnDate" id="return-date" style="display: none;">
 
-            <label style="display:flex; align-items:center; gap:4px;">
+            <label class="return-toggle-label">
                 <input type="checkbox" id="return-toggle">
                 Return
             </label>
@@ -172,7 +172,7 @@
             <h3>Up to 20% off partners, 5,000 bonus points, and free upgrades at Platinum level.</h3>
 
 
-            <a href="/manage-account" class="apply-link">Apply now →</a>
+            <a href="/log_in/register.html" class="apply-link">Apply now →</a>
 
         </div>
 
@@ -185,19 +185,6 @@
 
 </section>
 
-<script>
-    const toggle = document.getElementById("return-toggle");
-    const returnDate = document.getElementById("return-date");
-
-    toggle.addEventListener("change", function () {
-        returnDate.style.display = this.checked ? "inline-block" : "none";
-        returnDate.required = this.checked;
-
-        if (!this.checked) {
-            returnDate.value = "";
-        }
-    });
-</script>
 
 <section class="support-banner">
     <div class="support-container">
@@ -271,15 +258,22 @@
 <script>
     const toggle = document.getElementById("return-toggle");
     const returnDate = document.getElementById("return-date");
+    const searchCard = document.querySelector(".search-card");
 
-    toggle.addEventListener("change", function () {
-        returnDate.style.display = this.checked ? "inline-block" : "none";
-        returnDate.required = this.checked;
+    function updateReturnSearchLayout() {
+        returnDate.style.display = toggle.checked ? "inline-block" : "none";
+        returnDate.required = toggle.checked;
 
-        if (!this.checked) {
+        if (toggle.checked) {
+            searchCard.classList.add("return-active");
+        } else {
+            searchCard.classList.remove("return-active");
             returnDate.value = "";
         }
-    });
+    }
+
+    toggle.addEventListener("change", updateReturnSearchLayout);
+    updateReturnSearchLayout();
 </script>
 
 

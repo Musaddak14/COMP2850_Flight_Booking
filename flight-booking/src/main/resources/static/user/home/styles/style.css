@@ -1633,3 +1633,42 @@ label.row input {
 #apply-promo-btn:hover {
     opacity: 0.9;
 }
+
+.search-card {
+    max-width: 1000px;
+    width: 100%;
+    transition: max-width 0.2s ease;
+}
+
+.search-card.return-active {
+    max-width: 1250px;
+    width: calc(100% - 60px);
+}
+
+.flight-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+}
+
+.flight-bar input,
+.flight-bar select {
+    flex: 1;
+    min-width: 0;
+}
+
+.return-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+.search-btn {
+    flex: 0 0 auto;
+    width: 145px;
+    padding: 13px 20px;
+    white-space: nowrap;
+}
