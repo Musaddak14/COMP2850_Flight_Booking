@@ -16,6 +16,12 @@ import java.time.LocalDateTime
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+Handles user authentication, registration, session management, and OTP verification.
+
+Includes login security such as account lockout and password validation.
+ */
+
 class AuthenticationService(
     private val sessionTimeout: Long = 30L,
 ) {
@@ -43,6 +49,12 @@ class AuthenticationService(
         val isManager: Boolean,
         var lastActivity: LocalDateTime = LocalDateTime.now(),
     )
+
+    /**
+     Registers a new user account after validating input and hashing the password.
+
+     Also creates a loyalty account for the user.
+     */
 
     fun register(
         firstName: String,
@@ -121,6 +133,10 @@ class AuthenticationService(
             )
         }
     }
+
+    /**
+     Registers a new manager account with elevated privileges.
+     */
 
     fun registerManager(
         firstName: String,
@@ -201,6 +217,12 @@ class AuthenticationService(
         }
     }
 
+    /**
+     Authenticates a user using email and password.
+
+     Handles account lockout, failed attempts, and updates last login time.
+     */
+
     fun login(
         email: String,
         rawPassword: String,
@@ -264,7 +286,12 @@ class AuthenticationService(
         }
     }
 
-    // create session
+    /**
+     Creates a session for an authenticated user.
+
+     @return session ID
+     */
+
     fun createSession(user: User): String {
         val sessionId = UUID.randomUUID().toString()
         activeSessions[sessionId] =
@@ -276,11 +303,19 @@ class AuthenticationService(
         return sessionId
     }
 
+    /**
+     Generates a one-time password (OTP) for additional verification.
+     */
+
     fun createOtpChallenge(user: User): String {
         val otp = (100000..999999).random().toString()
         pendingOtps[user.email] = OtpData(user.userId, otp, LocalDateTime.now().plusMinutes(5))
         return otp
     }
+
+    /**
+     Verifies a submitted OTP and ensures it has not expired.
+     */
 
     fun verifyOtp(
         email: String,
@@ -312,6 +347,12 @@ class AuthenticationService(
         return Result.success(user)
     }
 
+    /**
+     Validates a session and checks expiry and account status.
+
+     @return User if session is valid, otherwise null
+     */
+
     fun validateSession(sessionId: String): User? {
         val session = activeSessions[sessionId] ?: return null
         val expiryTime = session.lastActivity.plusMinutes(sessionTimeout)
@@ -341,9 +382,17 @@ class AuthenticationService(
         return findById(session.userId)
     }
 
+    /**
+     Removes an active session.
+     */
+
     fun logout(sessionId: String) {
         activeSessions.remove(sessionId)
     }
+
+    /**
+     Checks whether a session belongs to a manager user.
+     */
 
     fun isManagerSession(sessionId: String): Boolean {
         val session = activeSessions[sessionId] ?: return false
@@ -357,7 +406,9 @@ class AuthenticationService(
         return session.isManager
     }
 
-    // end of session stuff
+    /**
+     Resets a user's password by generating a new salt and hash.
+     */
 
     fun resetPassword(
         user: User,
@@ -381,6 +432,12 @@ class AuthenticationService(
         }
     }
 
+    /**
+     Finds a user by email.
+
+     @return User or null if not found
+     */
+
     fun findByEmail(email: String): User? =
         transaction {
             Users
@@ -390,6 +447,12 @@ class AuthenticationService(
                 }.singleOrNull()
                 ?.let { rowToUser(it) }
         }
+
+    /**
+     Finds a user by ID.
+
+     @return User or null if not found
+     */
 
     fun findById(userId: Int): User? =
         transaction {
@@ -401,10 +464,18 @@ class AuthenticationService(
                 ?.let { rowToUser(it) }
         }
 
+    /**
+     * Retrieves all users from the database.
+     */
+
     fun getAllUsers(): List<User> =
         transaction {
             Users.selectAll().map { rowToUser(it) }
         }
+
+    /**
+     * Converts a database row into either a User or Manager object.
+     */
 
     private fun rowToUser(row: ResultRow): User {
         val role = row[Users.role]
@@ -432,6 +503,10 @@ class AuthenticationService(
         }
     }
 
+    /**
+     * Checks whether an account is locked and unlocks it if the lockout time has expired.
+     */
+
     private fun isLocked(row: ResultRow): Boolean {
         val accountLocked = row[Users.accountLocked]
         val lockedAtString = row[Users.lockedAt]
@@ -458,6 +533,10 @@ class AuthenticationService(
 
         return true
     }
+
+    /**
+     * Creates a default manager account if one does not already exist.
+     */
 
     fun setDefaultManager(
         firstName: String,

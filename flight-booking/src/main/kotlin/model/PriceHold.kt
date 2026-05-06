@@ -35,7 +35,8 @@ object PriceHoldSeats : Table() {
     val holdId = reference("holdId", PriceHolds.holdId)
     val flightId = reference("flightId", Flights.flightId)
     val seatNumber = varchar("seatNumber", VARCHAR_LENGTH)
-    override val primaryKey = PrimaryKey(flightId, holdId, seatNumber) // prevent duplicate seats for the same hold
+    override val primaryKey = PrimaryKey(flightId, holdId, seatNumber)
+// prevent duplicate seats for the same hold
 }
 
 data class PriceHoldDetails(

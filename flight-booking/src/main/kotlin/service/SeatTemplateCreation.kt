@@ -1,4 +1,3 @@
-package service
 import com.flightsystem.model.SeatClass
 import com.flightsystem.model.Seats
 import org.jetbrains.exposed.sql.insert

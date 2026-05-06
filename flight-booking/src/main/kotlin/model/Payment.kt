@@ -10,6 +10,13 @@ enum class PaymentStatus {
     REFUNDED,
 }
 
+/**
+Represents a payment transaction within the system.
+
+Stores payment details, status, timestamps, and provides helper
+methods for updating and checking payment state.
+ */
+
 data class Payment(
     val paymentID: String,
     val bookingID: String,
@@ -21,24 +28,52 @@ data class Payment(
     val timestamp: LocalDateTime = LocalDateTime.now(),
     var refundedAt: LocalDateTime? = null,
 ) {
+    /**
+     Marks the payment as successful.
+     */
+
     fun setStatusSuccess() {
         status = PaymentStatus.SUCCESS
     }
 
+    /**
+     Marks the payment as failed.
+     */
+
     fun setStatusFailed() {
         status = PaymentStatus.FAILED
     }
+
+    /**
+     Marks the payment as refunded and records the refund time.
+     */
 
     fun setRefunded() {
         status = PaymentStatus.REFUNDED
         refundedAt = LocalDateTime.now()
     }
 
+    /**
+     Checks whether the payment is eligible for a refund.
+     */
+
     fun isRefundable(): Boolean = status == PaymentStatus.SUCCESS
+
+    /**
+     Checks whether the payment is still pending.
+     */
 
     fun isPending(): Boolean = status == PaymentStatus.PENDING
 
+    /**
+     Checks whether the payment was successful.
+     */
+
     fun isSuccessful(): Boolean = status == PaymentStatus.SUCCESS
+
+    /**
+     Returns a formatted summary of the payment for display or logging.
+     */
 
     fun getSummary(): String =
         """
@@ -53,6 +88,13 @@ data class Payment(
         ${if (refundedAt != null) "Refunded at: $refundedAt" else ""}
         """.trimIndent()
 }
+
+/**
+Database table for storing payment records.
+
+Includes payment status, card details (last digits only),
+timestamps, and refund tracking.
+ */
 
 object Payments : Table() {
     val paymentID = varchar("paymentID", 50)

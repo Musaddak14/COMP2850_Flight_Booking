@@ -4,11 +4,21 @@ import org.jetbrains.exposed.sql.Table
 
 private const val VARIABLE_LENGTH = 128
 
+/**
+Represents the status of a user account.
+ */
+
 enum class AccountStatus {
     ACTIVE,
     FROZEN,
     DELETED,
 }
+
+/**
+Database table for storing user accounts.
+
+Includes authentication data, account state, and role information.
+ */
 
 object Users : Table() {
     val userId = integer("user_id").autoIncrement()

@@ -407,6 +407,4 @@ class BookingService {
                     )
                 }
         }
-
-    // calc total price based on seat class
 }

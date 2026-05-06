@@ -52,7 +52,6 @@ class PriceHoldService {
             val unavailableSeat = seatsFromDb.find { !it[Seats.isAvailable] }
             if (unavailableSeat != null) {
                 throw IllegalArgumentException("One or more selected seats aren't available")
-                // all selected seats have to be available before creating the hold
             }
             // load flight data from DB so total price is calcd from stored flight price
             val flightRow =

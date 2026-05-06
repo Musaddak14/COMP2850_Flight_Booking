@@ -1,9 +1,5 @@
 package com.example.com
 
-// imports the flight info
-
-// import org.h2.api.H2Type.row
-
 import com.example.com.service.ManagerAnalyticsService
 import com.flightsystem.AppEnv
 import com.flightsystem.model.AccountStatus
@@ -33,9 +29,9 @@ import com.flightsystem.service.PaymentService
 import com.flightsystem.service.PriceHoldService
 import com.flightsystem.service.PromoCodeService
 import com.flightsystem.service.TicketService
+import createEmptySeatMaps
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
-import io.ktor.server.application.call
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -59,7 +55,6 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
-import service.createEmptySeatMaps
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime

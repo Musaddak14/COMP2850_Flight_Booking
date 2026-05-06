@@ -13,6 +13,12 @@ import javax.mail.internet.MimeMessage
 import javax.mail.internet.MimeMultipart
 import javax.mail.util.ByteArrayDataSource
 
+/**
+Handles email communication for the system.
+
+Used for booking confirmations, PDF ticket delivery, and general customer messages.
+ */
+
 class EmailService(
     private val smtpHost: String,
     private val smtpPort: String,
@@ -20,6 +26,12 @@ class EmailService(
     private val smtpPassword: String,
     private val fromEmail: String,
 ) {
+    /**
+     Sends a booking confirmation email with a PDF ticket attached.
+
+     The email includes booking reference, route, date, seats, and total paid.
+     */
+
     fun sendBookingConfirmationEmail(
         toEmail: String?,
         passengerName: String,
@@ -112,6 +124,12 @@ class EmailService(
 
         Transport.send(message)
     }
+
+    /**
+     Sends a general plain-text email.
+
+     Used for support messages or manager-to-customer communication.
+     */
 
     fun sendEmail(
         toEmail: String,
