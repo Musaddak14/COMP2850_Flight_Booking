@@ -70,28 +70,28 @@
                     <p class="age-label">Your confirmed booking information</p>
 
                     <div class="user_input_box">
-                        <label>Booking ID</label>
-                        <input type="text" value="${data.bookingId}" disabled>
+                        <label for="booking-id">Booking ID</label>
+                        <input type="text" id="booking-id" value="${data.bookingId}" disabled>
                     </div>
 
                     <div class="user_input_box">
-                        <label>Flight</label>
-                        <input type="text" value="${escapeHtml(data.flightId)}" disabled>
+                        <label for="flight-id">Flight</label>
+                        <input type="text" id="flight-id" value="${escapeHtml(data.flightId)}" disabled>
                     </div>
 
                     <div class="user_input_box">
-                        <label>Seat(s)</label>
-                        <input type="text" value="${escapeHtml(outboundSeats.join(', '))}" disabled>
+                        <label for="seat-numbers">Seat(s)</label>
+                        <input type="text" id="seat-numbers" value="${escapeHtml(outboundSeats.join(', '))}" disabled>
                     </div>
 
                     <div class="user_input_box">
-                        <label>Cabin Class</label>
-                    <input type="text" value="${data.cabin ?? 'N/A'}" disabled>
+                        <label for="cabin-class">Cabin Class</label>
+                        <input type="text" id="cabin-class" value="${data.cabin ?? 'N/A'}" disabled>
                     </div>
 
                     <div class="user_input_box">
-                        <label>Add-ons</label>
-                        <input type="text" value="${formatAddOns(data.addOns)}" disabled>
+                        <label for="add-ons">Add-ons</label>
+                        <input type="text" id="add-ons" value="${formatAddOns(data.addOns)}" disabled>
                     </div>
 
                 </div>
@@ -106,13 +106,13 @@
                         <p class="age-label">Return journey details</p>
 
                         <div class="user_input_box">
-                            <label>Return flight</label>
-                            <input type="text" value="${escapeHtml(data.returnFlightId)}" disabled>
+                            <label for="return-flight">Return flight</label>
+                            <input type="text" id="return-flight" value="${escapeHtml(data.returnFlightId)}" disabled>
                         </div>
 
                         <div class="user_input_box">
-                            <label>Return seat(s)</label>
-                            <input type="text" value="${escapeHtml(returnSeats.length > 0 ? returnSeats.join(', ') : 'Not available')}" disabled>
+                            <label for="return-seats">Return seat(s)</label>
+                            <input type="text" id="return-seats" value="${escapeHtml(returnSeats.length > 0 ? returnSeats.join(', ') : 'Not available')}" disabled>
                         </div>
                     </div>
                 `);
@@ -134,8 +134,8 @@
                     <div class="booking_page_1">
                         <h2>Passenger ${i + 1}</h2>
                         <div class="user_input_box">
-                            <label>Full name</label>
-                            <input type="text" value="${escapeHtml(name)}" disabled>
+                            <label for="passenger-${i}">Full name</label>
+                            <input type="text" id="passenger-${i}" value="${escapeHtml(name)}" disabled>
                         </div>
                     </div>
                 `);

@@ -1,6 +1,6 @@
 .guest-addons-hero .eyebrow {
     margin: 0 0 6px;
-    color: #7a8caa;
+    color: #666;
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -23,7 +23,7 @@
 
 .guest-full-price {
     margin-left: auto;
-    color: #7a8caa;
+    color: #666;
     font-size: 11px;
     font-weight: 400;
 }

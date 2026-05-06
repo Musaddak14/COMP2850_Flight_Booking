@@ -4,6 +4,9 @@ body {
     background-color: #f2f2f2;
 }
 
+/* makes padding+border count inside width so no overflow  */
+*, *::before, *::after { box-sizing: border-box; }
+
 /*Sets main font and grey background for whole page*/
 
 
@@ -151,6 +154,20 @@ body {
     border-bottom: 2px solid #00a1de;
 }
 
+@media (max-width: 700px) {
+    .top-nav { flex-wrap: wrap; gap: 10px; justify-content: space-between; }
+    .center-nav {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        display: flex;
+    }
+    .lang { display: none; }
+}
+
+
+
+
 .footer-divider {
     height: 20px;
     background: white;
@@ -231,22 +248,51 @@ footer {
 /* for links insidee navbar */
 /* USED GPT 5.3 FOR ASSISTANCE WITH THE HOVER EFFECT*/
 
+/* footer wraps if no room  */
+footer { flex-wrap: wrap; gap: 20px; }
 
+@media (max-width: 600px) {
+    footer { justify-content: center; }
+    .footer-left, .footer-right { width: 100%; text-align: center; }
+}
+
+
+/* logos row wraps too  */
+.footer-logos { flex-wrap: wrap; gap: 15px; }
+
+/* logo size scales w screen  */
+.footer-logos img { height: clamp(30px, 6vw, 50px); }
+
+/* tiny screens - footer halfs go full width centerd  */
+@media (max-width: 600px) {
+    .footer-left, .footer-right { width: 100%; text-align: center; }
+}
 
 /* -----------------------------  */
 /* Airoplane Banner IMAGE */
 /* -----------------------------  */
 
-.Airoplane_Banner {
-    position: relative;
-    margin-bottom: 80px;
-}
-
 .Banner-plane {
     width: 100%;
-    height: 350px;
+    height: clamp(180px, 35vw, 350px);
     object-fit: cover; /* stops image distortion */
 }
+
+.Airoplane_Banner {
+    position: relative;
+}
+
+@media (max-width: 900px) {
+    .search-card {
+        position: static !important;
+        transform: none !important;
+        margin: 20px auto;
+        width: 90%;
+        left: auto;
+        bottom: auto;
+    }
+}
+
 
 
 /* -----------------------------  */
@@ -306,6 +352,29 @@ footer {
 /* FLIGHT SEARCH BAR */
 /* ============================= */
 
+/* mobile layout - stack everythin vertical when screen gets small  */
+@media (max-width: 900px) {
+
+    /*  flip the bar from a row into a column so inputs sit on top of each other */
+    .flight-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    /* inputs+dropdowns: remove the right border since theres nothin beside em anymore
+       swap it for a bottom border so each stacked row has a divider underneath  */
+    .flight-bar input,
+    .flight-bar select {
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+        width: 100%;
+    }
+
+    /* search btn stretches full width so it matches the inputs above it  */
+    .search-btn {
+        width: 100%;
+    }
+}
 .flight-bar {
     display: flex;
     align-items: center;
@@ -413,14 +482,17 @@ footer {
 
 /*centers everything + adds space from section above*/
 
-
-
 .experience-grid {
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 25px;
-    margin-top: 40px;
+    max-width: 1200px;
+    margin: 40px auto 0;
+    padding: 0 20px;
+    justify-items: center;
 }
+
+.experience-card { width: auto; }   /* remove fixed 260px */
 
 /*makes a row for the buttons/pics with spacing between*/
 
@@ -578,6 +650,27 @@ footer {
 /*underline on hover*/
 
 
+/* mobile: stack the promo card vertical + center text  */
+@media (max-width: 900px) {
+    .card-promo {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .card-image img {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .card-text {
+        text-align: center;
+        max-width: 100%;
+    }
+
+    .blue-box h2 {
+        font-size: clamp(28px, 6vw, 70px);
+    }
+}
 
 /* SUPPORT BANNER */
 
@@ -925,6 +1018,63 @@ footer {
     border: 2px solid #007bff;
 }
 
+/* mobile fixes for flight results page  */
+@media (max-width: 900px) {
+
+    /* filter/sort/title stack vertical instead of 3 cols  */
+    .results-top {
+        grid-template-columns: 1fr;
+        padding: 10px 20px;
+        gap: 15px;
+    }
+
+    /* dropdowns full width  */
+    .dropdown select { max-width: 100%; }
+
+    /* smaller heading on mobile  */
+    .results-header h1 { font-size: 28px; }
+
+    /* flight card stacks vertical  */
+    .flight-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    /* logo/times row goes vertical too  */
+    .flight-left {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* kill the big margin on the buttons  */
+    .Book_Now-btn,
+    .details-btn { margin-top: 10px; }
+
+    /* tighter gap between times so they fit  */
+    .time-section { gap: 15px; }
+
+    /* shrink the big times so they fit  */
+    .time-section h2 { font-size: 22px; }
+
+    /* price boxes stack vertical full width  */
+    .flight-prices {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .price-box { width: 100%; }
+
+    .flight-logo {
+        position: static;
+    }
+
+    .airline-block {
+        align-items: flex-start;
+    }
+}
+
+
 
 /* Booking page 1 */
 
@@ -947,6 +1097,32 @@ footer {
     padding: 10px 40px;
 }
 
+/* payment page wrapper  */
+.payment-wrap {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+/* 2 col layout - form left, summary right  */
+.payment-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* on mobile stack em - summary below payment  */
+@media (max-width: 900px) {
+    .payment-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* booking page cards full width on mobile  */
+    .booking_page_1 {
+        width: 100%;
+    }
+}
 
 /* main card container */
 .booking_page_1 {
@@ -993,7 +1169,7 @@ footer {
 /* bold text showing what each box is menat to include */
 .user_input_box small {
     font-size: 12px;
-    color: #888;
+    color: #666;
     margin-bottom: 6px;
 }
 
@@ -1004,9 +1180,15 @@ footer {
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 15px;
-    color: #333;
+    color: #666;
     appearance: none;
     background: #fff;
+}
+
+/* keep payment form grid inputs inside their cells  */
+.booking_page_1 .user_input_box input {
+    width: 100%;
+    min-width: 0;
 }
 
 /* adds the arrow to selects */
@@ -1032,7 +1214,7 @@ footer {
 /* DD MM YYYY label */
 .dob-field small {
     font-size: 12px;
-    color: #888;
+    color: #666;
     margin-bottom: 4px;
 }
 
@@ -1092,7 +1274,7 @@ footer {
 .col-label {
     text-align: center;
     font-size: 13px;
-    color: grey;
+    color: #666;
     font-weight: 600;
 }
 
@@ -1115,7 +1297,7 @@ footer {
 .row-num {
     text-align: center;
     font-size: 12px;
-    color: grey;
+    color: #666;
 }
 
 
@@ -1194,7 +1376,7 @@ footer {
     align-items: center;
     gap: 6px;
     font-size: 12px;
-    color: lightslategrey;
+    color: #666;
 }
 
 /* small coloured box next to label */
@@ -1226,8 +1408,8 @@ footer {
 .continue-btn {
     width: 80%;
     padding: 12px;
-    background: dimgrey;
-    color: white;
+    background: #666;
+    color: #ffffff;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
@@ -1342,7 +1524,7 @@ footer {
 
 .pk p {
     font-size: 11px;
-    color: #888;
+    color: #666;
 }
 
 /* badge eg Free or 30% off */
@@ -1445,7 +1627,7 @@ label.row input {
 /* option description */
 .rs {
     font-size: 11px;
-    color: #888;
+    color: #666;
     margin-top: 1px;
 }
 
@@ -1569,7 +1751,7 @@ label.row input {
 .btnb {
     background: none;
     border: none;
-    color: #888;
+    color: #666;
     font-size: 12px;
     width: 100%;
     margin-top: 7px;
@@ -1591,15 +1773,13 @@ label.row input {
 #email-line { margin-bottom:24px; }
 
 /* return home btn  */
-.booking-confirmation .continue-btn { display:inline-block; text-decoration:none; width:auto; padding:12px 24px; background:#1a2b4a; color:white; border-radius:30px; }e-btn { display:inline-block; text-decoration:none; width:auto; padding:12px 24px; background:#1a2b4a; border-radius:30px; }
+.booking-confirmation .continue-btn { display:inline-block; text-decoration:none; width:auto; padding:12px 24px; background:#1a2b4a; color: #ffffff; border-radius:30px; }  e-btn { display:inline-block; text-decoration:none; width:auto; padding:12px 24px; background: #666; border-radius:30px; }
 
-#pay-btn {
-    opacity: 0.7;
-}
+
 
 #pay-btn.active {
     background: #1f8f3a;
-    color: white;
+    color: #000000;
     opacity: 1;
 }
 
@@ -1619,7 +1799,7 @@ label.row input {
 .Book_Now-btn.active,
 .continue-btn.active {
     background: #1f8f3a;
-    color: white;
+    color: #000000;
 }
 
 .Book_Now-btn:disabled,

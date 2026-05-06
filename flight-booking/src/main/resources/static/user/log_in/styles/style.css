@@ -518,3 +518,72 @@ footer {
     box-sizing: border-box;
     background: #fff;
 }
+
+
+/* nav stacks centered on small screens  */
+@media (max-width: 700px) {
+    .top-nav {
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: space-between;
+    }
+
+    /* center-nav drops to its own row + centers  */
+    .center-nav {
+        position: static;
+        transform: none;
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    /* hide lang text on small screens  */
+    .lang { display: none; }
+}
+
+/* tabs go vertical on tiny screens so they dont squish  */
+@media (max-width: 480px) {
+    .login-tabs {
+        flex-direction: column;
+        border-bottom: none;
+    }
+
+    .login-tab {
+        text-align: left;
+        border-bottom: 2px solid #e8e8e8;
+        margin-bottom: 0;
+    }
+
+    .login-tab.active {
+        border-bottom: 2px solid #132e8e;
+    }
+
+    /* form options stack instead of row  */
+    .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    /* login card less padding on tiny screens  */
+    .login-card {
+        padding: 20px 16px;
+    }
+
+    .login-header h1 { font-size: 18px; }
+}
+
+/* footer wraps + stacks centered  */
+footer { flex-wrap: wrap; gap: 20px; }
+
+@media (max-width: 600px) {
+    footer { justify-content: center; }
+    .footer-left, .footer-right { width: 100%; text-align: center; }
+}
+
+.footer-logos { flex-wrap: wrap; gap: 15px; }
+.footer-logos img { height: clamp(30px, 6vw, 50px); }
+
+/* box-sizing global so padding dont overflow  */
+*, *::before, *::after { box-sizing: border-box; }
