@@ -1,6 +1,7 @@
 package com.flightsystem.model
 
 import org.jetbrains.exposed.sql.Table
+
 /**
 Database table for tracking promo code usage.
 

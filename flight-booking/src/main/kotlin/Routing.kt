@@ -1,87 +1,63 @@
 package com.example.com
 
 import com.example.com.service.ManagerAnalyticsService
-import com.flightsystem.model.Airport
-import com.flightsystem.model.Airports
-import com.flightsystem.model.Bookings
-import com.flightsystem.model.Flights
-import com.flightsystem.model.CheckoutRequest
-import com.flightsystem.model.Layovers
-import com.flightsystem.model.Manager
-import com.flightsystem.model.PaymentRequest
-import com.flightsystem.model.PriceHold
-import com.flightsystem.model.PriceHoldSeats
-import com.flightsystem.model.PriceHolds
-import com.flightsystem.service.AuthenticationService
-import com.flightsystem.service.CheckoutService
-import com.flightsystem.model.PassengerInput
-import com.flightsystem.model.Users
-
-import model.ManagerSentEmails
-import model.ManagerSentEmailResponse
-
 import com.flightsystem.AppEnv
 import com.flightsystem.model.AccountStatus
-import com.flightsystem.service.EmailService
-
-
-
-import com.flightsystem.service.LoyaltyService
-import com.flightsystem.service.PaymentService
-import com.flightsystem.service.PriceHoldService
-import com.flightsystem.service.TicketService
-import com.flightsystem.service.PromoCodeService
-import model.CreateTicketRequest
-import model.UpdateTicketRequest
-
-
-import io.ktor.server.request.receive
-import io.ktor.server.routing.post
-
-
-
-
-import com.sun.org.apache.xalan.internal.lib.ExsltDatetime.time
-import com.flightsystem.service.PassengerService
+import com.flightsystem.model.Airports
+import com.flightsystem.model.BookingDetails
+import com.flightsystem.model.Bookings
+import com.flightsystem.model.CheckoutRequest
+import com.flightsystem.model.Flights
+import com.flightsystem.model.Layovers
+import com.flightsystem.model.LoyaltyAccounts
+import com.flightsystem.model.Manager
+import com.flightsystem.model.Passenger
+import com.flightsystem.model.PassengerInput
+import com.flightsystem.model.PaymentRequest
+import com.flightsystem.model.PriceHoldSeats
+import com.flightsystem.model.PriceHolds
 import com.flightsystem.model.SavePassengersRequest
 import com.flightsystem.model.Seats
-
-
-import io.ktor.server.request.receive
-import io.ktor.server.routing.post
+import com.flightsystem.model.Users
+import com.flightsystem.service.AuthenticationService
 import com.flightsystem.service.BookingService
-
-
-
-// imports the flight info
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
+import com.flightsystem.service.CheckoutService
+import com.flightsystem.service.EmailService
+import com.flightsystem.service.LoyaltyService
+import com.flightsystem.service.PassengerService
+import com.flightsystem.service.PaymentService
+import com.flightsystem.service.PriceHoldService
+import com.flightsystem.service.PromoCodeService
+import com.flightsystem.service.TicketService
+import createEmptySeatMaps
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.Application
+import io.ktor.server.http.content.staticResources
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondFile
+import io.ktor.server.response.respondRedirect
+import io.ktor.server.routing.delete
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.put
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import kotlinx.serialization.Serializable
-
-import io.ktor.server.application.*
-import io.ktor.server.pebble.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.pebbletemplates.pebble.loader.ClasspathLoader
-import org.jetbrains.exposed.sql.*
-import io.ktor.http.*
-import io.ktor.server.http.content.*
-import org.h2.api.H2Type.row
+import model.CreateTicketRequest
+import model.ManagerSentEmailResponse
+import model.ManagerSentEmails
+import model.UpdateTicketRequest
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
-//import org.h2.api.H2Type.row
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
-
+import org.jetbrains.exposed.sql.update
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
-import com.flightsystem.model.BookingDetails
-import com.flightsystem.model.LoyaltyAccounts
-import com.flightsystem.model.Passenger
-import com.flightsystem.model.SeatClass
-import createEmptySeatMaps
 
 @Serializable
 data class UpdateUserRequest(
@@ -101,13 +77,13 @@ data class FlightResponse(
     val date: String,
     val departureTime: String,
     val arrivalTime: String,
-    val length: Double
+    val length: Double,
 )
 
 @Serializable
 data class ManagerBookingDetailResponse(
     val booking: BookingDetails?,
-    val passengers: List<Passenger>
+    val passengers: List<Passenger>,
 )
 
 @Serializable
@@ -119,7 +95,7 @@ data class UpcomingFlightData(
     val date: String,
     val departureTime: String,
     val arrivalTime: String,
-    val length: Double
+    val length: Double,
 )
 
 @Serializable
@@ -131,7 +107,7 @@ data class HistoricFlightData(
     val date: String,
     val departureTime: String,
     val arrivalTime: String,
-    val length: Double
+    val length: Double,
 )
 
 @Serializable
@@ -143,7 +119,7 @@ data class InsertFlightData(
     val departureTime: String,
     val arrivalTime: String,
     val length: Double,
-    val price: Double
+    val price: Double,
 )
 
 @Serializable
@@ -151,7 +127,7 @@ data class InsertAirportData(
     val code: String,
     val name: String,
     val city: String,
-    val country: String
+    val country: String,
 )
 
 @Serializable
@@ -160,20 +136,19 @@ data class RegisterRequest(
     val lastName: String,
     val email: String,
     val password: String,
-    val dateOfBirth: String
+    val dateOfBirth: String,
 )
 
 @Serializable
 data class RegisterResponse(
     val success: Boolean,
-    val message: String
+    val message: String,
 )
-
 
 @Serializable
 data class ApplyPromoCodeRequest(
     val code: String,
-    val originalAmount: Double
+    val originalAmount: Double,
 )
 
 @Serializable
@@ -182,14 +157,14 @@ data class ApplyPromoCodeResponse(
     val code: String? = null,
     val originalAmount: Double,
     val discountedAmount: Double? = null,
-    val message: String
+    val message: String,
 )
 
 @Serializable
 data class CreatePromoCodeRequest(
     val code: String,
     val discountType: String,
-    val discountValue: Double
+    val discountValue: Double,
 )
 
 @Serializable
@@ -198,11 +173,10 @@ data class CreatePromoCodeResponse(
     val message: String? = null,
 )
 
-
 @Serializable
 data class LoginRequest(
     val email: String,
-    val password: String
+    val password: String,
 )
 
 @Serializable
@@ -213,7 +187,7 @@ data class LoginResponse(
     val lastName: String,
     val email: String,
     val role: String,
-    val sessionId: String
+    val sessionId: String,
 )
 
 @Serializable
@@ -221,36 +195,32 @@ data class SessionCheckResponse(
     val valid: Boolean,
     val userId: Int? = null,
     val email: String? = null,
-    val role: String? = null
+    val role: String? = null,
 )
 
 @Serializable
 data class ErrorResponse(
-    val error: String
+    val error: String,
 )
-
-
 
 @Serializable
 data class SendManagerEmailRequest(
     val toEmail: String,
     val subject: String,
-    val message: String
+    val message: String,
 )
-
 
 @Serializable
-data class SendManagerEmailResponse (
+data class SendManagerEmailResponse(
     val success: Boolean,
-    val message: String
+    val message: String,
 )
-
 
 @Serializable
 data class CreateBookingRequest(
     val userId: Int,
     val flightId: String,
-    val seatNumbers: List<String>
+    val seatNumbers: List<String>,
 )
 
 @Serializable
@@ -259,7 +229,7 @@ data class CreateHoldRequest(
     val flightId: String,
     val seatNumbers: List<String>,
     val returnFlightId: String? = null,
-    val returnSeatNumbers: List<String> = emptyList()
+    val returnSeatNumbers: List<String> = emptyList(),
 )
 
 @Serializable
@@ -274,17 +244,15 @@ data class CreateHoldResponse(
     val returnSeatNumbers: List<String>,
 )
 
-
 @Serializable
-data class AccountSummary (
+data class AccountSummary(
     val userId: Int,
     val firstName: String,
     val lastName: String,
     val membershipNumber: String,
     val membershipTier: String,
-    val loyaltyPoints: Int
+    val loyaltyPoints: Int,
 )
-
 
 @Serializable
 data class BookingLookupResponse(
@@ -294,12 +262,12 @@ data class BookingLookupResponse(
     val seats: List<String>,
     val passengers: List<String>,
     val cabin: String?,
-    val addOns: String?
+    val addOns: String?,
 )
 
 @Serializable
 data class UpdateSeatsRequest(
-    val seats: List<String>
+    val seats: List<String>,
 )
 
 @Serializable
@@ -311,13 +279,13 @@ data class ManagerAnalyticsResponse(
     val bookingsPerHour: List<HourlyBookingCount>,
     val bookingsPerFlight: List<FlightBookingCount>,
     val popularRoutes: List<RouteBookingCount>,
-    val bookingsPerRoute: List<RouteBookingCount>
+    val bookingsPerRoute: List<RouteBookingCount>,
 )
 
 @Serializable
 data class HourlyBookingCount(
     val hour: Int,
-    val count: Int
+    val count: Int,
 )
 
 @Serializable
@@ -326,13 +294,14 @@ data class FlightBookingCount(
     val date: String,
     val departureAirport: String,
     val arrivalAirport: String,
-    var bookingCount: Int
+    var bookingCount: Int,
 )
+
 @Serializable
 data class RouteBookingCount(
     val departureAirport: String,
     val arrivalAirport: String,
-    val bookingCount: Int
+    val bookingCount: Int,
 )
 
 @Serializable
@@ -342,10 +311,16 @@ data class Route(
 )
 
 @Serializable
-data class OtpWaitingresponse(val success: Boolean, val otpRequired: Boolean)
+data class OtpWaitingresponse(
+    val success: Boolean,
+    val otpRequired: Boolean,
+)
 
 @Serializable
-data class OtpVerifyRequest(val email: String, val otp: String)
+data class OtpVerifyRequest(
+    val email: String,
+    val otp: String,
+)
 
 @Serializable
 data class ManagerAccountChanges(
@@ -355,32 +330,30 @@ data class ManagerAccountChanges(
     val email: String,
     val role: String,
     val status: AccountStatus,
-    val loyaltyPoints: Int
+    val loyaltyPoints: Int,
 )
 
 @Serializable
 data class AddPointsRequest(
-    val points: Int
+    val points: Int,
 )
-
-
 
 fun Application.configureRouting() {
     val authenticationService = AuthenticationService()
 
-    val emailService = EmailService(
-        smtpHost = "smtp.gmail.com",
-        smtpPort = "587",
-        smtpUsername = AppEnv.require("SMTP_USERNAME"),
-        smtpPassword = AppEnv.require("SMTP_PASSWORD"),
-        fromEmail = AppEnv.require("SMTP_USERNAME")
-    )
+    val emailService =
+        EmailService(
+            smtpHost = "smtp.gmail.com",
+            smtpPort = "587",
+            smtpUsername = AppEnv.require("SMTP_USERNAME"),
+            smtpPassword = AppEnv.require("SMTP_PASSWORD"),
+            fromEmail = AppEnv.require("SMTP_USERNAME"),
+        )
 
     val ticketService = TicketService(emailService)
     val promoCodeService = PromoCodeService()
 
     routing {
-
         staticResources("/styles", "static/user/home/styles")
         staticResources("/scripts", "static/user/home/scripts")
 
@@ -393,7 +366,6 @@ fun Application.configureRouting() {
         staticResources("/support/styles", "static/user/support/styles")
         staticResources("/support/scripts", "static/user/support/scripts")
         staticResources("/shared", "static/shared")
-
 
         get("/lounges") {
             call.respondFile(File("src/main/resources/static/user/home/lounges.html"))
@@ -430,12 +402,9 @@ fun Application.configureRouting() {
         val passengerService = PassengerService()
         val bookingService = BookingService()
 
-
-
         get("/manage") {
             call.respondFile(File("src/main/resources/static/user/manage-account/index.html"))
         }
-
 
         staticResources("/", "static/user/home")
         staticResources("/log_in", "static/user/log_in")
@@ -458,7 +427,7 @@ fun Application.configureRouting() {
 
         get("/seatmap") {
             call.respondFile(
-                File("src/main/resources/static/user/book/seatmap.html")
+                File("src/main/resources/static/user/book/seatmap.html"),
             )
         }
 
@@ -470,20 +439,19 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/user/support/support.html"))
         }
 
-
-
-
-        get("/api/airports") {                          //get airport data for the drop-down search menu
-            val airportData = transaction {
-                Airports.selectAll().orderBy(Airports.country).map { row ->
-                    mapOf(
-                        "code" to row[Airports.code],
-                        "name" to row[Airports.name],
-                        "country" to row[Airports.country],
-                        "city" to row[Airports.city],
-                    )
+        get("/api/airports") {
+            // get airport data for the drop-down search menu
+            val airportData =
+                transaction {
+                    Airports.selectAll().orderBy(Airports.country).map { row ->
+                        mapOf(
+                            "code" to row[Airports.code],
+                            "name" to row[Airports.name],
+                            "country" to row[Airports.country],
+                            "city" to row[Airports.city],
+                        )
+                    }
                 }
-            }
             call.respond(airportData)
         }
 
@@ -493,7 +461,7 @@ fun Application.configureRouting() {
             if (userIdParam.isNullOrBlank()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    ErrorResponse("Missing userId")
+                    ErrorResponse("Missing userId"),
                 )
                 return@get
             }
@@ -502,7 +470,7 @@ fun Application.configureRouting() {
             if (userId == null) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    ErrorResponse("Invalid userId")
+                    ErrorResponse("Invalid userId"),
                 )
                 return@get
             }
@@ -511,7 +479,7 @@ fun Application.configureRouting() {
             if (user == null) {
                 call.respond(
                     HttpStatusCode.NotFound,
-                    ErrorResponse("User not found")
+                    ErrorResponse("User not found"),
                 )
                 return@get
             }
@@ -527,11 +495,10 @@ fun Application.configureRouting() {
                     lastName = user.lastName,
                     membershipNumber = "BA-${user.userId}",
                     membershipTier = "Member",
-                    loyaltyPoints = points
-                )
+                    loyaltyPoints = points,
+                ),
             )
         }
-
 
         get("/api/flights") {
             val from = call.request.queryParameters["from"]
@@ -539,75 +506,73 @@ fun Application.configureRouting() {
             val date = call.request.queryParameters["date"]
             val passengers = call.request.queryParameters["passengers"]
 
-            //read user input from the URL so API can filter flights
+            // read user input from the URL so API can filter flights
 
-            val flightData = transaction {
-                //TODO:
-                //Remove requirement for date in search
+            val flightData =
+                transaction {
+                    // TODO:
+                    // Remove requirement for date in search
 
-                Flights.selectAll().mapNotNull { row ->
+                    Flights.selectAll().mapNotNull { row ->
 
+                        val departure = row[Flights.departureAirport]
+                        val arrival = row[Flights.arrivalAirport]
+                        val flightDate = row[Flights.date]
 
-                    val departure = row[Flights.departureAirport]
-                    val arrival = row[Flights.arrivalAirport]
-                    val flightDate = row[Flights.date]
+                        // pull data from the database row into simple variable for comparison
 
+                        var match = true
+                        // boolean val used to check if results meet filters or not
 
-                    //pull data from the database row into simple variable for comparison
+                        if (from != null) {
+                            if (departure != from) {
+                                match = false
+                            }
+                        }
+                        // if the user inputted a departure airport remove results with different departure airport
 
-                    var match = true
-                    //boolean val used to check if results meet filters or not
+                        if (to != null) {
+                            if (arrival != to) {
+                                match = false
+                            }
+                        }
+                        // if the user inputted an arrival airport remove results with different arrival airports
 
-                    if (from != null) {
-                        if (departure != from) {
-                            match = false
+                        if (date != "") {
+                            if (flightDate != date) {
+                                match = false
+                            }
+                        }
+                        // if the user inputted a date remove results with a different date
+
+                        if (match == true) {
+                            // only include flights that match everything
+
+                            FlightResponse(
+                                row[Flights.flightId],
+                                row[Flights.departureAirport],
+                                row[Flights.arrivalAirport],
+                                row[Flights.price],
+                                row[Flights.date],
+                                row[Flights.departureTime],
+                                row[Flights.arrivalTime],
+                                row[Flights.length],
+                            )
+                        } else {
+                            null
+                            // lables flight as non matching (reject)
                         }
                     }
-                    // if the user inputted a departure airport remove results with different departure airport
-
-                    if (to != null) {
-                        if (arrival != to) {
-                            match = false
-                        }
-                    }
-                    // if the user inputted an arrival airport remove results with different arrival airports
-
-
-                    if (date != "") {
-                        if (flightDate != date) {
-                            match = false
-                        }
-                    }
-                    // if the user inputted a date remove results with a different date
-
-                    if (match == true) {
-                        // only include flights that match everything
-
-                        FlightResponse(
-                            row[Flights.flightId],
-                            row[Flights.departureAirport],
-                            row[Flights.arrivalAirport],
-                            row[Flights.price],
-                            row[Flights.date],
-                            row[Flights.departureTime],
-                            row[Flights.arrivalTime],
-                            row[Flights.length]
-                        )
-                    } else {
-                        null
-                        //lables flight as non matching (reject)
-                    }
-
+                    // removes all the rejected flights
                 }
-                // removes all the rejected flights
-            }
             call.respond(flightData)
         }
 
         // seat routing
         get("/api/seats") {
-            val flightId = call.request.queryParameters["flightId"]
-                ?: return@get call.respond(HttpStatusCode.BadRequest, "flightId required")
+            val flightId =
+                call.request.queryParameters["flightId"]
+                    ?: return@get call.respond(HttpStatusCode.BadRequest, "flightId required")
 
             val bookingService = BookingService()
             val seats = bookingService.getAvailableSeats(flightId)
@@ -623,10 +588,11 @@ fun Application.configureRouting() {
         post("/api/passengers") {
             val request = call.receive<SavePassengersRequest>()
 
-            val savedPassengers = passengerService.addPassengersToBooking(
-                request.bookingId,
-                request.passengers
-            )
+            val savedPassengers =
+                passengerService.addPassengersToBooking(
+                    request.bookingId,
+                    request.passengers,
+                )
 
             call.respond(HttpStatusCode.Created, savedPassengers)
         }
@@ -656,7 +622,8 @@ fun Application.configureRouting() {
                 if (updatedTicket == null) {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        "Ticket update failed. Ticket may not exist, or booking change could not be processed")
+                        "Ticket update failed. Ticket may not exist, or booking change could not be processed",
+                    )
                 } else {
                     call.respond(HttpStatusCode.OK, updatedTicket)
                 }
@@ -688,26 +655,29 @@ fun Application.configureRouting() {
         }
 
         get("/api/manager/flights") {
-            //TODO:
-            //Add manager only access - requires manager log-in key.
-            val upcomingFlightData = transaction {
-                Flights.selectAll().where { Flights.date greaterEq LocalDate.now().toString() }
-                    .orderBy(Flights.date to SortOrder.ASC, Flights.departureTime to SortOrder.ASC).map { row ->
-                        UpcomingFlightData(
-                            flightId = row[Flights.flightId],
-                            departureAirport = row[Flights.departureAirport],
-                            arrivalAirport = row[Flights.arrivalAirport],
-                            date = row[Flights.date],
-                            departureTime = row[Flights.departureTime],
-                            arrivalTime = row[Flights.arrivalTime],
-                            price = row[Flights.price],
-                            length = row[Flights.length]
-
-                            //TODO:
-                            //Add quantity of tickets sold / still available
-                        )
-                    }
-            }
+            // TODO:
+            // Add manager only access - requires manager log-in key.
+            val upcomingFlightData =
+                transaction {
+                    Flights
+                        .selectAll()
+                        .where { Flights.date greaterEq LocalDate.now().toString() }
+                        .orderBy(Flights.date to SortOrder.ASC, Flights.departureTime to SortOrder.ASC)
+                        .map { row ->
+                            UpcomingFlightData(
+                                flightId = row[Flights.flightId],
+                                departureAirport = row[Flights.departureAirport],
+                                arrivalAirport = row[Flights.arrivalAirport],
+                                date = row[Flights.date],
+                                departureTime = row[Flights.departureTime],
+                                arrivalTime = row[Flights.arrivalTime],
+                                price = row[Flights.price],
+                                length = row[Flights.length],
+                                // TODO:
+                                // Add quantity of tickets sold / still available
+                            )
+                        }
+                }
             call.respond(upcomingFlightData)
         }
 
@@ -740,19 +710,19 @@ fun Application.configureRouting() {
         post("/api/manager/airports") {
             val sessionId: String
             val sessionIdFromUrl = call.request.queryParameters["sessionId"]
-            //get user session id
-            if (sessionIdFromUrl == null){
+            // get user session id
+            if (sessionIdFromUrl == null) {
                 sessionId = ""
-                //if session id is empty ie not logged in then sessionid = ""
-            }else{
+                // if session id is empty ie not logged in then sessionid = ""
+            } else {
                 sessionId = sessionIdFromUrl
             }
-            //else get there real sessionid
+            // else get there real sessionid
             val isManager = authenticationService.isManagerSession(sessionId)
-            //checks if the sessionid is a manager sessionid
+            // checks if the sessionid is a manager sessionid
             if (!isManager) {
                 call.respondRedirect("/log_in")
-                return@post   // exit this handler, don't run the code below
+                return@post // exit this handler, don't run the code below
             }
 
             val request = call.receive<InsertAirportData>()
@@ -775,9 +745,10 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.BadRequest, "flightId required")
                 return@delete
             }
-            val emptyBookingData = transaction {
-                Bookings.selectAll().where { Bookings.flightId eq flightId }.count() > 0
-            }
+            val emptyBookingData =
+                transaction {
+                    Bookings.selectAll().where { Bookings.flightId eq flightId }.count() > 0
+                }
 
             if (emptyBookingData) {
                 call.respond(HttpStatusCode.BadRequest, "flight has existing bookings.")
@@ -803,35 +774,37 @@ fun Application.configureRouting() {
         }
 
         post("/checkout") {
-
             val request = call.receive<CheckoutRequest>()
 
-            val checkoutService = CheckoutService(
-                priceHoldService = PriceHoldService(),
-                paymentService = PaymentService(),
-                loyaltyService = LoyaltyService(),
-                promoCodeService = PromoCodeService()
-            )
+            val checkoutService =
+                CheckoutService(
+                    priceHoldService = PriceHoldService(),
+                    paymentService = PaymentService(),
+                    loyaltyService = LoyaltyService(),
+                    promoCodeService = PromoCodeService(),
+                )
 
-            val paymentRequest = PaymentRequest(
-                cardholderName = request.cardholderName,
-                cardNumber = request.cardNumber,
-                expiryMonth = request.expiryMonth,
-                expiryYear = request.expiryYear,
-                cvv = request.cvv,
-                billingAddress = request.billingAddress
-            )
+            val paymentRequest =
+                PaymentRequest(
+                    cardholderName = request.cardholderName,
+                    cardNumber = request.cardNumber,
+                    expiryMonth = request.expiryMonth,
+                    expiryYear = request.expiryYear,
+                    cvv = request.cvv,
+                    billingAddress = request.billingAddress,
+                )
 
-            val response = checkoutService.checkout(
-                holdId = request.holdId,
-                returnHoldId = request.returnHoldId,
-                request = paymentRequest,
-                pointsToRedeem = request.pointsToRedeem,
-                promoCode = request.promoCode,
-                guestEmail = request.guestEmail,
-                cabin = request.cabin,
-                addOns = request.addOns
-            )
+            val response =
+                checkoutService.checkout(
+                    holdId = request.holdId,
+                    returnHoldId = request.returnHoldId,
+                    request = paymentRequest,
+                    pointsToRedeem = request.pointsToRedeem,
+                    promoCode = request.promoCode,
+                    guestEmail = request.guestEmail,
+                    cabin = request.cabin,
+                    addOns = request.addOns,
+                )
 
             if (response.success) {
                 call.respond(HttpStatusCode.OK, response)
@@ -842,27 +815,25 @@ fun Application.configureRouting() {
 
         post("/api/auth/login") {
             val request = call.receive<LoginRequest>()
-            //val authenticationService = AuthenticationService()
+            // val authenticationService = AuthenticationService()
             val result = authenticationService.login(request.email, request.password)
 
             if (result.isSuccess) {
                 val user = result.getOrThrow()
-                val otp =  authenticationService.createOtpChallenge(user)
-                //val sessionId = authenticationService.createSession(user)
+                val otp = authenticationService.createOtpChallenge(user)
+                // val sessionId = authenticationService.createSession(user)
 
-                if (user.email == "manager@astraeus.com"){
+                if (user.email == "manager@astraeus.com") {
                     emailService.sendEmail(
                         toEmail = "bhamani01@gmail.com, musaddakali14@gmail.com , mikaeel4760@gmail.com , tods2006@gmail.com",
                         subject = "MANAGER ADMIN ACCESS REQUESTED",
-                        body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes."
+                        body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes.",
                     )
-
-                }else {
+                } else {
                     emailService.sendEmail(
-
                         toEmail = user.email,
                         subject = "Your Astraeus Airways login code",
-                        body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes. Do not share it."
+                        body = "Your one-time login code is: $otp\n\nThis code expires in 5 minutes. Do not share it.",
                     )
                 }
 
@@ -870,7 +841,7 @@ fun Application.configureRouting() {
             } else {
                 call.respond(
                     HttpStatusCode.Unauthorized,
-                    ErrorResponse("Invalid email or password")
+                    ErrorResponse("Invalid email or password"),
                 )
             }
         }
@@ -883,8 +854,6 @@ fun Application.configureRouting() {
                 val user = result.getOrThrow()
                 val sessionId = authenticationService.createSession(user)
 
-
-
                 call.respond(
                     HttpStatusCode.OK,
                     LoginResponse(
@@ -894,10 +863,11 @@ fun Application.configureRouting() {
                         lastName = user.lastName,
                         email = user.email,
                         role = if (user is Manager) "MANAGER" else "USER",
-                        sessionId = sessionId
-                    ))
-            }else{
-                call.respond(HttpStatusCode.Unauthorized, ErrorResponse(result.exceptionOrNull()?.message ?:"Invalid otp"))
+                        sessionId = sessionId,
+                    ),
+                )
+            } else {
+                call.respond(HttpStatusCode.Unauthorized, ErrorResponse(result.exceptionOrNull()?.message ?: "Invalid otp"))
             }
         }
 
@@ -909,7 +879,7 @@ fun Application.configureRouting() {
             if (email.isNullOrBlank() || password.isNullOrBlank()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    ErrorResponse("missing email or password")
+                    ErrorResponse("missing email or password"),
                 )
                 return@get
             }
@@ -928,13 +898,13 @@ fun Application.configureRouting() {
                         lastName = user.lastName,
                         email = user.email,
                         role = if (user is Manager) "MANAGER" else "USER",
-                        sessionId = sessionId
-                    )
+                        sessionId = sessionId,
+                    ),
                 )
             } else {
                 call.respond(
                     HttpStatusCode.Unauthorized,
-                    ErrorResponse("invalid emaol or password")
+                    ErrorResponse("invalid emaol or password"),
                 )
             }
         }
@@ -946,7 +916,7 @@ fun Application.configureRouting() {
             if (sessionId.isNullOrBlank()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    ErrorResponse("Missing sessionId")
+                    ErrorResponse("Missing sessionId"),
                 )
                 return@get
             }
@@ -955,7 +925,7 @@ fun Application.configureRouting() {
             if (user == null) {
                 call.respond(
                     HttpStatusCode.Unauthorized,
-                    SessionCheckResponse(valid = false)
+                    SessionCheckResponse(valid = false),
                 )
             } else {
                 call.respond(
@@ -964,8 +934,8 @@ fun Application.configureRouting() {
                         valid = true,
                         userId = user.userId,
                         email = user.email,
-                        role = if (user is Manager) "MANAGER" else "USER"
-                    )
+                        role = if (user is Manager) "MANAGER" else "USER",
+                    ),
                 )
             }
         }
@@ -977,16 +947,17 @@ fun Application.configureRouting() {
             if (sessionId.isNullOrBlank()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    ErrorResponse("Missing sessionId")
+                    ErrorResponse("Missing sessionId"),
                 )
                 return@post
             }
             authenticationService.logout(sessionId)
             call.respond(
-                HttpStatusCode.OK, RegisterResponse(
+                HttpStatusCode.OK,
+                RegisterResponse(
                     success = true,
-                    message = "Successfully logged out"
-                )
+                    message = "Successfully logged out",
+                ),
             )
         }
 
@@ -1021,37 +992,37 @@ fun Application.configureRouting() {
                 )
             }
         }
-        */
+         */
 
         post("/api/auth/register") {
             val request = call.receive<RegisterRequest>()
 
-            val result = authenticationService.register(
-                request.firstName,
-                request.lastName,
-                request.dateOfBirth,
-                request.email,
-                request.password
-            )
+            val result =
+                authenticationService.register(
+                    request.firstName,
+                    request.lastName,
+                    request.dateOfBirth,
+                    request.email,
+                    request.password,
+                )
 
             if (result.isSuccess) {
                 call.respond(
                     HttpStatusCode.OK,
                     RegisterResponse(
                         success = true,
-                        message = "Account registered successfully."
-                    )
+                        message = "Account registered successfully.",
+                    ),
                 )
             } else {
                 call.respond(
                     HttpStatusCode.BadRequest,
                     ErrorResponse(
-                        result.exceptionOrNull()?.message ?: "Registration failed"
-                    )
+                        result.exceptionOrNull()?.message ?: "Registration failed",
+                    ),
                 )
             }
         }
-
 
         get("/loyaltypage") {
             call.respondFile(File("src/main/resources/static/user/loyalty/loyaltypage.html"))
@@ -1065,8 +1036,9 @@ fun Application.configureRouting() {
             }
 
             val loyaltyService = LoyaltyService()
-            val loyaltyAccount = loyaltyService.getLoyaltyAccount(userId)
-                ?: loyaltyService.createLoyaltyAccount(userId)
+            val loyaltyAccount =
+                loyaltyService.getLoyaltyAccount(userId)
+                    ?: loyaltyService.createLoyaltyAccount(userId)
 
             call.respond(HttpStatusCode.OK, loyaltyAccount)
         }
@@ -1081,41 +1053,46 @@ fun Application.configureRouting() {
 
         post("/api/holds") {
             try {
-
                 val request = call.receive<CreateHoldRequest>()
                 val priceHoldService = PriceHoldService()
 
-                var userId = request.userId ?: transaction {
-                    val guestEmail = "guest@astraeus.local"
-                    val existingGuest = Users.selectAll().where {
-                        Users.email eq guestEmail
-                    }.singleOrNull()
+                var userId =
+                    request.userId ?: transaction {
+                        val guestEmail = "guest@astraeus.local"
+                        val existingGuest =
+                            Users
+                                .selectAll()
+                                .where {
+                                    Users.email eq guestEmail
+                                }.singleOrNull()
 
-                    if (existingGuest != null) {
-                        existingGuest[Users.userId]
-                    } else {
-                        val insertedGuest = Users.insert {
-                            it[firstName] = "Guest"
-                            it[lastName] = "Customer"
-                            it[dateOfBirth] = "1900-01-01"
-                            it[email] = guestEmail
-                            it[passwordHash] = "guest"
-                            it[salt] = "guest"
-                            it[role] = "USER"
-                            it[status] = AccountStatus.ACTIVE
+                        if (existingGuest != null) {
+                            existingGuest[Users.userId]
+                        } else {
+                            val insertedGuest =
+                                Users.insert {
+                                    it[firstName] = "Guest"
+                                    it[lastName] = "Customer"
+                                    it[dateOfBirth] = "1900-01-01"
+                                    it[email] = guestEmail
+                                    it[passwordHash] = "guest"
+                                    it[salt] = "guest"
+                                    it[role] = "USER"
+                                    it[status] = AccountStatus.ACTIVE
+                                }
+
+                            insertedGuest[Users.userId]
                         }
-
-                        insertedGuest[Users.userId]
                     }
-                }
                 var flightId = request.flightId
                 val seatNumbers = request.seatNumbers
                 val returnFlightId = request.returnFlightId
                 val returnSeatNumbers = request.returnSeatNumbers
                 val hold = priceHoldService.createHold(userId, flightId, seatNumbers, returnFlightId, returnSeatNumbers)
-                val user = transaction {
-                    Users.selectAll().where { Users.userId eq userId }.singleOrNull()
-                }
+                val user =
+                    transaction {
+                        Users.selectAll().where { Users.userId eq userId }.singleOrNull()
+                    }
 
                 if (user == null) {
                     call.respond(HttpStatusCode.BadRequest, "Invalid user")
@@ -1129,14 +1106,23 @@ fun Application.configureRouting() {
                     return@post
                 }
 
-
                 val holdId = hold.holdId
                 userId = hold.userId
                 flightId = hold.flightId
                 val expiryTime = hold.expiryTime
                 val totalPrice = hold.totalPrice
 
-                val holdResponse = CreateHoldResponse(holdId, userId, flightId, seatNumbers, totalPrice, expiryTime, hold.returnFlightId, returnSeatNumbers)
+                val holdResponse =
+                    CreateHoldResponse(
+                        holdId,
+                        userId,
+                        flightId,
+                        seatNumbers,
+                        totalPrice,
+                        expiryTime,
+                        hold.returnFlightId,
+                        returnSeatNumbers,
+                    )
                 call.respond(HttpStatusCode.Created, holdResponse)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -1144,7 +1130,6 @@ fun Application.configureRouting() {
             }
         }
         get("/api/bookings/lookup") {
-
             // get  parameters from the request url
             val bookingIdParam = call.request.queryParameters["bookingId"]
             val lastName = call.request.queryParameters["lastName"]?.trim()
@@ -1199,24 +1184,25 @@ fun Application.configureRouting() {
             call.respond(
                 HttpStatusCode.OK,
                 BookingLookupResponse(
-                    bookingId  = details.booking.bookingId,
-                    flightId   = details.booking.flightId,
+                    bookingId = details.booking.bookingId,
+                    flightId = details.booking.flightId,
                     returnFlightId = details.booking.returnFlightId,
-                    seats      = details.seats,
+                    seats = details.seats,
                     passengers = passengerNames,
                     cabin = details.booking.cabin,
                     addOns = details.booking.addOns,
-                )
+                ),
             )
         }
 
         post("/api/promo/apply") {
             val request = call.receive<ApplyPromoCodeRequest>()
 
-            val result = promoCodeService.applyPromoCode(
-                codeValue = request.code,
-                originalAmount = request.originalAmount
-            )
+            val result =
+                promoCodeService.applyPromoCode(
+                    codeValue = request.code,
+                    originalAmount = request.originalAmount,
+                )
 
             if (result.isSuccess) {
                 call.respond(
@@ -1226,8 +1212,8 @@ fun Application.configureRouting() {
                         code = request.code.uppercase(),
                         originalAmount = request.originalAmount,
                         discountedAmount = result.getOrNull(),
-                        message = "Promo code applied successfully"
-                    )
+                        message = "Promo code applied successfully",
+                    ),
                 )
             } else {
                 call.respond(
@@ -1237,8 +1223,8 @@ fun Application.configureRouting() {
                         code = request.code.uppercase(),
                         originalAmount = request.originalAmount,
                         discountedAmount = null,
-                        message = result.exceptionOrNull()?.message ?: "Invalid promo code"
-                    )
+                        message = result.exceptionOrNull()?.message ?: "Invalid promo code",
+                    ),
                 )
             }
         }
@@ -1249,7 +1235,7 @@ fun Application.configureRouting() {
             if (sessionId.isNullOrBlank()) {
                 call.respond(
                     HttpStatusCode.Unauthorized,
-                    ErrorResponse("Missing sessionId")
+                    ErrorResponse("Missing sessionId"),
                 )
                 return@post
             }
@@ -1259,7 +1245,7 @@ fun Application.configureRouting() {
             if (user == null) {
                 call.respond(
                     HttpStatusCode.Unauthorized,
-                    ErrorResponse("Invalid session")
+                    ErrorResponse("Invalid session"),
                 )
                 return@post
             }
@@ -1267,7 +1253,7 @@ fun Application.configureRouting() {
             if (user !is Manager) {
                 call.respond(
                     HttpStatusCode.Forbidden,
-                    ErrorResponse("Only managers can send emails")
+                    ErrorResponse("Only managers can send emails"),
                 )
                 return@post
             }
@@ -1279,8 +1265,8 @@ fun Application.configureRouting() {
                     HttpStatusCode.BadRequest,
                     SendManagerEmailResponse(
                         success = false,
-                        message = "Recipient email cannot be blank"
-                    )
+                        message = "Recipient email cannot be blank",
+                    ),
                 )
                 return@post
             }
@@ -1290,8 +1276,8 @@ fun Application.configureRouting() {
                     HttpStatusCode.BadRequest,
                     SendManagerEmailResponse(
                         success = false,
-                        message = "Subject cannot be blank"
-                    )
+                        message = "Subject cannot be blank",
+                    ),
                 )
                 return@post
             }
@@ -1301,8 +1287,8 @@ fun Application.configureRouting() {
                     HttpStatusCode.BadRequest,
                     SendManagerEmailResponse(
                         success = false,
-                        message = "Message cannot be blank"
-                    )
+                        message = "Message cannot be blank",
+                    ),
                 )
                 return@post
             }
@@ -1311,12 +1297,12 @@ fun Application.configureRouting() {
                 emailService.sendEmail(
                     toEmail = request.toEmail,
                     subject = request.subject,
-                    body = request.message
+                    body = request.message,
                 )
 
                 val now = LocalDateTime.now().toString()
 
-                transaction{
+                transaction {
                     ManagerSentEmails.insert {
                         it[ManagerSentEmails.managerId] = user.userId
                         it[ManagerSentEmails.managerEmail] = user.email
@@ -1331,33 +1317,34 @@ fun Application.configureRouting() {
                     HttpStatusCode.OK,
                     SendManagerEmailResponse(
                         success = true,
-                        message = "Email sent successfully"
-                    )
+                        message = "Email sent successfully",
+                    ),
                 )
             } catch (e: Exception) {
                 call.respond(
                     HttpStatusCode.InternalServerError,
                     SendManagerEmailResponse(
                         success = false,
-                        message = e.message ?: "Failed to send email"
-                    )
+                        message = e.message ?: "Failed to send email",
+                    ),
                 )
             }
 
             get("/api/manager/sent-emails") {
-                val sentEmails = transaction {
-                    ManagerSentEmails.selectAll().map { row ->
-                        ManagerSentEmailResponse(
-                            emailId = row[ManagerSentEmails.emailId],
-                            managerId = row[ManagerSentEmails.managerId],
-                            managerEmail = row[ManagerSentEmails.managerEmail],
-                            toEmail = row[ManagerSentEmails.toEmail],
-                            subject = row[ManagerSentEmails.subject],
-                            message = row[ManagerSentEmails.message],
-                            sentAt = row[ManagerSentEmails.sentAt]
-                        )
+                val sentEmails =
+                    transaction {
+                        ManagerSentEmails.selectAll().map { row ->
+                            ManagerSentEmailResponse(
+                                emailId = row[ManagerSentEmails.emailId],
+                                managerId = row[ManagerSentEmails.managerId],
+                                managerEmail = row[ManagerSentEmails.managerEmail],
+                                toEmail = row[ManagerSentEmails.toEmail],
+                                subject = row[ManagerSentEmails.subject],
+                                message = row[ManagerSentEmails.message],
+                                sentAt = row[ManagerSentEmails.sentAt],
+                            )
+                        }
                     }
-                }
                 call.respond(HttpStatusCode.OK, sentEmails)
             }
         }
@@ -1365,27 +1352,28 @@ fun Application.configureRouting() {
         post("/api/manager/promo-codes") {
             val request = call.receive<CreatePromoCodeRequest>()
 
-            val result = promoCodeService.createPromoCode(
-                codeValue = request.code,
-                discountType = request.discountType.uppercase(),
-                discountValue = request.discountValue
-            )
+            val result =
+                promoCodeService.createPromoCode(
+                    codeValue = request.code,
+                    discountType = request.discountType.uppercase(),
+                    discountValue = request.discountValue,
+                )
 
             if (result.isSuccess) {
                 call.respond(
                     HttpStatusCode.Created,
                     CreatePromoCodeResponse(
                         success = true,
-                        message = "Promo code created successfully"
-                    )
+                        message = "Promo code created successfully",
+                    ),
                 )
             } else {
                 call.respond(
                     HttpStatusCode.BadRequest,
                     CreatePromoCodeResponse(
                         success = false,
-                        message = result.exceptionOrNull()?.message ?: "Unable to create promo code"
-                    )
+                        message = result.exceptionOrNull()?.message ?: "Unable to create promo code",
+                    ),
                 )
             }
         }
@@ -1404,48 +1392,43 @@ fun Application.configureRouting() {
         get("/manager/bookings") {
             val sessionId: String
             val sessionIdFromUrl = call.request.queryParameters["sessionId"]
-            //get user session id
-            if (sessionIdFromUrl == null){
+            // get user session id
+            if (sessionIdFromUrl == null) {
                 sessionId = ""
-                //if session id is empty ie not logged in then sessionid = ""
-            }else{
+                // if session id is empty ie not logged in then sessionid = ""
+            } else {
                 sessionId = sessionIdFromUrl
             }
-            //else get there real sessionid
+            // else get there real sessionid
             val isManager = authenticationService.isManagerSession(sessionId)
-            //checks if the sessionid is a manager sessionid
+            // checks if the sessionid is a manager sessionid
             if (isManager == false) {
                 call.respondRedirect("/log_in")
-                return@get   // exit this handler, don't run the code below
+                return@get // exit this handler, don't run the code below
             }
-            //if not then whenever they try access manager site redirect to homepage
-
+            // if not then whenever they try access manager site redirect to homepage
 
             call.respondFile(File("src/main/resources/static/manager/edit_bookings/edit_bookings.html"))
-            //else redirect to manager site
+            // else redirect to manager site
         }
 
         // get booking + its passengers
         get("/api/manager/bookings/{bookingId}") {
-
-            val bookingId = call.parameters["bookingId"]?.toIntOrNull()
-                ?: return@get call.respond(HttpStatusCode.BadRequest, "invalid booking id")
+            val bookingId =
+                call.parameters["bookingId"]?.toIntOrNull()
+                    ?: return@get call.respond(HttpStatusCode.BadRequest, "invalid booking id")
 
             val booking = bookingService.getBookingDetails(bookingId)
             val passengers = passengerService.getPassengersByBooking(bookingId)
 
             call.respond(ManagerBookingDetailResponse(booking = booking, passengers = passengers))
-
-
         }
 
         // update a passenger in a booking
         put("/api/manager/passengers/{passengerId}") {
-
-
-
-        val passengerId = call.parameters["passengerId"]?.toIntOrNull()
-                ?: return@put call.respond(HttpStatusCode.BadRequest, "invalid passenger id")
+            val passengerId =
+                call.parameters["passengerId"]?.toIntOrNull()
+                    ?: return@put call.respond(HttpStatusCode.BadRequest, "invalid passenger id")
 
             val input = call.receive<PassengerInput>()
 
@@ -1456,10 +1439,10 @@ fun Application.configureRouting() {
 
         // update seats on a booking (frees old seats, books new ones)
         put("/api/manager/bookings/{bookingId}/seats") {
-
             // get booking id
-            val bookingId = call.parameters["bookingId"]?.toIntOrNull()
-                ?: return@put call.respond(HttpStatusCode.BadRequest, "invalid booking id")
+            val bookingId =
+                call.parameters["bookingId"]?.toIntOrNull()
+                    ?: return@put call.respond(HttpStatusCode.BadRequest, "invalid booking id")
             // get the new seats list from request body
             val request = call.receive<UpdateSeatsRequest>()
             val newSeats = request.seats
@@ -1467,19 +1450,20 @@ fun Application.configureRouting() {
             val success = bookingService.updateBookingSeats(bookingId, newSeats)
 
             // send back result
-            if (success) call.respond(HttpStatusCode.OK)
-            else call.respond(HttpStatusCode.BadRequest, "invalid seats")
-
-
+            if (success) {
+                call.respond(HttpStatusCode.OK)
+            } else {
+                call.respond(HttpStatusCode.BadRequest, "invalid seats")
+            }
         }
 
         // Delete entire booking + free seats + delete passengers
         // cancel a booking (removes passengers, frees seats, deletes booking)
         delete("/api/manager/bookings/{bookingId}") {
-
             // get booking id from url
-            val bookingId = call.parameters["bookingId"]?.toIntOrNull()
-                ?: return@delete call.respond(HttpStatusCode.BadRequest, "invalid booking id")
+            val bookingId =
+                call.parameters["bookingId"]?.toIntOrNull()
+                    ?: return@delete call.respond(HttpStatusCode.BadRequest, "invalid booking id")
 
             // remove all passengers on this booking first
             passengerService.deletePassengersByBooking(bookingId)
@@ -1488,9 +1472,11 @@ fun Application.configureRouting() {
             val success = bookingService.cancelBooking(bookingId)
 
             // send back result
-            if (success) call.respond(HttpStatusCode.OK)
-            else call.respond(HttpStatusCode.NotFound)
-
+            if (success) {
+                call.respond(HttpStatusCode.OK)
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
         }
 
         get("/api/debug/passengers") {
@@ -1500,7 +1486,6 @@ fun Application.configureRouting() {
 
         // used for the manage account page so user can view their details
         get("/api/user/details") {
-
             // get the user id
             val userIdText = call.request.queryParameters["userId"]
             val userId = userIdText?.toIntOrNull()
@@ -1512,9 +1497,10 @@ fun Application.configureRouting() {
             }
 
             // search the database for a user with this id
-            val userRow = transaction {
-                Users.selectAll().where { Users.userId eq userId }.singleOrNull()
-            }
+            val userRow =
+                transaction {
+                    Users.selectAll().where { Users.userId eq userId }.singleOrNull()
+                }
 
             // if no user was found, return an error
             if (userRow == null) {
@@ -1529,16 +1515,18 @@ fun Application.configureRouting() {
             val email = userRow[Users.email]
 
             // send the user details back as a response
-            call.respond(HttpStatusCode.OK, mapOf(
-                "firstName" to firstName,
-                "lastName" to lastName,
-                "dateOfBirth" to dateOfBirth,
-                "email" to email,
-            ))
+            call.respond(
+                HttpStatusCode.OK,
+                mapOf(
+                    "firstName" to firstName,
+                    "lastName" to lastName,
+                    "dateOfBirth" to dateOfBirth,
+                    "email" to email,
+                ),
+            )
         }
 
         get("/api/user/bookings") {
-
             // get userid
             val userId = call.request.queryParameters["userId"]?.toIntOrNull()
 
@@ -1556,20 +1544,19 @@ fun Application.configureRouting() {
         }
 
         put("/api/user/update") {
-
             // read the new user details
             val request = call.receive<UpdateUserRequest>()
 
             // update the user in the database
-            val numberOfRowsUpdated = transaction {
-                Users.update({ Users.userId eq request.userId }) {
-                    it[Users.firstName] = request.firstName
-                    it[Users.lastName] = request.lastName
-                    it[Users.dateOfBirth] = request.dateOfBirth
-                    it[Users.email] = request.email
-
+            val numberOfRowsUpdated =
+                transaction {
+                    Users.update({ Users.userId eq request.userId }) {
+                        it[Users.firstName] = request.firstName
+                        it[Users.lastName] = request.lastName
+                        it[Users.dateOfBirth] = request.dateOfBirth
+                        it[Users.email] = request.email
+                    }
                 }
-            }
 
             // if no rows were updated, the user was not found
             if (numberOfRowsUpdated == 0) {
@@ -1580,7 +1567,6 @@ fun Application.configureRouting() {
             }
         }
 
-
         get("/addons") {
             call.respondFile(File("src/main/resources/static/user/loyalty/addons.html"))
         }
@@ -1588,7 +1574,6 @@ fun Application.configureRouting() {
         get("/manager/analytics") {
             call.respondFile(File("src/main/resources/static/manager/analytics/analytics.html"))
         }
-
 
         get("/api/manager/analytics") {
             val analytics = ManagerAnalyticsService().getAnalytics()
@@ -1615,19 +1600,25 @@ fun Application.configureRouting() {
                 return@get
             }
 
-            val pointsByUserId = transaction {
-                LoyaltyAccounts.selectAll().associate { row -> row[LoyaltyAccounts.userId] to row[LoyaltyAccounts.loyaltyPoints] }
-            }
+            val pointsByUserId =
+                transaction {
+                    LoyaltyAccounts.selectAll().associate { row -> row[LoyaltyAccounts.userId] to row[LoyaltyAccounts.loyaltyPoints] }
+                }
 
-            val managerAccountChanges = transaction { Users.selectAll().map { row -> ManagerAccountChanges(
-                    userId = row[Users.userId],
-                    firstName = row[Users.firstName],
-                    lastName = row[Users.lastName],
-                    email = row[Users.email],
-                    role = row[Users.role],
-                    status = row[Users.status],
-                    loyaltyPoints = pointsByUserId[row[Users.userId]] ?: 0
-            ) } }
+            val managerAccountChanges =
+                transaction {
+                    Users.selectAll().map { row ->
+                        ManagerAccountChanges(
+                            userId = row[Users.userId],
+                            firstName = row[Users.firstName],
+                            lastName = row[Users.lastName],
+                            email = row[Users.email],
+                            role = row[Users.role],
+                            status = row[Users.status],
+                            loyaltyPoints = pointsByUserId[row[Users.userId]] ?: 0,
+                        )
+                    }
+                }
             call.respond(HttpStatusCode.OK, managerAccountChanges)
         }
 
@@ -1658,9 +1649,10 @@ fun Application.configureRouting() {
                 return@post
             }
 
-            val account = transaction {
-                Users.selectAll().where { Users.userId eq userId }.singleOrNull()
-            }
+            val account =
+                transaction {
+                    Users.selectAll().where { Users.userId eq userId }.singleOrNull()
+                }
 
             if (account == null) {
                 call.respond(HttpStatusCode.BadRequest, "invalid user")
@@ -1668,7 +1660,7 @@ fun Application.configureRouting() {
             }
 
             transaction {
-                Users.update({ Users.userId eq userId }) {it[Users.status] = AccountStatus.FROZEN }
+                Users.update({ Users.userId eq userId }) { it[Users.status] = AccountStatus.FROZEN }
             }
 
             call.respond(HttpStatusCode.OK)
@@ -1701,9 +1693,10 @@ fun Application.configureRouting() {
                 return@post
             }
 
-            val account = transaction {
-                Users.selectAll().where { Users.userId eq userId }.singleOrNull()
-            }
+            val account =
+                transaction {
+                    Users.selectAll().where { Users.userId eq userId }.singleOrNull()
+                }
 
             if (account == null) {
                 call.respond(HttpStatusCode.BadRequest, "invalid user")
@@ -1711,7 +1704,7 @@ fun Application.configureRouting() {
             }
 
             transaction {
-                Users.update({ Users.userId eq userId }) {it[Users.status] = AccountStatus.ACTIVE }
+                Users.update({ Users.userId eq userId }) { it[Users.status] = AccountStatus.ACTIVE }
             }
 
             call.respond(HttpStatusCode.OK)
@@ -1744,9 +1737,10 @@ fun Application.configureRouting() {
                 return@post
             }
 
-            val account = transaction {
-                Users.selectAll().where { Users.userId eq userId }.singleOrNull()
-            }
+            val account =
+                transaction {
+                    Users.selectAll().where { Users.userId eq userId }.singleOrNull()
+                }
 
             if (account == null) {
                 call.respond(HttpStatusCode.BadRequest, "invalid user")
@@ -1754,7 +1748,7 @@ fun Application.configureRouting() {
             }
 
             transaction {
-                Users.update({ Users.userId eq userId }) {it[Users.status] = AccountStatus.DELETED }
+                Users.update({ Users.userId eq userId }) { it[Users.status] = AccountStatus.DELETED }
             }
 
             call.respond(HttpStatusCode.OK)
@@ -1787,9 +1781,10 @@ fun Application.configureRouting() {
                 return@post
             }
 
-            val account = transaction {
-                Users.selectAll().where { Users.userId eq userId }.singleOrNull()
-            }
+            val account =
+                transaction {
+                    Users.selectAll().where { Users.userId eq userId }.singleOrNull()
+                }
 
             if (account == null) {
                 call.respond(HttpStatusCode.BadRequest, "invalid user")
@@ -1797,7 +1792,7 @@ fun Application.configureRouting() {
             }
 
             transaction {
-                Users.update({ Users.userId eq userId }) {it[Users.status] = AccountStatus.ACTIVE }
+                Users.update({ Users.userId eq userId }) { it[Users.status] = AccountStatus.ACTIVE }
             }
 
             call.respond(HttpStatusCode.OK)
@@ -1841,4 +1836,3 @@ fun Application.configureRouting() {
         }
     }
 }
-

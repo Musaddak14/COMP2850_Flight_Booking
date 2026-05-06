@@ -1,27 +1,44 @@
 package com.example.com
 
-import io.ktor.server.application.*
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
-import com.flightsystem.service.PromoCodeService
-import model.*
-
-import com.flightsystem.model.*
+import com.flightsystem.model.Airports
+import com.flightsystem.model.BookingSeats
+import com.flightsystem.model.Bookings
+import com.flightsystem.model.Flights
+import com.flightsystem.model.Layovers
+import com.flightsystem.model.LoyaltyAccounts
+import com.flightsystem.model.Passengers
+import com.flightsystem.model.Payments
+import com.flightsystem.model.PriceHoldSeats
+import com.flightsystem.model.PriceHolds
+import com.flightsystem.model.PromoCodeUsages
+import com.flightsystem.model.PromoCodes
+import com.flightsystem.model.Seats
+import com.flightsystem.model.Users
 import com.flightsystem.service.AuthenticationService
+import com.flightsystem.service.PromoCodeService
 import createEmptySeatMaps
+import io.ktor.server.application.Application
+import model.ManagerSentEmails
+import model.SupportTicketHistory
+import model.SupportTickets
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.StdOutSqlLogger
+import org.jetbrains.exposed.sql.addLogger
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Application.configureDatabases() {
-    val database = Database.connect(
-        url = "jdbc:h2:./database;DB_CLOSE_DELAY=-1",
-        user = "root",
-        driver = "org.h2.Driver",
-        password = "",
-    )
+    val database =
+        Database.connect(
+            url = "jdbc:h2:./database;DB_CLOSE_DELAY=-1",
+            user = "root",
+            driver = "org.h2.Driver",
+            password = "",
+        )
 
     transaction {
         addLogger(StdOutSqlLogger)
-
-
 
         SchemaUtils.create(
             Airports,
@@ -40,10 +57,8 @@ fun Application.configureDatabases() {
             PromoCodeUsages,
             SupportTickets,
             SupportTicketHistory,
-            ManagerSentEmails
+            ManagerSentEmails,
         )
-
-
 
         try {
             exec("""ALTER TABLE BOOKINGS ADD COLUMN "date" VARCHAR(255)""")
@@ -112,13 +127,12 @@ fun Application.configureDatabases() {
             lastName = "User",
             dateOfBirth = "1990-01-01",
             email = "manager@astraeus.com",
-            rawPassword = "password123"
+            rawPassword = "password123",
         )
 
         PromoCodeService().makeDefaultPromoCodes()
 
         val flights = Flights.selectAll().map { it[Flights.flightId] }
-
 
         createEmptySeatMaps(flights)
     }

@@ -14,7 +14,7 @@ data class PromoCode(
     val code: String,
     val discountType: String,
     val discountValue: Double,
-    val isActive: Boolean
+    val isActive: Boolean,
 )
 
 /**

@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 enum class SeatClass {
     ECONOMY,
     PREMIUM_ECONOMY,
-    BUSINESS
+    BUSINESS,
 }

@@ -23,5 +23,5 @@ data class ManagerSentEmailResponse(
     val toEmail: String,
     val subject: String,
     val message: String,
-    val sentAt: String
+    val sentAt: String,
 )

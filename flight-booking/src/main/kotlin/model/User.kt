@@ -1,9 +1,7 @@
 package com.flightsystem.model
 
-import java.time.LocalDateTime
 import kotlinx.serialization.Serializable
-
-@Serializable
+import java.time.LocalDateTime
 
 /**
 Represents a registered user in the system.
@@ -11,17 +9,16 @@ Represents a registered user in the system.
 Stores personal details, authentication data, and account state such as lockout and login tracking.
  */
 
+@Serializable
 open class User(
     val userId: Int,
     var firstName: String,
-    var lastName:  String,
+    var lastName: String,
     var dateOfBirth: String,
     var email: String,
     private var passwordHash: String,
-    private var salt: String
+    private var salt: String,
 ) {
-
-
     private var lastLogin: String? = null
     private var accountLocked: Boolean = false
     private var lockedAt: String = "00:00"
@@ -32,18 +29,20 @@ open class User(
         private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
         private const val MAX_FAILED_ATTEMPTS = 5
         private const val LOCKOUT_MINUTES = 30L
-
-
     }
 
     /**
-    Updates user details after validating name fields and email format.
+     Updates user details after validating name fields and email format.
      */
 
-    fun updateDetails(newFirstName: String, newLastName: String, newEmail: String) {
-        require(newFirstName.isNotBlank()) {"First Name cannot be empty"}
-        require(newLastName.isNotBlank()) {"Last Name cannot be empty"}
-        require(EMAIL_REGEX.matches(newEmail)) {"Invalid email format"}
+    fun updateDetails(
+        newFirstName: String,
+        newLastName: String,
+        newEmail: String,
+    ) {
+        require(newFirstName.isNotBlank()) { "First Name cannot be empty" }
+        require(newLastName.isNotBlank()) { "Last Name cannot be empty" }
+        require(EMAIL_REGEX.matches(newEmail)) { "Invalid email format" }
 
         firstName = newFirstName
         lastName = newLastName
@@ -51,31 +50,30 @@ open class User(
     }
 
     /**
-    Updates the stored password hash and salt for the user.
+     Updates the stored password hash and salt for the user.
      */
 
-    fun updatePassword(newPasswordHash: String, newSalt: String) {
+    fun updatePassword(
+        newPasswordHash: String,
+        newSalt: String,
+    ) {
         passwordHash = newPasswordHash
         salt = newSalt
     }
 
     /**
-    Checks whether a given password hash matches the stored hash.
+     Checks whether a given password hash matches the stored hash.
 
-    @return true if the password is correct
+     @return true if the password is correct
      */
 
-    fun verifyPassword(candidateHash: String): Boolean {
-        return candidateHash == passwordHash
-    }
+    fun verifyPassword(candidateHash: String): Boolean = candidateHash == passwordHash
 
     /**
-    Returns the salt associated with the user's password.
+     Returns the salt associated with the user's password.
      */
 
-    fun getSalt(): String {
-        return salt
-    }
+    fun getSalt(): String = salt
 
     /**
      Sets seat preference for the user (not currently used)
@@ -88,7 +86,7 @@ open class User(
     fun getSeatPreference(): String = seatPreference
 
     /**
-    Resets failed login attempts and updates last login timestamp.
+     Resets failed login attempts and updates last login timestamp.
      */
 
     fun recordLoginSuccess() {
@@ -99,19 +97,19 @@ open class User(
     }
 
     /**
-    Increments failed login attempts and locks the account if the limit is reached.
+     Increments failed login attempts and locks the account if the limit is reached.
      */
 
     fun recordLoginFailure() {
         failedLoginAttempts++
-        if (failedLoginAttempts >= MAX_FAILED_ATTEMPTS ) {
+        if (failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
             accountLocked = true
             lockedAt = LocalDateTime.now().toString()
         }
     }
 
     /**
-    Checks whether the account is locked and unlocks it if the lockout period has expired.
+     Checks whether the account is locked and unlocks it if the lockout period has expired.
      */
 
     fun isLocked(): Boolean {
@@ -125,7 +123,7 @@ open class User(
     }
 
     /**
-    Unlocks the account and resets failed login attempts.
+     Unlocks the account and resets failed login attempts.
      */
 
     fun unlockAccount() {
@@ -135,8 +133,4 @@ open class User(
     }
 
     fun getLastLogin(): LocalDateTime? = lastLogin?.let { LocalDateTime.parse(it) }
-
-
-
 }
-

@@ -1,6 +1,5 @@
 package com.flightsystem.model
 
-import model.TicketStatus
 import org.jetbrains.exposed.sql.Table
 
 private const val VARIABLE_LENGTH = 128
@@ -12,7 +11,7 @@ Represents the status of a user account.
 enum class AccountStatus {
     ACTIVE,
     FROZEN,
-    DELETED
+    DELETED,
 }
 
 /**
