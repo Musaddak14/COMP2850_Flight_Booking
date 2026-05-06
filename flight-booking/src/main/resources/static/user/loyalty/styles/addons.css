@@ -47,3 +47,47 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+
+/* mobile fixes for extras page when signed in  */
+@media (max-width: 900px) {
+
+    /* wrap grid stacks - cards on top, summary below  */
+    .wrap {
+        grid-template-columns: 1fr;
+        padding: 0 16px;
+    }
+
+    /* unstick the summary so it sits under the cards  */
+    .sum {
+        position: static;
+    }
+
+    /* perks row goes vertical on mobile  */
+    .perks {
+        grid-template-columns: 1fr;
+    }
+
+    /* perks borders - bottom only when stacked  */
+    .pk {
+        border-right: none;
+        border-bottom: 1px solid #e4e4e4;
+    }
+
+    .pk:last-child {
+        border-bottom: none;
+    }
+
+    /* member card top - allow wrappin if name + points dont fit  */
+    .lt {
+        flex-wrap: wrap;
+    }
+
+    /* points pushed under on small screens  */
+    .pts {
+        margin-left: 0;
+        text-align: left;
+        width: 100%;
+    }
+}
