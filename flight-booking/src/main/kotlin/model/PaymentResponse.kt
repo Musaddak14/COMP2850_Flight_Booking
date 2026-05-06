@@ -8,9 +8,9 @@ data class PaymentResponse(
     val paymentId: String?,
     val bookingId: Int?,
     val returnBookingId: Int? = null,
-    //now including loyalty info
+    // now including loyalty info
     val pointsEarned: Int? = null,
     val pointsUsed: Int? = null,
     val updatedPointsTotal: Int? = null,
-    val finalAmountPaid: Double? = null
+    val finalAmountPaid: Double? = null,
 )

@@ -1,43 +1,38 @@
 package com.flightsystem.service
 
 import model.CreateTicketRequest
+import model.SupportTicketHistory
 import model.SupportTickets
+import model.TicketHistoryResponse
 import model.TicketResponse
 import model.TicketStatus
 import model.UpdateTicketRequest
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import java.time.LocalDateTime
-import model.SupportTicketHistory
-import model.TicketHistoryResponse
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-
-class TicketService (
-
-    private val emailService: EmailService
-
+class TicketService(
+    private val emailService: EmailService,
 ) {
-
-
-
-    fun createTicket(request: CreateTicketRequest): TicketResponse {
-        return transaction {
+    fun createTicket(request: CreateTicketRequest): TicketResponse =
+        transaction {
             val now = LocalDateTime.now().toString()
 
-            val insertedRow = SupportTickets.insert {
-                it[bookingId] = request.bookingId
-                it[customerName] = request.customerName
-                it[customerEmail] = request.customerEmail
-                it[requestType] = request.requestType
-                it[message] = request.message
-                it[status] = TicketStatus.OPEN
-                it[createdAt] = now
-                it[updatedAt] = null
-                it[managerNote] = null
-            }
+            val insertedRow =
+                SupportTickets.insert {
+                    it[bookingId] = request.bookingId
+                    it[customerName] = request.customerName
+                    it[customerEmail] = request.customerEmail
+                    it[requestType] = request.requestType
+                    it[message] = request.message
+                    it[status] = TicketStatus.OPEN
+                    it[createdAt] = now
+                    it[updatedAt] = null
+                    it[managerNote] = null
+                }
 
             val insertedId = insertedRow[SupportTickets.suppTickId]
 
@@ -52,13 +47,12 @@ class TicketService (
                 createdAt = now,
                 updatedAt = null,
                 managerNote = null,
-                archived = false
+                archived = false,
             )
         }
-    }
 
-    fun getAllTickets(): List<TicketResponse> {
-        return transaction {
+    fun getAllTickets(): List<TicketResponse> =
+        transaction {
             SupportTickets.selectAll().map { row ->
                 TicketResponse(
                     id = row[SupportTickets.suppTickId],
@@ -71,22 +65,25 @@ class TicketService (
                     createdAt = row[SupportTickets.createdAt],
                     updatedAt = row[SupportTickets.updatedAt],
                     managerNote = row[SupportTickets.managerNote],
-                    archived = row[SupportTickets.archived]
+                    archived = row[SupportTickets.archived],
                 )
             }
         }
-    }
 
-    fun updateTicket(ticketId: Int, request: UpdateTicketRequest): TicketResponse? {
+    fun updateTicket(
+        ticketId: Int,
+        request: UpdateTicketRequest,
+    ): TicketResponse? {
         return transaction {
             val now = LocalDateTime.now().toString()
 
-            // reuse existing booking logic 
+            // reuse existing booking logic
             val bookingService = BookingService()
 
-            val row = SupportTickets.selectAll().firstOrNull { resultRow ->
-                resultRow[SupportTickets.suppTickId] == ticketId
-            }
+            val row =
+                SupportTickets.selectAll().firstOrNull { resultRow ->
+                    resultRow[SupportTickets.suppTickId] == ticketId
+                }
 
             if (row == null) {
                 null
@@ -99,19 +96,22 @@ class TicketService (
                 ) {
                     val managerNote = request.managerNote ?: ""
 
-                    val looksLikeSeatUpdate = Regex("""^\s*\d+[A-F](\s*,\s*\d+[A-F])*\s*$""")
-                        .matches(managerNote)
+                    val looksLikeSeatUpdate =
+                        Regex("""^\s*\d+[A-F](\s*,\s*\d+[A-F])*\s*$""")
+                            .matches(managerNote)
 
                     if (looksLikeSeatUpdate) {
-                        val newSeatNumbers = managerNote
-                            .split(",")
-                            .map { it.trim() }
-                            .filter { it.isNotBlank() }
+                        val newSeatNumbers =
+                            managerNote
+                                .split(",")
+                                .map { it.trim() }
+                                .filter { it.isNotBlank() }
 
-                        val bookingUpdated = bookingService.updateBookingSeats(
-                            bookingId = row[SupportTickets.bookingId],
-                            newSeatNumbers = newSeatNumbers
-                        )
+                        val bookingUpdated =
+                            bookingService.updateBookingSeats(
+                                bookingId = row[SupportTickets.bookingId],
+                                newSeatNumbers = newSeatNumbers,
+                            )
 
                         if (!bookingUpdated) {
                             return@transaction null
@@ -133,7 +133,6 @@ class TicketService (
                     }
                 }
 
-
                 if (request.status == TicketStatus.RESOLVED || request.status == TicketStatus.REJECTED) {
                     val email = row[SupportTickets.customerEmail]
                     val name = row[SupportTickets.customerName]
@@ -141,27 +140,28 @@ class TicketService (
 
                     val subject = "Update on your Astraeus support ticket #$ticketId"
 
-                    val body = """
-        Hello $name,
+                    val body =
+                        """
+                        Hello $name,
 
-        Your support ticket (ID: $ticketId) has been updated.
+                        Your support ticket (ID: $ticketId) has been updated.
 
-        New status: ${request.status}
+                        New status: ${request.status}
 
-        Manager message:
-        $note
+                        Manager message:
+                        $note
 
-        If you need any further help, please contact Astraeus Support again.
+                        If you need any further help, please contact Astraeus Support again.
 
-        Kind regards,
-        Astraeus Support
-    """.trimIndent()
+                        Kind regards,
+                        Astraeus Support
+                        """.trimIndent()
 
                     try {
                         emailService.sendEmail(
                             toEmail = email,
                             subject = subject,
-                            body = body
+                            body = body,
                         )
                     } catch (e: Exception) {
                         println("Failed to send support ticket email: ${e.message}")
@@ -179,36 +179,37 @@ class TicketService (
                     createdAt = row[SupportTickets.createdAt],
                     updatedAt = now,
                     managerNote = request.managerNote,
-                    archived = row[SupportTickets.archived]
+                    archived = row[SupportTickets.archived],
                 )
             }
         }
     }
 
-    fun getTicketHistory(ticketId: Int): List<TicketHistoryResponse> {
-        return transaction {
-            SupportTicketHistory.selectAll()
+    fun getTicketHistory(ticketId: Int): List<TicketHistoryResponse> =
+        transaction {
+            SupportTicketHistory
+                .selectAll()
                 .where { SupportTicketHistory.ticketId eq ticketId }
                 .map { row ->
-                TicketHistoryResponse(
-                    historyId = row[SupportTicketHistory.historyId],
-                    ticketId = row[SupportTicketHistory.ticketId],
-                    oldStatus = row[SupportTicketHistory.oldStatus],
-                    newStatus = row[SupportTicketHistory.newStatus],
-                    managerNote = row[SupportTicketHistory.managerNote],
-                    changedAt = row[SupportTicketHistory.changedAt]
-                )}
+                    TicketHistoryResponse(
+                        historyId = row[SupportTicketHistory.historyId],
+                        ticketId = row[SupportTicketHistory.ticketId],
+                        oldStatus = row[SupportTicketHistory.oldStatus],
+                        newStatus = row[SupportTicketHistory.newStatus],
+                        managerNote = row[SupportTicketHistory.managerNote],
+                        changedAt = row[SupportTicketHistory.changedAt],
+                    )
+                }
         }
-    }
 
-    fun archiveTicket(ticketId: Int): Boolean {
-        return transaction {
-            val updatedRows = SupportTickets.update(
-                where = { SupportTickets.suppTickId eq ticketId }
-            ) { row -> 
-                row[SupportTickets.archived] = true 
-            }
+    fun archiveTicket(ticketId: Int): Boolean =
+        transaction {
+            val updatedRows =
+                SupportTickets.update(
+                    where = { SupportTickets.suppTickId eq ticketId },
+                ) { row ->
+                    row[SupportTickets.archived] = true
+                }
             updatedRows > 0
         }
-    }
 }

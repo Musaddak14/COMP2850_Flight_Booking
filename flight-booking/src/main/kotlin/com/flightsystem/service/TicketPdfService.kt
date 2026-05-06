@@ -1,8 +1,17 @@
 package com.flightsystem.service
 
-import com.example.com.Route
+/**
+Generates a PDF ticket containing booking and passenger details.
+
+@return PDF file content as a ByteArray
+ */
 
 class TicketPdfService {
+    /**
+     Generates a PDF ticket containing booking and passenger details.
+
+     @return PDF file content as a ByteArray
+     */
 
     fun generateTicketPdf(
         bookingId: String,
@@ -14,22 +23,23 @@ class TicketPdfService {
         returnBookingId: String? = null,
         returnRoute: String? = null,
         returnDate: String? = null,
-        returnSeats: String? = null
+        returnSeats: String? = null,
     ): ByteArray {
-        val lines = mutableListOf(
-            "ASTRAEUS AIRWAYS",
-            "ELECTRONIC TICKET / BOARDING DOCUMENT",
-            "================================================",
-            "Passenger Name   : $passengerName",
-            "",
-            "OUTBOUND BOOKING",
-            "Booking Ref      : $bookingId",
-            "Route            : $route",
-            "Travel Date      : $date",
-            "Seat Assignment  : $seats",
-            "Total Paid       : £${"%.2f".format(total)}",
-            "================================================"
-        )
+        val lines =
+            mutableListOf(
+                "ASTRAEUS AIRWAYS",
+                "ELECTRONIC TICKET / BOARDING DOCUMENT",
+                "================================================",
+                "Passenger Name   : $passengerName",
+                "",
+                "OUTBOUND BOOKING",
+                "Booking Ref      : $bookingId",
+                "Route            : $route",
+                "Travel Date      : $date",
+                "Seat Assignment  : $seats",
+                "Total Paid       : £${"%.2f".format(total)}",
+                "================================================",
+            )
 
         if (returnBookingId != null) {
             lines.add("")
@@ -47,25 +57,26 @@ class TicketPdfService {
                 "Please arrive at the airport at least 2 hours",
                 "before departure and bring a valid ID/passport.",
                 "",
-                "Thank you for booking with us!"
-            )
+                "Thank you for booking with us!",
+            ),
         )
 
-        val contentStream = buildString {
-            append("BT\n")
-            append("/F1 18 Tf\n")
-            append("50 780 Td\n")
-            append("(${escapePdfText(lines[0])}) Tj\n")
-            append("/F1 12 Tf\n")
-            append("0 -30 Td\n")
+        val contentStream =
+            buildString {
+                append("BT\n")
+                append("/F1 18 Tf\n")
+                append("50 780 Td\n")
+                append("(${escapePdfText(lines[0])}) Tj\n")
+                append("/F1 12 Tf\n")
+                append("0 -30 Td\n")
 
-            for (i in 1 until lines.size) {
-                append("(${escapePdfText(lines[i])}) Tj\n")
-                append("0 -18 Td\n")
+                for (i in 1 until lines.size) {
+                    append("(${escapePdfText(lines[i])}) Tj\n")
+                    append("0 -18 Td\n")
+                }
+
+                append("ET")
             }
-
-            append("ET")
-        }
 
         val objects = mutableListOf<String>()
 
@@ -103,10 +114,13 @@ class TicketPdfService {
         return pdf.toString().toByteArray(Charsets.UTF_8)
     }
 
-    private fun escapePdfText(text: String): String {
-        return text
+    /**
+     Escapes special characters so text can be safely written into a PDF
+     */
+
+    private fun escapePdfText(text: String): String =
+        text
             .replace("\\", "\\\\")
             .replace("(", "\\(")
             .replace(")", "\\)")
-    }
 }
