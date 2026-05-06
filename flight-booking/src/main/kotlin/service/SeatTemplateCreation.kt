@@ -1,10 +1,12 @@
+package com.example.com.service
+
 import com.flightsystem.model.SeatClass
 import com.flightsystem.model.Seats
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
-/*
+/**
 * On function call, every flight in the database is checked for a corresponding seat map
 * if any flights don't have one, it creates one
 * otherwise existing seat maps are left as is

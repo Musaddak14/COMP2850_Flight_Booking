@@ -1,9 +1,9 @@
 package com.example.com
 
+import com.example.com.service.createEmptySeatMaps
 import com.flightsystem.model.*
 import com.flightsystem.service.AuthenticationService
 import com.flightsystem.service.PromoCodeService
-import createEmptySeatMaps
 import io.ktor.server.application.*
 import model.*
 import org.jetbrains.exposed.sql.*

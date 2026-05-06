@@ -402,48 +402,4 @@ class BookingService {
                     )
                 }
         }
-
-    // calc total price based on seat class
-    /* temp comment this out - trying something
-    fun calculatePriceByClass(flight: Flight, seats: List<Seat>): Double {
-        var totalPrice = 0.0
-
-        for (seat in seats) {
-            val seatPrice = when (seat.seatClass) {
-                SeatClass.ECONOMY -> flight.price
-                SeatClass.BUSINESS -> flight.price * 1.5
-                SeatClass.FIRST -> flight.price * 2
-            }
-            totalPrice += seatPrice
-        }
-        return totalPrice
-    }
-     */
-
-    // update the seats assigned to an existing booking
-    /* temp
-    fun updateBookingSeats(
-        booking: Booking,
-        newSeats: List<Seat>
-    ): Boolean {
-        //check if new seats are available
-        if (!validateSeats(newSeats)) {
-            return false
-        }
-
-        // release old seats
-        for (seat in booking.seatsBooked) {
-            seat.isAvailable = true
-        }
-
-        // reserve new seats
-        for (seat in newSeats) {
-            seat.isAvailable = false
-        }
-        //update the booking with the new seats
-        booking.seatsBooked.clear()
-        booking.seatsBooked.addAll(newSeats)
-        return true
-    }
-     */
 }
