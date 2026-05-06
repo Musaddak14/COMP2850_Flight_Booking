@@ -301,4 +301,20 @@ main {
     .overview-grid {
         padding: 0;
     }
+
+    .manager-btn {
+        display: inline-block;
+        padding: 9px 24px;
+        background: #132e8e;
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+    .manager-btn:hover {
+        background: #0e2270;
+    }
 }

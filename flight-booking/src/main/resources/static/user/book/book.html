@@ -221,17 +221,17 @@
                 <div class="flight-prices">
                     <div class="price-box" role="button" tabindex="0" aria-pressed="false">
                         <span>Economy</span>
-                        <strong>£${flight.price.toFixed(0)}</strong>
+                        <strong>${fmt(flight.price)}</strong>
                     </div>
 
                     <div class="price-box" role="button" tabindex="0" aria-pressed="false">
                         <span>Premium Economy</span>
-                        <strong>£${(flight.price * 1.6).toFixed(0)}</strong>
+                        <strong>${fmt(flight.price * 1.6)}</strong>
                     </div>
 
                     <div class="price-box" role="button" tabindex="0" aria-pressed="false">
                         <span>Business</span>
-                        <strong>£${(flight.price * 3.5).toFixed(0)}</strong>
+                        <strong>${fmt(flight.price * 3.5)}</strong>
                     </div>
                 </div>
             </div>
