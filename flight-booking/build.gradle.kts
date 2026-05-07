@@ -39,6 +39,12 @@ dependencies {
     implementation("com.sun.mail:javax.mail:1.6.2")
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
     implementation("com.sun.activation:javax.activation:1.2.0")
+
     testImplementation("io.ktor:ktor-server-test-host")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlin_version")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+
+}
+tasks.test {
+    useJUnitPlatform()
 }
