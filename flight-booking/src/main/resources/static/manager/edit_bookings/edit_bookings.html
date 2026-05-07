@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/manager/flight_view/styles/flight_view.css">
 </head>
 <body>
+<!-- This list page gives managers a lightweight entry point for finding and opening editable bookings. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -36,6 +37,7 @@
 <main>
     <section>
         <h2>Filter Bookings</h2>
+        <!-- Client-side filters narrow the already-loaded booking list by booking id and user id. -->
         <div style="padding: 16px 18px; display: flex; gap: 16px;">
             <label for="filter-booking-id" class="sr-only">Filter by Booking ID</label>
             <input type="number" id="filter-booking-id" placeholder="Booking ID" style="padding: 9px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; font-family: Inter, sans-serif; width: 160px;">
@@ -49,6 +51,7 @@
 
     <section aria-labelledby="bookings-heading">
         <h2 id="bookings-heading">All Bookings</h2>
+        <!-- The table body is rebuilt from the current filtered booking array whenever filters change. -->
         <table id="upcoming-flights-table">
             <thead>
             <tr>
@@ -67,6 +70,7 @@
 </main>
 
 <script>
+    /** Stores the full booking list locally so filters can run without re-requesting the API. */
     let allBookings = [];
 
     fetch('/api/manager/bookings')
@@ -76,6 +80,7 @@
             renderTable(data);
         });
 
+    /** Re-renders the booking rows from the provided data set and preserves the empty state when needed. */
     function renderTable(data) {
         const tbody = document.getElementById('upcoming-flights-body');
         if (!data.length) {
@@ -93,6 +98,7 @@
     `).join('');
     }
 
+    /** Applies the current booking-id and user-id filters against the in-memory booking list. */
     function applyFilter() {
         const bookingId = document.getElementById('filter-booking-id').value.trim();
         const userId = document.getElementById('filter-user-id').value.trim();
@@ -104,12 +110,14 @@
         renderTable(filtered);
     }
 
+    /** Clears both filter inputs and restores the full booking list to the table. */
     function clearFilter() {
         document.getElementById('filter-booking-id').value = '';
         document.getElementById('filter-user-id').value = '';
         renderTable(allBookings);
     }
 
+    /** Opens the detail page for the selected booking using a query-string booking id. */
     function editBooking(bookingId) {
         window.location.href = `/manager/edit_bookings/edit_booking_detail.html?bookingId=${bookingId}`;
     }

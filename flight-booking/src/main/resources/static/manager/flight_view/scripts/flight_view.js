@@ -1,4 +1,5 @@
 (async () => {
+    /** Protects the flight manager tools behind a valid manager session before data or forms are used. */
     const sessionId = sessionStorage.getItem("sessionId");
     if (!sessionId) {
         window.location.href = "/log_in";
@@ -13,6 +14,7 @@
     }
     "use strict";
 
+    /** Flight-view coordinates flight loading, airport creation, filtering, and row-level removal. */
     const allFlightsEndpoint = "/api/flights?date=";
     const createFlightEndpoint = "/api/manager/flight_view";
     const allAirportsEndpoint = "/api/airports";
@@ -37,6 +39,7 @@
     let activeFilter = "upcoming";
     let existingAirportCodes = new Set();
 
+    /** Updates the shared manager message area after each load, submit, or delete action. */
     function setMessage(text, state) {
         if (!message) {
             return;
@@ -46,6 +49,7 @@
         message.className = state && state !== "info" ? state : "";
     }
 
+    /** Keeps the filter summary aligned with the currently visible flight subset. */
     function setFilterSummary(text) {
         if (!filterSummary) {
             return;
@@ -54,6 +58,7 @@
         filterSummary.textContent = text;
     }
 
+    /** Formats numeric prices for the flight table. */
     function formatPrice(value) {
         if (typeof value !== "number" || Number.isNaN(value)) {
             return "Not available";
@@ -62,6 +67,7 @@
         return `£${value.toFixed(2)}`;
     }
 
+    /** Renders a single empty-state row when no flights match the current conditions. */
     function renderEmptyRow(text) {
         if (!tableBody) {
             return;
@@ -74,20 +80,24 @@
         `;
     }
 
+    /** Appends a plain-text cell to a generated flight row. */
     function appendCell(row, text) {
         const cell = document.createElement("td");
         cell.textContent = text;
         row.appendChild(cell);
     }
 
+    /** Standardizes airport codes so validation and duplicate checks use uppercase IATA values. */
     function normalizeAirportCode(value) {
         return value.trim().toUpperCase();
     }
 
+    /** Trims free-text airport fields and collapses extra whitespace before submission. */
     function normalizeTextField(value) {
         return value.trim().replace(/\s+/g, " ");
     }
 
+    /** Creates a stable local date string for comparing flight dates against today. */
     function toLocalDateString(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -95,6 +105,7 @@
         return `${year}-${month}-${day}`;
     }
 
+    /** Combines each flight's date and departure time so past/upcoming filtering uses one comparison point. */
     function parseFlightDepartureDateTime(flight) {
         if (!flight || typeof flight.date !== "string" || !flight.date) {
             return null;
@@ -108,6 +119,7 @@
         return Number.isNaN(dateTime.getTime()) ? null : dateTime;
     }
 
+    /** Determines whether a flight belongs in the past filter or the upcoming filter. */
     function isPastFlight(flight) {
         const departureDateTime = parseFlightDepartureDateTime(flight);
 
@@ -122,6 +134,7 @@
         return flight.date < toLocalDateString(new Date());
     }
 
+    /** Sorts flights chronologically before the active filter decides whether to reverse them. */
     function compareFlightsAscending(leftFlight, rightFlight) {
         const leftDateTime = parseFlightDepartureDateTime(leftFlight);
         const rightDateTime = parseFlightDepartureDateTime(rightFlight);
@@ -141,6 +154,7 @@
         return leftDateTime.getTime() - rightDateTime.getTime();
     }
 
+    /** Applies the active filter to the cached flights list before table rendering. */
     function getFilteredFlights() {
         const filteredFlights = allFlights.filter((flight) => {
             if (activeFilter === "past") {
@@ -163,6 +177,7 @@
         return filteredFlights;
     }
 
+    /** Chooses the empty-state copy that matches the current filter tab. */
     function getEmptyFlightText() {
         if (activeFilter === "past") {
             return "No past flights found.";
@@ -175,6 +190,7 @@
         return "No upcoming flights found.";
     }
 
+    /** Summarizes how many flights the table is currently showing for the selected filter. */
     function getSummaryText(flightCount) {
         if (activeFilter === "past") {
             return flightCount === 1 ? "Showing 1 past flight." : `Showing ${flightCount} past flights.`;
@@ -187,6 +203,7 @@
         return flightCount === 1 ? "Showing 1 upcoming flight." : `Showing ${flightCount} upcoming flights.`;
     }
 
+    /** Syncs the filter button active state with the current in-memory filter value. */
     function updateFilterButtons() {
         filterButtons.forEach((button) => {
             const buttonFilter = button.dataset.flightFilter;
@@ -196,6 +213,7 @@
         });
     }
 
+    /** Reads JSON or plain-text API errors so the message banner can show a useful explanation. */
     async function readResponseMessage(response, fallbackMessage) {
         const rawBody = await response.text();
 
@@ -211,6 +229,7 @@
         }
     }
 
+    /** Removes a flight after confirmation, then reloads the table from the server. */
     async function removeFlight(flightId, buttonElement) {
         if (!flightId) {
             setMessage("Flight ID is missing, so this flight cannot be removed.", "error");
@@ -245,6 +264,7 @@
         }
     }
 
+    /** Rebuilds the flights table from the filtered data set and wires each remove button. */
     function renderFlights(flights) {
         if (!tableBody) {
             return;
@@ -287,11 +307,13 @@
         setFilterSummary(getSummaryText(flights.length));
     }
 
+    /** Re-renders the table whenever the filter changes or the full flights list is refreshed. */
     function applyActiveFilter() {
         updateFilterButtons();
         renderFlights(getFilteredFlights());
     }
 
+    /** Loads all flights from the API, caches them locally, and renders the selected filter view. */
     async function loadFlights() {
         setMessage("Loading flights...", "info");
 
@@ -318,6 +340,7 @@
         }
     }
 
+    /** Loads existing airport codes so duplicate airport creation can be blocked client-side first. */
     async function loadAirportCodes() {
         try {
             const response = await fetch(allAirportsEndpoint);
@@ -339,6 +362,7 @@
         }
     }
 
+    /** Converts the add-flight form fields into the request body expected by the manager API. */
     function buildFlightPayload(formElement) {
         const formData = new FormData(formElement);
 
@@ -354,6 +378,7 @@
         };
     }
 
+    /** Converts the add-airport form into a normalized payload for the airport endpoint. */
     function buildAirportPayload(formElement) {
         const formData = new FormData(formElement);
 
@@ -365,6 +390,7 @@
         };
     }
 
+    /** Performs lightweight airport validation before the request is sent to the backend. */
     function validateAirportPayload(payload) {
         if (!payload.code) {
             return "Enter an airport code.";
@@ -393,6 +419,7 @@
         return null;
     }
 
+    /** Submits a new flight, resets the form, and refreshes the visible flights table. */
     async function submitFlight(formElement) {
         const payload = buildFlightPayload(formElement);
 
@@ -415,6 +442,7 @@
         await loadFlights();
     }
 
+    /** Submits a new airport and updates the local code cache once it succeeds. */
     async function submitAirport(formElement) {
         const payload = buildAirportPayload(formElement);
         const validationError = validateAirportPayload(payload);
@@ -443,6 +471,7 @@
         setMessage(`Airport ${payload.code} added successfully.`, "success");
     }
 
+    /** Filter buttons switch between upcoming, past, and all flights without another fetch. */
     filterButtons.forEach((button) => {
         button.addEventListener("click", () => {
             const selectedFilter = button.dataset.flightFilter;
@@ -456,6 +485,7 @@
         });
     });
 
+    /** The add-flight form is handled in JavaScript so status messaging and refresh happen inline. */
     if (form) {
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
@@ -469,12 +499,14 @@
         });
     }
 
+    /** Airport codes are uppercased as the manager types to match IATA expectations. */
     if (airportCodeInput) {
         airportCodeInput.addEventListener("input", () => {
             airportCodeInput.value = normalizeAirportCode(airportCodeInput.value).slice(0, 3);
         });
     }
 
+    /** The add-airport form uses the same inline message area as the flight form. */
     if (airportForm) {
         airportForm.addEventListener("submit", async (event) => {
             event.preventDefault();
@@ -488,6 +520,8 @@
         });
     }
 
+    /** Airport codes load first so duplicate validation is ready before managers submit the form. */
     await loadAirportCodes();
+    /** Flights then load into the table using the default upcoming filter. */
     loadFlights();
 })();

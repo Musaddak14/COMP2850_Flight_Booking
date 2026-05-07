@@ -1,4 +1,5 @@
 (async () => {
+    /** Protects the dashboard behind a manager-only session before any UI actions are enabled. */
     const sessionId = sessionStorage.getItem("sessionId");
     if (!sessionId) {
         window.location.href = "/log_in";
@@ -15,6 +16,7 @@
     "use strict";
 
 
+    /** Core dashboard controls for date display, email actions, history, and promo creation. */
     const todayLabel = document.getElementById("today-label");
 
     const sendManagerEmailButton = document.getElementById("send-manager-email-btn");
@@ -23,6 +25,7 @@
     const managerEmailMessage = document.getElementById("manager-email-message");
     const managerEmailStatus = document.getElementById("manager-email-status");
 
+    /** Sends a manager-authenticated customer email after basic field validation. */
     if (sendManagerEmailButton) {
         sendManagerEmailButton.addEventListener("click", async () => {
             const sessionId = sessionStorage.getItem("sessionId");
@@ -100,6 +103,7 @@
     const promoCreateValue = document.getElementById("promo-create-value");
     const promoCreateStatus = document.getElementById("promo-create-status");
 
+    /** Creates a promo code from the dashboard form and reports the result inline. */
     if (createPromoButton) {
         createPromoButton.addEventListener("click", async () => {
             const sessionId = sessionStorage.getItem("sessionId");
@@ -170,6 +174,7 @@
         });
     }
 
+    /** The hero date gives managers quick temporal context when they land on the dashboard. */
     if (todayLabel) {
         const today = new Date();
         todayLabel.textContent = today.toLocaleDateString("en-GB", {
@@ -183,6 +188,7 @@
     let sentEmails = [];
     let emailHistoryVisible = false;
 
+    /** Loads previously sent manager emails so the history panel can render and filter them. */
     async function loadSentEmails() {
         const list = document.getElementById("sent-email-list");
         if (!list) return;
@@ -197,6 +203,7 @@
     const emailHistorySearch = document.getElementById("email-history-search");
     const sentEmailList = document.getElementById("sent-email-list");
 
+    /** The history toggle shows or hides the searchable email archive without leaving the page. */
     if (toggleEmailHistoryButton && sentEmailList && emailHistorySearch) {
         toggleEmailHistoryButton.addEventListener("click", () => {
             emailHistoryVisible = !emailHistoryVisible;
@@ -216,6 +223,7 @@
         emailHistorySearch.addEventListener("input", renderSentEmails);
     }
 
+    /** Rebuilds the visible email history from the in-memory list and current search term. */
     function renderSentEmails() {
         const list = document.getElementById("sent-email-list");
         const searchInput = document.getElementById("email-history-search");
@@ -245,5 +253,6 @@
             `).join("")}
         `;
     }
-loadSentEmails();
+    /** Preload history so the archive is ready as soon as the manager opens it. */
+    loadSentEmails();
 })();

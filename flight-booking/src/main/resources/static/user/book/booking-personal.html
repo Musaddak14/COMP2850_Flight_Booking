@@ -9,6 +9,7 @@
 </head>
 <body>
 
+<!-- Shared customer header for the passenger-details step. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -33,6 +34,7 @@
     </nav>
 </header>
 
+<!-- Route summary for the selected outbound leg. -->
 <section class="flights-overview-header">
 
     <div class="flights-overview">
@@ -43,10 +45,19 @@
 
 </section>
 
+<!-- Passenger forms are generated dynamically so the page can match the searched passenger count. -->
 <div id="passenger-forms"></div>
+<!-- Inline validation messages for missing passenger details are shown here before continuing to seat selection. -->
 <p id="booking-message" style="max-width: 960px; margin: 16px auto 0; padding: 0 20px; color: #c0392b; font-weight: 600;"></p>
 
 <script>
+    /**
+     * Captures passenger details for the selected booking before seat selection begins.
+     *
+     * The page reads the chosen flight and passenger count from the query string,
+     * builds one form card per passenger, validates the completed details, and
+     * saves the booking draft into sessionStorage for later steps.
+     */
     const params = new URLSearchParams(window.location.search);
     const from = params.get("from");
     const to = params.get("to");
@@ -116,6 +127,9 @@
     const container = document.getElementById("passenger-forms");
     const message = document.getElementById("booking-message");
 
+    /**
+     * Reads the signed-in user ID from sessionStorage when this booking belongs to an account holder.
+     */
     function getLoggedInUserId() {
         try {
             const user = JSON.parse(sessionStorage.getItem("user") ?? "null");
@@ -125,6 +139,7 @@
         }
     }
 
+    // Build one repeated passenger-details card for each traveller requested in the search step.
     for (let i = 1; i <= passengers; i++) {
         container.insertAdjacentHTML("beforeend", `
             <div class="booking_page_1">
@@ -198,8 +213,10 @@
         <button class="continue-btn" onclick="collectAndContinue()">Continue</button>
     `);
 
-
-
+    /**
+     * Validates every passenger card, stores the collected passenger list, and
+     * prepares the booking draft that the seat-selection step extends.
+     */
     function collectAndContinue() {
         const forms = document.querySelectorAll('.booking_page_1');
         const passengerData = [];
@@ -239,6 +256,7 @@
 
         message.textContent = "";
 
+        // Passenger details are stored separately and also embedded into the booking draft for later steps.
         sessionStorage.setItem('passengerData', JSON.stringify(passengerData));
 
         const bookingDraft = {
@@ -260,6 +278,7 @@
             returnCabin: returnCabin || cabin,
         };
 
+        // The seat-map step reads this draft back to know which leg, cabin, and passenger count it is handling.
         sessionStorage.setItem("bookingDraft", JSON.stringify(bookingDraft));
         window.location.href =
             "/seatmap?flightId=" + encodeURIComponent(flightId) +
@@ -311,6 +330,7 @@
 
 </script>
 <div class="footer-divider"></div>
+<!-- Shared footer for customer-facing booking pages. -->
 <footer>
     <a href="/manager" class="footer-left">Operations Console</a>
 

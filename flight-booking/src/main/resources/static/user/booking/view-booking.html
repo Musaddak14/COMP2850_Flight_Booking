@@ -9,6 +9,7 @@
 </head>
 <body>
 
+<!-- Shared customer header for the booking-reference lookup result page. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -30,6 +31,7 @@
     </nav>
 </header>
 
+<!-- Static heading for the retrieved booking details. -->
 <section class="flights-overview-header">
     <div class="flights-overview">
         <h1>Your Booking</h1>
@@ -37,14 +39,25 @@
     </div>
 </section>
 
+<!-- The lookup result is rendered into this container after the booking API responds. -->
 <div id="booking-content"></div>
+<!-- Any lookup or rendering failure is shown here instead of leaving the page blank. -->
 <p id="booking-error" style="max-width:700px;margin:24px auto;padding:0 20px;color:#c0392b;font-weight:600;"></p>
 
 <script>
+    /**
+     * Loads a booking by reference and renders the returned data into read-only booking cards.
+     *
+     * This page is driven entirely by query parameters so the booking-reference
+     * login flow can redirect here directly after a successful lookup.
+     */
     const params = new URLSearchParams(window.location.search);
     const bookingId = params.get('bookingId');
     const lastName = params.get('lastName');
 
+    /**
+     * Escapes API-provided text before it is inserted into HTML templates.
+     */
     function escapeHtml(value) {
         return String(value ?? "")
             .replaceAll("&", "&amp;")
@@ -63,7 +76,7 @@
                 ? data.returnSeatNumbers
                 : (Array.isArray(data.returnSeats) ? data.returnSeats : []);
 
-            // booking info card
+            // Primary booking card summarises the outbound leg, cabin, and selected add-ons.
             container.insertAdjacentHTML('beforeend', `
                 <div class="booking_page_1">
                     <h2>Booking Details</h2>
@@ -118,6 +131,9 @@
                 `);
             }
 
+            /**
+             * Formats stored add-ons for display whether they arrive as JSON text or plain text.
+             */
             function formatAddOns(raw) {
                 if (!raw) return 'None';
                 try {
@@ -128,7 +144,7 @@
             }
 
 
-            // one card per passenger
+            // Each passenger is rendered as a separate read-only card beneath the booking summary.
             data.passengers.forEach((name, i) => {
                 container.insertAdjacentHTML('beforeend', `
                     <div class="booking_page_1">
@@ -142,10 +158,12 @@
             });
         })
         .catch(() => {
+            // Covers failed lookups, malformed responses, and rendering-time errors.
             document.getElementById('booking-error').textContent = 'Could not load booking details.';
         });
 </script>
 <div class="footer-divider"></div>
+<!-- Shared footer for customer-facing booking and lookup pages. -->
 <footer>
     <a href="/manager" class="footer-left">Operations Console</a>
 

@@ -6,11 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flight Results</title>
     <link rel="stylesheet" href="../home/styles/style.css">
+    <!-- Shared currency helper keeps the cabin prices aligned with the selected display currency. -->
     <script src="/shared/currency.js"></script>
 
 </head>
 <body>
 
+<!-- Shared customer header for the booking results step. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -36,6 +38,7 @@
                 <option value="AUD">A$ AUD</option>
                 <option value="JPY">¥ JPY</option>
             </select>
+            <!-- Restore the last selected currency so newly rendered prices match the rest of the booking flow. -->
             <script>document.getElementById("currency-select").value = getSelectedCurrency();</script>
             <span id="welcome-message"></span>
             <a href="/log_in" id="login-link">Log In</a>
@@ -48,6 +51,7 @@
 
 
 
+<!-- Search summary row showing the current route plus placeholder filter/sort controls. -->
 <section class="results-top">
     <div class="filter">
         <label for="filter-select">Filter by:</label>
@@ -76,11 +80,13 @@
 
 
 <section class="results-wrapper">
+    <!-- Outbound results are always shown first and drive the next booking step. -->
     <h2>Outbound flights</h2>
     <div class="results-list" id="flight-list"></div>
 </section>
 
 <section class="results-wrapper" id="return-section" style="display: none;">
+    <!-- The return section is only revealed when a return date was supplied in the original search. -->
     <h2>Return flights</h2>
     <div class="results-list" id="return-flight-list"></div>
 </section>
@@ -92,6 +98,13 @@
 
 
 <script type="module">
+    /**
+     * Renders the flight-results step of the booking flow.
+     *
+     * This script reads the search query from the URL, loads matching flights,
+     * lets the user pick a cabin, and then carries the chosen IDs into the
+     * passenger-details step through the next page URL or sessionStorage.
+     */
     const sessionId = sessionStorage.getItem("sessionId");
     const firstName = sessionStorage.getItem("firstName");
 
@@ -129,6 +142,10 @@
             window.location.href = "/log_in";
         });
     }
+
+    /**
+     * Formats the searched date for the route summary header.
+     */
     function formatRouteDate(date) {
         if (!date) {
             return "From today onwards";
@@ -145,6 +162,9 @@
         });
     }
 
+    /**
+     * Builds the next-step URL for one-way bookings once an outbound flight and cabin are selected.
+     */
     function buildBookingUrl({ from, to, date, passengers, cabin, flightId }) {
         const nextParams = new URLSearchParams({
             from: from ?? "",
@@ -158,6 +178,9 @@
         return `/booking-personal?${nextParams.toString()}`;
     }
 
+    /**
+     * Clears previously stored booking state before a new booking path is started.
+     */
     function clearBookingProgress() {
         const bookingKeys = [
             "bookingDraft",
@@ -175,6 +198,9 @@
     }
 
 
+    /**
+     * Renders the list of flight cards and wires cabin selection to the supplied booking callback.
+     */
     function renderFlights(list, flights, onBookClick) {
         list.innerHTML = "";
 
@@ -243,6 +269,7 @@
 
             bookBtn.disabled = true;
 
+            // A cabin must be chosen before the page knows which fare tier to carry into the next step.
             priceBoxes.forEach(box => {
                 box.addEventListener("click", function () {
                     priceBoxes.forEach(item => { item.classList.remove("selected"); item.setAttribute("aria-pressed","false"); });
@@ -269,6 +296,12 @@
         });
     }
 
+    /**
+     * Loads outbound flights and, when needed, a matching return leg.
+     *
+     * One-way bookings redirect as soon as the outbound selection is complete.
+     * Return bookings wait until both legs have been chosen before continuing.
+     */
     async function loadFlights() {
         const params = new URLSearchParams(window.location.search);
         const from = params.get("from");
@@ -285,6 +318,9 @@
 
         const flightSelectionMessage = document.getElementById("flight-selection-message");
 
+        /**
+         * Completes a return booking only after both directions have a selected flight and cabin.
+         */
         function tryContinueReturnBooking() {
             if (!selectedOutboundFlight && selectedReturnFlight) {
                 flightSelectionMessage.textContent = "Return flight selected. Now select an outbound flight.";
@@ -326,6 +362,7 @@
 
             returnSection.style.display = "block";
 
+            // Return results are loaded with the route reversed so the user can complete the round trip.
             const returnResponse = await fetch(`/api/flights?from=${to}&to=${from}&date=${returnDate}&passengers=${passengers}`);
             const returnFlights = await returnResponse.json();
 
@@ -352,6 +389,7 @@
             : formatRouteDate(date);
 
         try {
+            // Main results request for the outbound leg based on the original search parameters.
             const response = await fetch(`/api/flights?from=${from}&to=${to}&date=${date}&passengers=${passengers}`);
             const flights  = await response.json();
             const list     = document.getElementById("flight-list");
@@ -392,6 +430,7 @@
             //catch block is for error handling ie if anything goes wrong then the catchj block runs
 
         } catch {
+            // Keep API failures inside the results area so the user can retry the search without a blank page.
             document.getElementById("flight-list").innerHTML =
                 "<p>Failed to load flights. Please try again.</p>";
         }

@@ -8,10 +8,12 @@
     <link rel="stylesheet" href="styles/style.css">
 </head>
 
+<!-- Shared home scripts: one validates airport inputs, the other updates the nav for signed-in users. -->
 <script src="scripts/dropDown.js" defer></script>
 <script src="scripts/sessionHome.js" defer></script>
 
 <body>
+<!-- Shared customer header; the hidden support link is revealed only for manager sessions. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -57,6 +59,7 @@
 
     <div class="search-card">
 
+        <!-- Home search form posts into the booking flow after dropDown.js resolves visible airport labels to airport codes. -->
         <form action="/book" method="get" class="flight-bar">
 
             <label for="from" class="sr-only">Departure airport</label>
@@ -100,6 +103,7 @@
 <!-- featured destinations section -->
 
 
+<!-- Static recommendation cards link out to supporting travel and policy content pages. -->
 <section class="experience">
     <h2>Featured destinations from United Kingdom</h2>
     <p>Browse our itineraries to discover routes, destinations, and travel options designed to help you plan your next trip</p>
@@ -139,6 +143,7 @@
 
 </a>
 
+<!-- Loyalty marketing section highlights the rewards programme and points users toward account management. -->
 <section class="blue-box">
     <!-- loyalty section with blue background -->
 
@@ -186,6 +191,7 @@
 
 </section>
 
+<!-- This inline handler keeps the optional return-date field aligned with the checkbox state. -->
 <script>
     const toggle = document.getElementById("return-toggle");
     const returnDate = document.getElementById("return-date");
@@ -200,6 +206,7 @@
     });
 </script>
 
+<!-- Support CTA section gives the landing page a direct route into the ticket submission flow. -->
 <section class="support-banner">
     <div class="support-container">
 
@@ -251,6 +258,7 @@
 </section>
 
 <div class="footer-divider"></div>
+<!-- Shared customer footer used across the broader user-facing experience. -->
 <footer>
     <a href="/manager" class="footer-left">Operations Console</a>
 
@@ -274,6 +282,7 @@
     const toggle = document.getElementById("return-toggle");
     const returnDate = document.getElementById("return-date");
 
+    // Mirror the checkbox state into the hidden return-date input so one-way searches stay clean.
     toggle.addEventListener("change", function () {
         returnDate.style.display = this.checked ? "inline-block" : "none";
         returnDate.required = this.checked;

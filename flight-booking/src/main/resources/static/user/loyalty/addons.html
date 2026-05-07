@@ -14,6 +14,7 @@
 
 
 <body>
+<!-- Shared customer header with currency selection and sign-in entry point. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -45,6 +46,7 @@
     </nav>
 </header>
 
+<!-- This hero summarizes the current guest booking before paid add-ons are chosen. -->
 <section class="flights-overview-header guest-addons-hero">
     <div class="flights-overview">
         <p class="eyebrow">Guest booking</p>
@@ -53,8 +55,10 @@
     </div>
 </section>
 
+<!-- The main layout keeps add-on selections on the left and a live order summary on the right. -->
 <main class="wrap guest-addons-layout">
     <div>
+        <!-- The guest card mirrors the primary traveller and collects the email used for confirmation. -->
         <div class="card guest-card">
             <div class="lt guest-card-header">
                 <div class="av" id="guest-initials">--</div>
@@ -96,6 +100,7 @@
             </div>
         </div>
 
+        <!-- Optional baggage choices are stored into the booking draft as a single radio selection. -->
         <div class="card">
             <div class="sh">Baggage</div>
             <label class="row"><input type="radio" name="bag" data-price="0" data-label="No hold bag"><div class="rl"><div class="rn">No hold bag</div><div class="rs">Cabin only</div></div><div class="rp">—</div></label>
@@ -104,6 +109,7 @@
             <label class="row"><input type="radio" name="bag" data-price="45" data-label="1 x 32kg bag"><div class="rl"><div class="rn">1 x 32 kg</div><div class="rs">Heavy items</div></div><div class="rp">£45</div></label>
         </div>
 
+        <!-- Meal prices are always shown at guest rates on this page. -->
         <div class="card">
             <div class="sh">Meals <span class="guest-full-price">Full guest price</span></div>
             <label class="row"><input type="radio" name="meal" data-price="0" data-label="No meal"><div class="rl"><div class="rn">No meal</div></div><div class="rp">—</div></label>
@@ -111,6 +117,7 @@
             <label class="row"><input type="radio" name="meal" data-price="22" data-label="Premium dine set"><div class="rl"><div class="rn">Premium dine</div><div class="rs">3-course meal and drink</div></div><div class="rp">£22</div></label>
         </div>
 
+        <!-- Insurance is treated as another mutually exclusive add-on group. -->
         <div class="card">
             <div class="sh">Insurance</div>
             <label class="row"><input type="radio" name="ins" data-price="0" data-label="No insurance"><div class="rl"><div class="rn">No insurance</div></div><div class="rp">—</div></label>
@@ -118,6 +125,7 @@
             <label class="row"><input type="radio" name="ins" data-price="28.50" data-label="Premium insurance"><div class="rl"><div class="rn">Premium cover</div><div class="rs">Medical and adventure sports</div></div><div class="rp">£28.50</div></label>
         </div>
 
+        <!-- Extras can be combined, so these options are persisted as a checkbox list. -->
         <div class="card">
             <div class="sh">Extras</div>
             <label class="row"><input type="checkbox" checked data-price="8" data-label="Priority boarding"><div class="rl"><div class="rn">Priority boarding</div><div class="rs">Board first</div></div><div class="rp">£8</div></label>
@@ -127,6 +135,7 @@
         </div>
     </div>
 
+    <!-- The summary column reflects saved selections and the running checkout total. -->
     <aside class="sum">
         <div class="sh2">Your order</div>
         <div class="sb">
@@ -145,8 +154,10 @@
     </aside>
 </main>
 
+<!-- Guest add-on logic restores the draft, validates the email, and prepares the payment handoff. -->
 <script src="/loyalty/scripts/addons.js"></script>
 <script>
+    /** Formats the visible option prices through the shared currency helper on initial render. */
     const rows = document.querySelectorAll(".row");
 
     rows.forEach(row => {

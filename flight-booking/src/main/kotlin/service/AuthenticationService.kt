@@ -33,7 +33,7 @@ class AuthenticationService(
         val expiry: LocalDateTime,
     )
 
-    // used for the otp maps user to an otp and expiery time
+    // used for the otp maps user to an otp and expiry time
     private val pendingOtps: MutableMap<String, OtpData> = ConcurrentHashMap()
     // maps user email to otp
 

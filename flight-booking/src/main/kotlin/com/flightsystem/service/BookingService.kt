@@ -15,6 +15,16 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
+import com.flightsystem.model.*
+import org.h2.api.H2Type.row
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -151,8 +161,8 @@ class BookingService {
                     userId = bookingRow[Bookings.userId],
                     flightId = bookingRow[Bookings.flightId],
                     totalPrice = 10.0,
-                    date = bookingRow[Bookings.date] ?: "",
-                    time = bookingRow[Bookings.time] ?: "",
+                    date = bookingRow[Bookings.date],
+                    time = bookingRow[Bookings.time],
                     cabin = bookingRow[Bookings.cabin],
                     addOns = bookingRow[Bookings.addOns],
                 )
@@ -209,8 +219,8 @@ class BookingService {
                     userId = row[Bookings.userId],
                     flightId = row[Bookings.flightId],
                     totalPrice = 10.0,
-                    date = row[Bookings.date] ?: "",
-                    time = row[Bookings.time] ?: "",
+                    date = row[Bookings.date],
+                    time = row[Bookings.time],
                     cabin = row[Bookings.cabin],
                     addOns = row[Bookings.addOns],
                 )
@@ -395,8 +405,8 @@ class BookingService {
                             userId = row[Bookings.userId],
                             flightId = row[Bookings.flightId],
                             totalPrice = 10.0,
-                            date = row[Bookings.date] ?: "",
-                            time = row[Bookings.time] ?: "",
+                            date = row[Bookings.date],
+                            time = row[Bookings.time],
                             cabin = row[Bookings.cabin],
                             addOns = row[Bookings.addOns],
                         )

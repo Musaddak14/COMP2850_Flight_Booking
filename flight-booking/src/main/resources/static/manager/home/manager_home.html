@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/manager/home/styles/manager_home.css">
 </head>
 <body>
+<!-- Shared manager header keeps the primary operations tools one click away. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -34,6 +35,7 @@
 </header>
 
 <main>
+    <!-- The hero acts as the landing summary and is updated with the current date in JavaScript. -->
     <section class="hero">
         <img src="/images/Aeroplane_Banner.jpg" alt="Aircraft on runway" class="hero-image">
         <div class="hero-overlay"></div>
@@ -58,6 +60,7 @@
         </div>
     </section>
 
+    <!-- Quick links send managers straight into the main operational workspaces. -->
     <section class="quick-actions" aria-labelledby="quick-actions-heading">
         <div class="section-heading">
             <h2 id="quick-actions-heading">Quick Actions</h2>
@@ -102,6 +105,7 @@
         </div>
     </section>
 
+    <!-- This overview row provides static orientation before managers move into detail screens. -->
     <section class="overview" aria-labelledby="overview-heading">
         <div class="section-heading">
             <h2 id="overview-heading">Shift Overview</h2>
@@ -126,6 +130,7 @@
         </div>
     </section>
 
+    <!-- Direct email tools post a manager-authenticated message to a customer and expose sent history. -->
     <section class="overview" aria-labelledby="direct-email-heading">
         <div class="section-heading">
             <h2 id="direct-email-heading">Direct Customer Email</h2>
@@ -191,6 +196,7 @@
         </div>
     </section>
 
+    <!-- Promo creation tools let managers seed checkout discount codes from the dashboard. -->
     <section class="overview" aria-labelledby="promo-management-heading">
         <div class="section-heading">
             <h2 id="promo-management-heading">Promo Code Management</h2>
@@ -245,6 +251,7 @@
 
 </main>
 
+<!-- Manager dashboard logic validates the session, fills the date label, and wires email and promo actions. -->
 <script src="/manager/home/scripts/manager_home.js"></script>
 </body>
 </html>

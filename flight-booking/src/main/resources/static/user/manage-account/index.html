@@ -6,11 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Account</title>
     <link rel="stylesheet" href="/manage-account/styles/style.css">
+    <!-- Shared session UI updates the nav, while the page script loads and saves account data. -->
     <script src="/scripts/sessionHome.js" defer></script>
     <script src="/manage-account/scripts/manage-account.js" defer></script>
 </head>
 <body>
 
+<!-- Shared customer header with links into manage-account and support flows. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -35,6 +37,7 @@
 
 <main class="manage-page">
 
+    <!-- This overview card is populated from the account-summary API when the page loads. -->
     <div class="account-overview">
         <h2>Your Account</h2>
         <div class="overview-grid">
@@ -53,6 +56,7 @@
         </div>
     </div>
 
+    <!-- The edit form lets a signed-in user update core personal details in one request. -->
     <div class="edit-card">
         <div class="edit-header">
             <h2>Edit Details</h2>
@@ -83,6 +87,7 @@
         </form>
     </div>
 
+    <!-- Tier progress visuals explain the user's current loyalty level and next milestone. -->
     <div class="edit-card">
         <div class="edit-header">
             <h2>Membership Tiers</h2>
@@ -143,6 +148,7 @@
         </div>
     </div>
 
+    <!-- Booking history is rendered dynamically from the user's saved bookings. -->
     <div class="edit-card">
         <div class="edit-header">
             <h2>Your Bookings</h2>
@@ -154,6 +160,7 @@
     </div>
 
 </main>
+<!-- Shared footer closes the account area with navigation back to operations pages. -->
 <div class="footer-divider"></div>
 <footer>
     <a href="/manager" class="footer-left">Operations Console</a>
