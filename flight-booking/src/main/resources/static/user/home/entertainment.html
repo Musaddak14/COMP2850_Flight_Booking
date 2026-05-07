@@ -7,12 +7,14 @@
     <title>In-flight Entertainment</title>
     <link rel="stylesheet" href="styles/style.css">
     <style>
+        /* Page-specific wrapper for editorial content while keeping the shared home chrome intact. */
         .page-shell {
             max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px 60px;
         }
 
+        /* Hero block introduces the onboard product with a concise marketing message. */
         .hero-panel {
             background: linear-gradient(135deg, #0d2b63, #1f3c88);
             color: white;
@@ -71,6 +73,7 @@
             padding-left: 20px;
         }
 
+        /* Top feature row summarises the entertainment categories before the longer copy. */
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -130,6 +133,7 @@
             color: #1f3c88;
         }
 
+        /* Stack the content areas on smaller screens so the reading order stays simple. */
         @media (max-width: 900px) {
             .content-grid,
             .feature-grid {
@@ -171,6 +175,7 @@
 </header>
 
 <div class="page-shell">
+    <!-- Hero section sets expectations for the in-flight entertainment offering. -->
     <section class="hero-panel">
         <h1>Explore in-flight entertainment</h1>
         <p>
@@ -179,6 +184,7 @@
         </p>
     </section>
 
+    <!-- Quick overview cards highlight the main content types available onboard. -->
     <section class="feature-grid">
         <div class="feature-box">
             <h3>Movies</h3>
@@ -194,6 +200,7 @@
         </div>
     </section>
 
+    <!-- Two-column content mixes descriptive copy with a placeholder area for future imagery. -->
     <section class="content-grid">
         <div class="content-card">
             <h2>What to expect onboard</h2>

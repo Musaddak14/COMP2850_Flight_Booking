@@ -1,6 +1,7 @@
 (() => {
     "use strict";
 
+    /** Handles the guest add-ons step by restoring booking state, recalculating totals, and preparing checkout handoff data. */
     const GUEST_SEAT_PRICE = 20;
     const GUEST_WIFI_PRICE = 8.99;
 
@@ -17,6 +18,7 @@
         bookingDraft.baseFareTotal = Number(bookingDraft.totalPrice) || 0;
     }
 
+    /** Formats the selected flight date for the route summary banner. */
     function formatRouteDate(date) {
         if (!date) {
             return "From today onwards";
@@ -33,6 +35,7 @@
         });
     }
 
+    /** Uses the first passenger as the display name for the guest overview card. */
     function getPassengerOneName() {
         if (!bookingDraft || !Array.isArray(bookingDraft.passengers) || bookingDraft.passengers.length === 0) {
             return "Guest traveller";
@@ -44,6 +47,7 @@
         return `${first} ${last}`.trim() || "Guest traveller";
     }
 
+    /** Generates the small initials badge shown beside the guest name. */
     function getInitials(name) {
         if (!name) {
             return "--";
@@ -101,6 +105,7 @@
         return EMAIL_REGEX.test(email);
     }
 
+    /** Creates the simplified payload that later payment and booking APIs consume. */
     function buildBookingHandoff(draft) {
         return {
             userId: draft.userId,
@@ -121,6 +126,7 @@
         };
     }
 
+    /** Adds the base fare, reserved seat, wi-fi, and current add-on selections into one total. */
     function calculateLiveTotal() {
         const baseFare = Number(bookingDraft?.baseFareTotal) || 0;
         const baggagePrice = getSelectedRadioPrice("bag");
@@ -131,6 +137,7 @@
         return baseFare + baggagePrice + mealPrice + insurancePrice + extrasPrice + GUEST_SEAT_PRICE + GUEST_WIFI_PRICE;
     }
 
+    /** Rebuilds the summary rows so the sidebar matches the saved add-on choices. */
     function updateSelectionsSummary() {
         const lines = document.getElementById("lines");
         const selections = [];
@@ -161,6 +168,7 @@
         `).join("");
     }
 
+    /** Normalizes the current inputs and persists them to session storage for the next booking step. */
     function saveSelections() {
         if (!bookingDraft) {
             return null;
@@ -210,6 +218,7 @@
         return bookingDraft;
     }
 
+    /** Refreshes the fare breakdown after any add-on selection changes. */
     function updateLiveTotalDisplay() {
         const baseFare = Number(bookingDraft?.baseFareTotal) || 0;
         const total = calculateLiveTotal();
@@ -218,6 +227,7 @@
         document.getElementById("tot").textContent = fmt(total);
     }
 
+    /** Reapplies previously chosen add-ons when the user revisits this page. */
     function restoreSavedSelections() {
         const savedAddOns = bookingDraft?.addOns ?? {};
 
@@ -244,6 +254,7 @@
         }
     }
 
+    /** Populates the page from the booking draft and disables progression if the draft is missing. */
     function initializePage() {
         if (!bookingDraft) {
             document.getElementById("route-title").textContent = "Booking details unavailable";
@@ -273,6 +284,7 @@
         updateLiveTotalDisplay();
     }
 
+    /** Every add-on input updates the persisted draft and sidebar in real time. */
     const allInputs = document.querySelectorAll("input");
     for (let i = 0; i < allInputs.length; i++) {
         allInputs[i].addEventListener("change", () => {
@@ -282,6 +294,7 @@
         });
     }
 
+    /** Continue validates the guest handoff data before moving into payment. */
     continueButton.addEventListener("click", () => {
         handoffMessage.textContent = "";
 
@@ -314,6 +327,7 @@
         window.location.href = "/payment";
     });
 
+    /** Back preserves the current selections before returning to seat selection. */
     backButton.addEventListener("click", () => {
         saveSelections();
         window.location.href = "/seatmap";

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/manager/accounts/styles/accounts.css">
 </head>
 <body>
+<!-- Shared manager header keeps the rest of the operations tools available while working with accounts. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -34,6 +35,7 @@
 </header>
 
 <main>
+    <!-- The hero introduces the account-management workspace and its main responsibilities. -->
     <section class="accounts-hero" aria-labelledby="accounts-title">
         <p class="eyebrow">Manager Controls</p>
         <h1 id="accounts-title">Account Management</h1>
@@ -42,6 +44,7 @@
         </p>
     </section>
 
+    <!-- Summary cards are filled from the fetched account list to give a quick status snapshot. -->
     <section class="accounts-summary" aria-labelledby="accounts-summary-heading">
         <div class="section-heading">
             <h2 id="accounts-summary-heading">Account Snapshot</h2>
@@ -81,6 +84,7 @@
         </div>
     </section>
 
+    <!-- Search and status filters narrow the in-memory account list before the table is re-rendered. -->
     <section class="control-card" aria-labelledby="account-controls-heading">
         <div class="section-heading compact-heading">
             <h2 id="account-controls-heading">Find an Account</h2>
@@ -111,6 +115,7 @@
         <p id="accounts-message" class="accounts-message" role="status">Loading account data.</p>
     </section>
 
+    <!-- The table body is rebuilt in JavaScript so managers can top up points and change account status inline. -->
     <section class="table-card" aria-labelledby="account-table-heading">
         <div class="section-heading compact-heading">
             <h2 id="account-table-heading">Customer Accounts</h2>
@@ -140,6 +145,7 @@
     </section>
 </main>
 
+<!-- Account-management logic loads manager-visible users, updates summary totals, and wires row actions. -->
 <script src="/manager/accounts/scripts/accounts.js"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+/* Guest add-ons overrides keep this page visually aligned with the shared booking flow styles. */
 .guest-addons-hero .eyebrow {
     margin: 0 0 6px;
     color: #7a8caa;
@@ -11,10 +12,12 @@
     margin-top: 24px;
 }
 
+/* The guest card uses a dedicated header treatment so it reads differently from member pages. */
 .guest-card-header {
     background: linear-gradient(135deg, #1a2b4a, #244a78);
 }
 
+/* Guest-only labels call out where member discounts do not apply. */
 .guest-note {
     font-size: 12px;
     text-transform: uppercase;
@@ -36,12 +39,14 @@
     font-size: 13px;
 }
 
+/* Summary prices for included seat and wi-fi stay visually prominent in the sidebar. */
 #sum-seat-price,
 #sum-wifi-price {
     color: #1a2b4a;
     font-weight: 600;
 }
 
+/* On smaller screens the summary stacks underneath the options instead of beside them. */
 @media (max-width: 800px) {
     .guest-addons-layout {
         grid-template-columns: 1fr;

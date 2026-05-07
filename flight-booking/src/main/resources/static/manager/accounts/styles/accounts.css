@@ -1,3 +1,4 @@
+/* Manager accounts styles combine the shared console shell with summary, filter, and table layouts. */
 body {
     margin: 0;
     font-family: "Inter", system-ui, Helvetica, sans-serif;
@@ -84,6 +85,7 @@ main {
     padding: 40px 0 64px;
 }
 
+/* The hero introduces the workspace with a stronger visual treatment than the data cards below. */
 .accounts-hero {
     position: relative;
     overflow: hidden;
@@ -158,6 +160,7 @@ main {
     padding: 22px 22px 0;
 }
 
+/* Summary cards present live aggregate counts and loyalty totals from the loaded account list. */
 .summary-grid {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -218,6 +221,7 @@ main {
     line-height: 1.5;
 }
 
+/* The control and table cards share one container style for the filter bar and data grid. */
 .control-card,
 .table-card {
     overflow: hidden;
@@ -276,6 +280,7 @@ main {
     align-items: center;
 }
 
+/* Shared button styles support refresh, points top-ups, and status-changing account actions. */
 .secondary-button,
 .primary-button,
 .action-button {
@@ -367,6 +372,7 @@ main {
     color: #a0200e;
 }
 
+/* The table area is horizontally scrollable so all management actions remain available on smaller screens. */
 .table-wrap {
     overflow-x: auto;
 }
@@ -473,6 +479,7 @@ main {
     gap: 10px;
 }
 
+/* Mobile rules stack filters and summary cards while preserving the full table below. */
 @media (max-width: 1100px) {
     .center-nav {
         position: static;

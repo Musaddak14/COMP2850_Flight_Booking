@@ -7,12 +7,14 @@
     <title>Explore Dubai</title>
     <link rel="stylesheet" href="styles/style.css">
     <style>
+        /* Page-specific wrapper layered on top of the shared home navigation and typography styles. */
         .page-shell {
             max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px 60px;
         }
 
+        /* Destination hero introduces the page with a short editorial summary. */
         .hero-panel {
             background: linear-gradient(135deg, #0d2b63, #1f3c88);
             color: white;
@@ -35,6 +37,7 @@
             opacity: 0.95;
         }
 
+        /* Two-column layout pairs itinerary guidance with supporting destination context. */
         .overview-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -86,6 +89,7 @@
             margin: 0;
         }
 
+        /* Quick-scan highlights surface the main reasons to consider this stopover page. */
         .highlights-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -146,6 +150,7 @@
             color: #1f3c88;
         }
 
+        /* Collapse the content grids on smaller screens without affecting the shared header layout. */
         @media (max-width: 900px) {
             .overview-grid,
             .highlights-row {
@@ -187,6 +192,7 @@
 </header>
 
 <div class="page-shell">
+    <!-- Intro hero frames this as inspirational content rather than part of the booking transaction itself. -->
     <section class="hero-panel">
         <h1>Explore Dubai</h1>
         <p>
@@ -196,6 +202,7 @@
         </p>
     </section>
 
+    <!-- Highlight cards summarise the destination before the longer itinerary section below. -->
     <section class="highlights-row">
         <div class="highlight-box">
             <h3>Modern landmarks</h3>
@@ -211,6 +218,7 @@
         </div>
     </section>
 
+    <!-- Main content combines a sample itinerary with supporting context and booking-oriented CTAs. -->
     <section class="overview-grid">
         <div class="content-card">
             <h2>Suggested travel plan</h2>

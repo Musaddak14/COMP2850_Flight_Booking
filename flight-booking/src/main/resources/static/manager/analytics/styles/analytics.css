@@ -1,3 +1,4 @@
+/* Manager analytics styles combine the shared console shell with snapshot cards, reports, and chart layout. */
 body {
     margin: 0;
     font-family: "Inter", system-ui, Helvetica, sans-serif;
@@ -84,6 +85,7 @@ main {
     padding: 40px 0 64px;
 }
 
+/* The hero gives the analytics area a distinct landing treatment above the denser report content. */
 .analytics-hero {
     position: relative;
     overflow: hidden;
@@ -133,6 +135,7 @@ main {
     line-height: 1.6;
 }
 
+/* Snapshot and report sections share one vertical rhythm but use different internal layouts. */
 .analytics-snapshot,
 .report-grid {
     margin-bottom: 34px;
@@ -157,6 +160,7 @@ main {
     padding: 20px 20px 0;
 }
 
+/* Snapshot cards highlight key metrics before the user scans the larger tables and chart. */
 .analytics-grid {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -218,6 +222,7 @@ main {
     line-height: 1.5;
 }
 
+/* Feedback controls keep transient load/error messaging close to the snapshot cards. */
 .analytics-feedback {
     display: flex;
     align-items: center;
@@ -261,6 +266,7 @@ main {
     transform: translateY(-1px);
 }
 
+/* The report grid places tabular reports beside each other and reserves a wider slot for the chart. */
 .report-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -305,6 +311,7 @@ main {
     transform: translateY(-1px);
 }
 
+/* The hourly chart uses pure CSS/DOM bars so each hour can be rendered from normalized analytics data. */
 .hourly-chart-wrap {
     padding: 10px 20px 24px;
 }
@@ -371,6 +378,7 @@ main {
     font-size: 13px;
 }
 
+/* Shared table styles keep both report tables visually consistent with the rest of the dashboard. */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -402,6 +410,7 @@ td {
     color: #333333;
 }
 
+/* Responsive rules stack the report cards and widen the chart columns on narrower screens. */
 @media (max-width: 1050px) {
     .center-nav {
         position: static;

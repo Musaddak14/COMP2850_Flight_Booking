@@ -9,17 +9,21 @@
 </head>
 <body>
 
+<!-- This page focuses on one booking so managers can update seats, passenger fields, or delete the booking entirely. -->
 <header>
     <h1>Manager – Edit Booking</h1>
     <p>Edit passenger details, seats, or delete this booking.</p>
 </header>
 
 <main>
+    <!-- The booking detail form is injected here once the booking payload has loaded successfully. -->
     <div id="booking-content"></div>
+    <!-- Errors during the initial booking fetch are surfaced here instead of rendering partial controls. -->
     <p id="booking-error" style="color:#c0392b;font-weight:600;padding:20px;"></p>
 </main>
 
 <script>
+    /** Reads the booking id from the query string, loads the detail payload, and hands it off to the renderer. */
     const params = new URLSearchParams(window.location.search);
     const bookingId = params.get('bookingId');
     let loadedData = null;
@@ -37,6 +41,7 @@
             document.getElementById('booking-error').textContent = 'Could not load booking.';
         });
 
+    /** Builds the booking summary, passenger editors, seat editor, and delete controls from the loaded API data. */
     function render(data) {
         const container = document.getElementById('booking-content');
         const booking = data.booking.booking;
@@ -137,6 +142,7 @@
         `;
     }
 
+    /** Expands the stored add-ons blob into a readable comma-separated label for the disabled booking field. */
     function formatAddOns(raw) {
         if (!raw) return 'None';
         try {
@@ -146,6 +152,7 @@
         } catch { return raw; }
     }
 
+    /** Saves the edited seat list back to the manager seat-update endpoint for this booking. */
     function saveSeats() {
         const raw = document.getElementById('seats-input').value;
         const seats = raw.split(',').map(s => s.trim()).filter(s => s);
@@ -158,6 +165,7 @@
         });
     }
 
+    /** Collects one passenger's editable fields and submits them to the passenger update endpoint. */
     function savePassenger(passengerId) {
         const body = {
             title: document.getElementById(`p-title-${passengerId}`).value,
@@ -176,6 +184,7 @@
         });
     }
 
+    /** Deletes the full booking after confirmation and returns the manager to the booking list view. */
     function deleteBooking() {
         if (!confirm('Delete this entire booking? This cannot be undone.')) return;
         fetch(`/api/manager/bookings/${bookingId}`, { method: 'DELETE' })

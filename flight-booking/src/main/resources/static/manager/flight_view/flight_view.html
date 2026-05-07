@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/manager/flight_view/styles/flight_view.css">
 </head>
 <body>
+<!-- The flight-view header keeps this page focused on flight administration and links back to the manager dashboard. -->
 <header>
     <div class="header-content">
         <div>
@@ -18,11 +19,13 @@
 </header>
 
 <main>
+    <!-- This status area is updated by JavaScript after every load, add, and remove action. -->
     <section aria-labelledby="manager-message-heading">
         <h2 id="manager-message-heading">Messages</h2>
         <p id="manager-message" role="status">No messages.</p>
     </section>
 
+    <!-- The add-flight form posts a new flight definition into the manager flight API. -->
     <section aria-labelledby="add-flight-heading">
         <h2 id="add-flight-heading">Add Flight</h2>
         <form id="add-flight-form" method="post" action="/api/manager/flight_view">
@@ -70,6 +73,7 @@
         </form>
     </section>
 
+    <!-- The add-airport form lets managers seed valid airport codes before creating new routes. -->
     <section aria-labelledby="add-airport-heading">
         <h2 id="add-airport-heading">Add Airport</h2>
         <form id="add-airport-form" method="post" action="/api/manager/airports">
@@ -128,6 +132,7 @@
         </form>
     </section>
 
+    <!-- The flights section supports client-side filtering and row-level removal actions. -->
     <section aria-labelledby="flight-results-heading">
         <h2 id="flight-results-heading">Flights</h2>
         <div class="flight-filter-bar" role="group" aria-label="Filter flights by time">
@@ -166,6 +171,7 @@
         </table>
     </section>
 </main>
+<!-- Flight-view logic validates the manager session, handles both forms, and keeps the flights table in sync. -->
 <script src="/manager/flight_view/scripts/flight_view.js"></script>
 </body>
 </html>

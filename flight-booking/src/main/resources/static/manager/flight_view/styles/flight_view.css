@@ -1,3 +1,4 @@
+/* Flight-view styles cover the admin header, inline forms, filter controls, and flight results table. */
 body {
     margin: 0;
     font-family: 'Inter', system-ui, Helvetica, sans-serif;
@@ -119,6 +120,7 @@ section h2 {
     padding: 18px 18px 0;
 }
 
+/* Filter chips switch the table between upcoming, past, and all flights without changing page layout. */
 .flight-filter-button {
     padding: 9px 16px;
     border: 1px solid #bfd8e8;
@@ -285,6 +287,8 @@ section h2 {
 
 /*full width table, removes default cell gaps*/
 
+/* The flight table doubles as both a live status view and the surface for row-level delete actions. */
+
 #upcoming-flights-table thead tr {
     background: #f7f8fa;
     border-bottom: 2px solid #e4e4e4;
@@ -388,9 +392,9 @@ section h2 {
 }
 
 @media (max-width: 700px) {
+    /* Small screens turn the filter bar into evenly sized buttons for easier tapping. */
     .flight-filter-button {
         flex: 1 1 auto;
         text-align: center;
     }
 }
-

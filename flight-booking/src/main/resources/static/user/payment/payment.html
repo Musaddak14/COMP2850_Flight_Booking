@@ -6,11 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment</title>
     <link rel="stylesheet" href="../home/styles/style.css">
+    <!-- Shared currency helper keeps displayed totals aligned with the selected UI currency. -->
     <script src="/shared/currency.js"></script>
 
 </head>
 <body>
 
+<!-- Shared customer header for the checkout step. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -35,6 +37,7 @@
                 <option value="AUD">A$ AUD</option>
                 <option value="JPY">¥ JPY</option>
             </select>
+            <!-- Reapply the saved currency selection before the summary prices render. -->
             <script>document.getElementById("currency-select").value = getSelectedCurrency();</script>
             <span id="welcome-message"></span>
             <a href="/log_in" id="login-link">Log In</a>
@@ -43,6 +46,7 @@
     </nav>
 </header>
 
+<!-- Checkout still charges in GBP, so this notice appears when the UI is showing converted prices. -->
 <p id="currency-notice" style="display:none; text-align:center; font-size:0.8rem; background:#f5f0e8; padding:6px; margin:0;">
     Indicative prices only — you will be charged in GBP at checkout.
 </p>
@@ -54,6 +58,7 @@
 
 
 
+<!-- Payment-step heading shown above the form and summary columns. -->
 <section class="flights-overview-header">
     <div class="flights-overview">
         <h1 id="route-title">Payment</h1>
@@ -64,7 +69,7 @@
 <section style="max-width: 1100px; margin: 30px auto; padding: 0 20px;">
     <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 30px; align-items: start;">
 
-        <!-- PAYMENT FORM -->
+        <!-- Checkout form collects card details, promo input, and inline validation feedback. -->
         <div class="booking_page_1">
             <h2>Payment details</h2>
             <p class="age-label">Enter your card information</p>
@@ -116,7 +121,7 @@
 
         </div>
 
-        <!-- BOOKING SUMMARY -->
+        <!-- Booking summary mirrors the in-progress booking so the customer can review it before paying. -->
         <div class="booking_page_1">
             <h2>Booking summary</h2>
 
@@ -181,6 +186,13 @@
 </section>
 
 <script>
+    /**
+     * Runs the payment step of the booking flow.
+     *
+     * The page rebuilds booking state from sessionStorage, renders the checkout
+     * summary, optionally applies loyalty points and promo discounts, and then
+     * submits the final checkout request to the backend.
+     */
     const pendingBookingRequestRaw = sessionStorage.getItem("pendingBookingRequest");
     const bookingDraftRaw = sessionStorage.getItem("bookingDraft");
     const holdDataRaw = sessionStorage.getItem("holdData");
@@ -258,12 +270,16 @@
     const bookingDraft = parseStoredJson(bookingDraftRaw);
     const holdData = parseStoredJson(holdDataRaw);
 
+    // Merge the draft, pending request, and hold metadata so the summary can read from one object.
     bookingData = {
         ...(bookingDraft ?? {}),
         ...(pendingBookingRequest ?? {}),
         ...(holdData ?? {})
     };
 
+    /**
+     * Formats booking dates for the checkout summary.
+     */
     function formatDisplayDate(date) {
         if (!date) {
             return "From today onwards";
@@ -277,6 +293,9 @@
         return parsedDate.toLocaleDateString("en-GB");
     }
 
+    /**
+     * Formats numeric amounts for display using the shared currency helper.
+     */
     function formatCurrency(amount) {
         if (typeof amount !== "number" || !Number.isFinite(amount)) {
             return "To be confirmed";
@@ -285,10 +304,16 @@
         return fmt(amount);
     }
 
+    /**
+     * Validates the guest confirmation email when checkout is not tied to a signed-in account.
+     */
     function isValidEmail(email) {
         return /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email);
     }
 
+    /**
+     * Builds a short passenger-count summary for the review column.
+     */
     function getPassengerSummary(data) {
         const passengerList = Array.isArray(data?.passengers) ? data.passengers : [];
 
@@ -325,6 +350,9 @@
         return `${from} → ${to}`;
     }
 
+    /**
+     * Flattens the selected add-ons into a readable summary string for checkout review.
+     */
     function getAddOnSummary(data) {
         const addOns = data?.addOns;
 
@@ -355,12 +383,18 @@
         return selections.length > 0 ? selections.join(", ") : "No add-ons selected";
     }
 
+    /**
+     * Reads the signed-in user ID so the page can load loyalty information when available.
+     */
     function getCurrentUserId() {
         const rawUserId = sessionStorage.getItem("userId");
         const parsedUserId = Number(rawUserId);
         return Number.isFinite(parsedUserId) ? parsedUserId : null;
     }
 
+    /**
+     * Calculates the current total after any loyalty redemption but before promo-code discounts.
+     */
     function getCurrentCheckoutBaseTotal() {
         const totalPrice = Number(bookingData?.totalPrice) || 0;
 
@@ -387,6 +421,9 @@
         return Math.max(0, totalPrice - discount);
     }
 
+    /**
+     * Refreshes the displayed totals after loyalty points or promo codes change the payable amount.
+     */
     function updateDisplayedTotalWithPromo() {
         const baseTotal = getCurrentCheckoutBaseTotal();
         const finalAmount = discountedTotal !== null ? discountedTotal : baseTotal;
@@ -395,10 +432,16 @@
         finalTotal.textContent = `Final total: ${formatCurrency(finalAmount)}`;
     }
 
+    /**
+     * Converts redeemed loyalty points into a GBP discount using the checkout rule on this page.
+     */
     function calculateDiscount(points) {
         return points / 10;
     }
 
+    /**
+     * Shows or hides the points section and constrains the entered points to useful limits.
+     */
     function updateLoyaltyDisplay() {
         const totalPrice = Number(bookingData?.totalPrice) || 0;
 
@@ -457,6 +500,9 @@
 
     finalTotal.textContent = `Final total: ${formatCurrency(Number(bookingData?.totalPrice))}`;
 
+    /**
+     * Loads the current loyalty balance so checkout can offer point redemption to signed-in users.
+     */
     async function loadLoyaltyBalance() {
         const userId = getCurrentUserId();
 
@@ -507,6 +553,9 @@
         payButton.disabled = true;
     }
 
+    /**
+     * Applies a promo code against the current checkout total and updates the summary when valid.
+     */
     applyPromoButton.addEventListener("click", async function () {
         const promoCode = promoCodeInput.value.trim();
 
@@ -561,6 +610,10 @@
         }
     });
 
+    /**
+     * Validates the payment fields, submits the final checkout request, stores the
+     * response, and then forwards the flow into the confirmation page.
+     */
     payButton.addEventListener("click", async function () {
         const name = document.getElementById("cardholder-name").value.trim();
         const number = document.getElementById("card-number").value.trim();
@@ -575,6 +628,7 @@
         message.textContent = "";
         promoMessage.textContent = "";
 
+        // Keep obvious validation failures in-page so the checkout API is only called with usable data.
         if (!bookingData?.holdId) { message.textContent = "Your booking hold is missing. Return to seat selection and try again."; return; }
         if (name === "") { message.textContent = "Enter cardholder name."; return; }
         if (!/^\d{16}$/.test(number)) { message.textContent = "Card number must be 16 digits."; return; }
@@ -590,6 +644,7 @@
         try {
             payButton.disabled = true;
 
+            // Final checkout request includes hold IDs, payment details, add-ons, and optional discounts.
             const res = await fetch("/checkout", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -641,6 +696,7 @@
 
 // save passengers to DB
                 const draft = JSON.parse(sessionStorage.getItem("bookingDraft") || "{}");
+                // Passenger records are attached after checkout because booking IDs are created by the payment API.
                 await fetch("/api/passengers", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
@@ -671,6 +727,7 @@
     });
 </script>
 <div class="footer-divider"></div>
+<!-- Shared footer for checkout and confirmation pages. -->
 <footer>
     <a href="/manager" class="footer-left">Operations Console</a>
 

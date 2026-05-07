@@ -1,6 +1,7 @@
 (() => {
     "use strict";
 
+    /** Manager accounts uses one endpoint for loading users, then applies filtering and row actions locally. */
     const accountsEndpoint = "/api/manager/users";
     const tableBody = document.getElementById("accounts-table-body");
     const searchInput = document.getElementById("account-search");
@@ -22,6 +23,7 @@
         DELETED: 2
     };
 
+    /** Escapes account data before it is injected into table HTML. */
     function escapeHtml(value) {
         return String(value ?? "")
             .replaceAll("&", "&amp;")
@@ -31,14 +33,17 @@
             .replaceAll("'", "&#39;");
     }
 
+    /** Reads the current manager session id for protected account-management requests. */
     function getSessionId() {
         return sessionStorage.getItem("sessionId")?.trim() ?? "";
     }
 
+    /** Normalizes server status values so filtering, sorting, and styling use one consistent format. */
     function normaliseStatus(status) {
         return String(status ?? "UNKNOWN").trim().toUpperCase();
     }
 
+    /** Writes status feedback above the table for loading, success, and error states. */
     function setMessage(message, type = "") {
         if (!accountsMessage) {
             return;
@@ -60,6 +65,7 @@
         element.textContent = String(value);
     }
 
+    /** Recalculates the summary snapshot each time the account list changes. */
     function updateSummaryCards(accounts) {
         const totalAccounts = accounts.length;
         const activeAccounts = accounts.filter((account) => normaliseStatus(account.status) === "ACTIVE").length;
@@ -74,6 +80,7 @@
         setSummaryValue(totalPointsElement, totalPoints.toLocaleString("en-GB"));
     }
 
+    /** Applies the current text search and status filter to the cached account list. */
     function getFilteredAccounts() {
         const query = searchInput?.value.trim().toLowerCase() ?? "";
         const selectedStatus = statusFilter?.value ?? "ALL";
@@ -89,6 +96,7 @@
         });
     }
 
+    /** Maps normalized statuses to the pill styles used inside the table. */
     function getStatusClass(status) {
         switch (normaliseStatus(status)) {
             case "ACTIVE":
@@ -102,6 +110,7 @@
         }
     }
 
+    /** Groups accounts by status first, then sorts alphabetically for stable table rendering. */
     function sortAccounts(accounts) {
         return [...accounts].sort((left, right) => {
             const leftStatus = statusSortOrder[normaliseStatus(left.status)] ?? 99;
@@ -118,6 +127,7 @@
         });
     }
 
+    /** Chooses the row-level actions allowed for the account's current status. */
     function buildActionButtons(account) {
         const status = normaliseStatus(account.status);
         const userId = Number(account.userId);
@@ -151,6 +161,7 @@
         `;
     }
 
+    /** Rebuilds the full table body from the filtered account list and current busy row state. */
     function renderTable() {
         if (!tableBody) {
             return;
@@ -215,6 +226,7 @@
         }).join("");
     }
 
+    /** Accepts either JSON or plain-text backend responses so errors can still be surfaced cleanly. */
     async function fetchJsonOrText(response) {
         const text = await response.text();
 
@@ -229,6 +241,7 @@
         }
     }
 
+    /** Loads all manager-visible accounts, refreshes the summary cards, and updates the table message. */
     async function loadAccounts(options = {}) {
         const { keepMessage = false, successMessage = "" } = options;
         const sessionId = getSessionId();
@@ -273,6 +286,7 @@
         }
     }
 
+    /** Executes freeze, unfreeze, restore, and delete actions, then reloads the table data. */
     async function runAccountAction(userId, action, message) {
         const sessionId = getSessionId();
 
@@ -310,6 +324,7 @@
         }
     }
 
+    /** Submits a loyalty top-up for one account and refreshes the view after a successful update. */
     async function addPointsToAccount(userId, points) {
         const sessionId = getSessionId();
 
@@ -359,6 +374,7 @@
         }
     }
 
+    /** Search updates the visible subset immediately without needing another API request. */
     if (searchInput) {
         searchInput.addEventListener("input", () => {
             renderTable();
@@ -366,6 +382,7 @@
         });
     }
 
+    /** Status changes reuse the cached data and simply trigger a new table render. */
     if (statusFilter) {
         statusFilter.addEventListener("change", () => {
             renderTable();
@@ -373,12 +390,14 @@
         });
     }
 
+    /** Refresh forces a fresh account fetch from the manager API. */
     if (refreshButton) {
         refreshButton.addEventListener("click", () => {
             loadAccounts();
         });
     }
 
+    /** Delegated table events keep dynamically rendered buttons and forms interactive after each redraw. */
     if (tableBody) {
         tableBody.addEventListener("click", (event) => {
             const button = event.target.closest("[data-action]");

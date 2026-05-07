@@ -1,3 +1,4 @@
+/* Shared authentication stylesheet for the login and registration pages. */
 body {
     margin: 0;
     font-family: 'Inter', system-ui, Helvetica, sans-serif;
@@ -277,6 +278,7 @@ footer {
     margin: 0 0 24px;
 }
 
+/* Tabs are only used on the login page to swap between account login and booking lookup in place. */
 /* ----------------------------- */
 /* TABS */
 /* ----------------------------- */
@@ -324,6 +326,7 @@ footer {
     display: none;
 }
 
+/* Shared form field styling supports both sign-in and registration screens. */
 .form-group {
     display: flex;
     flex-direction: column;
@@ -363,6 +366,7 @@ footer {
     border-color: #132e8e;
 }
 
+/* Password-wrap reserves room for the inline show/hide button without changing the input width. */
 .password-wrap {
     position: relative;
 }
@@ -442,6 +446,7 @@ footer {
     cursor: wait;
 }
 
+/* Inline message colours reflect validation, loading, and success states set by the auth scripts. */
 .form-message {
     min-height: 20px;
     margin: -8px 0 0;

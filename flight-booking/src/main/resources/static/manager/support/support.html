@@ -6,6 +6,7 @@
     <title>Manager Support Tickets</title>
 
     <style>
+        /* Inline styles keep the support desk self-contained without relying on a separate manager stylesheet. */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f6f8;
@@ -14,18 +15,21 @@
             color: #222;
         }
 
+        /* The header introduces the support workspace above the ticket management area. */
         .page-header {
             background-color: #1f3c88;
             color: white;
             padding: 20px 40px;
         }
 
+        /* The page container centers the ticket tools and cards at a readable width. */
         .page-container {
             max-width: 1100px;
             margin: 30px auto;
             padding: 0 20px 40px;
         }
 
+        /* The top bar groups view toggles, search, and manual refresh controls. */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -57,6 +61,7 @@
             margin-left: 8px;
         }
 
+        /* Tickets render as stacked cards so each case can carry its own update controls and history. */
         .ticket-grid {
             display: grid;
             gap: 20px;
@@ -105,6 +110,7 @@
             min-height: 90px;
         }
 
+        /* History stays hidden until a manager explicitly expands it for one ticket. */
         .ticket-history {
             display: none;
             margin-top: 16px;
@@ -131,6 +137,7 @@
 </head>
 
 <body>
+<!-- The support manager header explains that this page is for reviewing and updating customer requests. -->
 <div class="page-header">
     <h1>Support Ticket Manager</h1>
     <p>Review, update, and manage customer support requests.</p>
@@ -141,6 +148,7 @@
         <h2>Support Tickets</h2>
 
         <div>
+            <!-- View tabs swap between active and archived tickets using the already-fetched ticket list. -->
             <button onclick="setView('active')" id="active-tab" class="refresh-btn">Active</button>
             <button onclick="setView('archived')" id="archived-tab" class="refresh-btn">Archived</button>
 
@@ -156,13 +164,16 @@
         </div>
     </div>
 
+    <!-- Ticket cards are injected here after filtering by archive state and booking-id search. -->
     <div id="ticketList" class="ticket-grid"></div>
 </div>
 
 <script>
+    /** Keeps the full ticket list in memory so the view tabs and search box can filter locally. */
     let allTickets = [];
     let currentView = "active"; // default
 
+    /** Fetches the latest ticket list from the support API and re-renders the current view. */
     async function loadTickets() {
         const response = await fetch("/api/tickets");
 
@@ -171,11 +182,13 @@
         renderTickets();
     }
 
+    /** Switches between active and archived ticket views without reloading the page. */
     function setView(view) {
         currentView = view;
         renderTickets();
     }
 
+    /** Rebuilds the visible ticket cards from the cached list using the current tab and search term. */
     function renderTickets() {
     const searchValue = document.getElementById("booking-search")?.value.trim() ?? "";
     const ticketList = document.getElementById("ticketList");
@@ -242,6 +255,7 @@
     });
 }
 
+    /** Sends the selected status and manager note back to the ticket update endpoint. */
     async function updateTicket(ticketId) {
         const status = document.getElementById(`status-${ticketId}`).value;
         const note = document.getElementById(`note-${ticketId}`).value;
@@ -263,6 +277,7 @@
         }
     }
 
+    /** Lazily loads one ticket's history the first time the manager expands its history panel. */
     async function loadTicketHistory(ticketId) {
         const box = document.getElementById(`history-${ticketId}`);
 
@@ -295,6 +310,7 @@
         `).join("");
     }
 
+    /** Archives a ticket after confirmation so resolved cases can move out of the active queue. */
     async function archiveTicket(ticketId) {
         const confirmArchive = confirm("Archive this ticket?");
         if (!confirmArchive) return;
@@ -310,6 +326,7 @@
         }
     }
 
+    /** Initial page load fetches the ticket queue before any filters or actions are used. */
     loadTickets();
 </script>
 </body>

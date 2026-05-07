@@ -1,3 +1,4 @@
+/* Manage-account styles cover the shared site chrome plus the account summary, edit form, tiers, and bookings UI. */
 body {
        margin: 0;
        font-family: 'Inter', system-ui, Helvetica, sans-serif;
@@ -431,6 +432,7 @@ footer {
 
 
 /*used to show the flights user has booked*/
+/* Booking history cards summarize previously purchased flights inside the account page. */
 
 /* the main card that wraps each booking */
 .booking-card {
@@ -490,6 +492,7 @@ footer {
 }
 
 /* tier progress section */
+/* Loyalty progress visuals rely on widths and active states set by manage-account.js. */
 
 .tier-progress-wrap {
     margin-bottom: 28px;

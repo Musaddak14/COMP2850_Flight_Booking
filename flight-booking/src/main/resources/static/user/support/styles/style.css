@@ -1,3 +1,4 @@
+/* Support page styles combine the shared customer header/footer with a focused ticket form card. */
 body {
     margin: 0;
     font-family: 'Inter', system-ui, Helvetica, sans-serif;
@@ -158,9 +159,7 @@ body {
 
 /* for links insidee navbar */
 
-
-
-
+/* The main support card centers the form and separates it from the shared page background. */
 .page-container {
     max-width: 700px;
     margin: 50px auto;
@@ -186,6 +185,7 @@ label {
     font-weight: 600;
 }
 
+/* These form control styles keep every support field visually consistent. */
 input,
 select,
 textarea {
@@ -217,6 +217,7 @@ button:hover {
     background: #162d66;
 }
 
+/* The result area holds submission feedback without shifting the rest of the layout. */
 #result {
     margin-top: 18px;
     font-weight: 600;

@@ -6,10 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link rel="stylesheet" href="/log_in/styles/style.css">
+    <!-- register.js handles client-side validation, registration submission, and feedback messaging. -->
     <script src="/log_in/scripts/register.js" defer></script>
 </head>
 <body>
 
+<!-- Shared customer header for auth pages. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -32,15 +34,18 @@
     </nav>
 </header>
 
+<!-- Registration layout reuses the same auth card styling as the login page. -->
 <main class="login-page">
 
     <div class="login-card">
 
+        <!-- Intro copy for the account creation flow. -->
         <div class="login-header">
             <h1>Create an account</h1>
             <p>Sign up to manage your bookings and miles</p>
         </div>
 
+        <!-- Main registration form; register.js builds the payload, validates it, and posts it to the auth API. -->
         <form class="login-form" id="register-form" novalidate>
             <div class="form-group">
                 <label for="first-name">First name</label>
@@ -82,6 +87,9 @@
 </main>
 
 <script>
+    /**
+     * Toggles the registration password field between masked and plain-text display.
+     */
     function togglePassword() {
         const input = document.getElementById('password');
         const btn = document.querySelector('.show-pass');
@@ -95,6 +103,7 @@
     }
 </script>
 <div class="footer-divider"></div>
+<!-- Shared footer for customer-facing authentication pages. -->
 <footer>
     <a href="/manager" class="footer-left">Operations Console</a>
 

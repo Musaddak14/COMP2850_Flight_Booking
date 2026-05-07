@@ -14,6 +14,7 @@
 
 <body>
 
+<!-- Shared customer header with session-aware sign-in and logout actions. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -46,6 +47,7 @@
     </nav>
 </header>
 
+<!-- The route summary is populated from the booking draft stored earlier in the funnel. -->
 <section class="flights-overview-header">
 
     <div class="flights-overview">
@@ -56,9 +58,11 @@
 
 </section>
 
+<!-- The left column collects add-ons while the right column keeps a running total for checkout. -->
 <div class="wrap">
     <div>
 
+        <!-- This account card switches between member and guest messaging based on session state. -->
         <div class="card">
             <div class="lt">
                 <div class="av" id="account-initials">--</div>
@@ -88,6 +92,7 @@
             </div>
         </div>
 
+        <!-- Baggage is stored as a single selected option in the booking draft. -->
         <div class="card">
             <div class="sh">Baggage</div>
             <label class="row"><input type="radio" name="bag"><div class="rl"><div class="rn">No hold bag</div><div class="rs">Cabin only</div></div><div class="rp">—</div></label>
@@ -96,6 +101,7 @@
             <label class="row"><input type="radio" name="bag" data-price="45" data-label="1 × 32kg bag"><div class="rl"><div class="rn">1 × 32 kg</div><div class="rs">Heavy items</div></div><div class="rp">£45</div></label>
         </div>
 
+        <!-- Meal pricing is rewritten at runtime so members see discounted totals. -->
         <div class="card">
             <div class="sh">Meals <span class="gs" id="meal-discount-label">30% Gold discount</span></div>
             <label class="row"><input type="radio" name="meal"><div class="rl"><div class="rn">No meal</div></div><div class="rp">—</div></label>
@@ -103,6 +109,7 @@
             <label class="row"><input type="radio" name="meal" data-price="15.40" data-label="Premium dine set"><div class="rl"><div class="rn">Premium dine</div><div class="rs">3-course + wine</div></div><div class="rp" id="premium-meal-price-display"><s>£22</s><span class="gld">£15.40</span></div></label>
         </div>
 
+        <!-- Insurance remains optional but only one plan can be selected at a time. -->
         <div class="card">
             <div class="sh">Insurance</div>
             <label class="row"><input type="radio" name="ins"><div class="rl"><div class="rn">No insurance</div></div><div class="rp">—</div></label>
@@ -110,6 +117,7 @@
             <label class="row"><input type="radio" name="ins" data-price="28.50" data-label="Premium insurance"><div class="rl"><div class="rn">Premium cover</div><div class="rs">Medical + adventure sports</div></div><div class="rp">£28.50</div></label>
         </div>
 
+        <!-- Extras are additive and therefore saved as a list of checked selections. -->
         <div class="card">
             <div class="sh">Extras</div>
             <label class="row"><input type="checkbox" checked data-price="8" data-label="Priority boarding"><div class="rl"><div class="rn">Priority boarding</div><div class="rs">Board first</div></div><div class="rp">£8</div></label>
@@ -120,6 +128,7 @@
 
     </div>
 
+    <!-- The order summary mirrors the add-on state that will be handed off to payment. -->
     <div class="sum">
         <div class="sh2">Your order</div>
         <div class="sb">
@@ -139,6 +148,7 @@
 </div>
 
 <script>
+    /** Drives the add-ons step by restoring booking state, adjusting member pricing, and wiring navigation. */
     const bookingDraftRaw = sessionStorage.getItem("bookingDraft");
     let bookingDraft = bookingDraftRaw ? JSON.parse(bookingDraftRaw) : null;
     const continueButton = document.querySelector(".btn");
@@ -149,6 +159,7 @@
         bookingDraft.baseFareTotal = Number(bookingDraft.totalPrice) || Number(bookingDraft.price) || 0;
     }
 
+    /** Uses the first passenger as the display identity when the user is travelling as a guest. */
     function getPassengerOneName() {
         if (!bookingDraft || !Array.isArray(bookingDraft.passengers) || bookingDraft.passengers.length === 0) {
             return "Guest";
@@ -160,6 +171,7 @@
         return `${first} ${last}`.trim() || "Guest";
     }
 
+    /** Builds the short avatar label shown in the account card. */
     function getInitials(name) {
         if (!name) return "--";
 
@@ -171,6 +183,7 @@
         return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
     }
 
+    /** Rewrites badges, meal prices, and included perks to match member or guest pricing. */
     function applyPricingDisplayMode() {
         const seatPerkBadge = document.getElementById("seat-perk-badge");
         const mealDiscountLabel = document.getElementById("meal-discount-label");
@@ -270,6 +283,7 @@
         return total;
     }
 
+    /** Combines the base fare with the currently selected add-ons for the live summary total. */
     function calculateLiveTotal() {
         const baseFare = Number(bookingDraft?.baseFareTotal) || 0;
         const baggagePrice = getSelectedRadioPrice("bag");
@@ -283,6 +297,7 @@
         return baseFare + baggagePrice + mealPrice + insurancePrice + extrasPrice + seatPrice + wifiPrice;
     }
 
+    /** Updates the summary panel and persists the latest running total back into session storage. */
     function updateLiveTotalDisplay() {
         const total = calculateLiveTotal();
         const baseFare = Number(bookingDraft?.baseFareTotal) || 0;
@@ -309,6 +324,7 @@
     const accountPointsEl = document.getElementById("account-points");
     const accountInitialsEl = document.getElementById("account-initials");
 
+    /** Loads loyalty/account details for signed-in users and falls back to booking data for guests. */
     async function populateAccountCard() {
         if (isSignedIn) {
             try {
@@ -356,6 +372,7 @@
         }
     }
 
+    /** Session values determine whether this step should show member perks or guest pricing. */
     const sessionId = sessionStorage.getItem("sessionId");
     const userId = sessionStorage.getItem("userId");
     const firstName = sessionStorage.getItem("firstName");
@@ -396,6 +413,7 @@
         }
     }
 
+    /** Logging out clears the stored session and returns the user to the authentication flow. */
     if (logoutButton) {
         logoutButton.addEventListener("click", async () => {
             const currentSessionId = sessionStorage.getItem("sessionId");
@@ -414,6 +432,7 @@
     }
 
 
+    /** Formats the booking date for the route banner shown above the add-ons flow. */
     function formatRouteDate(date) {
         if (!date) {
             return "From today onwards";
@@ -450,6 +469,7 @@
         return extras;
     }
 
+    /** Creates the payload later consumed by the payment step. */
     function buildBookingHandoff(draft) {
         return {
             userId: draft.userId,
@@ -468,6 +488,7 @@
         };
     }
 
+    /** Normalizes the current selections and saves them back into the booking draft and hold payload. */
     function saveSelections() {
         if (!bookingDraft) {
             return null;
@@ -528,6 +549,7 @@
         return bookingDraft;
     }
 
+    /** Re-renders the add-on summary lines listed under the fare breakdown. */
     function updateSelectionsSummary() {
         const lines = document.getElementById("lines");
         const selections = [];
@@ -615,6 +637,7 @@
         });
     }
 
+    /** Continue validates the saved booking state before sending the user to payment. */
     continueButton.addEventListener("click", () => {
         handoffMessage.textContent = "";
 
@@ -659,6 +682,7 @@
         window.location.href = "/payment";
     });
 
+    /** Back preserves the current selections before returning to seat choice. */
     backButton.addEventListener("click", () => {
         saveSelections();
         window.location.href = "/seatmap";
@@ -669,6 +693,7 @@
     updateSelectionsSummary();
     updateLiveTotalDisplay()
 </script>
+<!-- Shared customer footer used across the booking flow. -->
 <div class="footer-divider"></div>
 <footer>
     <a href="/manager" class="footer-left">Operations Console</a>
@@ -689,6 +714,7 @@
     <div class="footer-right">Astraeus UK</div>
 </footer>
 <script>
+    /** Reformats static price labels so non-discounted options match the selected display currency. */
     const rows = document.querySelectorAll(".row");
 
     rows.forEach(row => {
