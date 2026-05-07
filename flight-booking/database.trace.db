@@ -75793,7 +75793,7 @@ ALTER TABLE USERS ADD COLUMN STATUS VARCHAR(30) DEFAULT 'ACTIVE' [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:07:13.190434+01:00 jdbc[3]: exception
+2026-05-07 15:55:22.581482+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "date"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN "date" VARCHAR(255) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -75877,7 +75877,7 @@ ALTER TABLE BOOKINGS ADD COLUMN "date" VARCHAR(255) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:07:13.219871+01:00 jdbc[3]: exception
+2026-05-07 15:55:22.584638+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "time"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN "time" VARCHAR(255) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -75961,7 +75961,7 @@ ALTER TABLE BOOKINGS ADD COLUMN "time" VARCHAR(255) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:07:13.227852+01:00 jdbc[3]: exception
+2026-05-07 15:55:22.585778+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "CABIN"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN cabin VARCHAR(128) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -76045,7 +76045,7 @@ ALTER TABLE BOOKINGS ADD COLUMN cabin VARCHAR(128) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:07:13.234830+01:00 jdbc[3]: exception
+2026-05-07 15:55:22.586707+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "addOns"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN "addOns" VARCHAR(1000) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -76129,7 +76129,7 @@ ALTER TABLE BOOKINGS ADD COLUMN "addOns" VARCHAR(1000) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:07:13.241812+01:00 jdbc[3]: exception
+2026-05-07 15:55:22.587537+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "ARCHIVED"; SQL statement:
 ALTER TABLE SUPPORT_TICKETS ADD COLUMN ARCHIVED BOOLEAN DEFAULT FALSE [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -76213,7 +76213,7 @@ ALTER TABLE SUPPORT_TICKETS ADD COLUMN ARCHIVED BOOLEAN DEFAULT FALSE [42121-232
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:07:13.248794+01:00 jdbc[3]: exception
+2026-05-07 15:55:22.588404+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "returnFlightId"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN "returnFlightId" VARCHAR(128) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -76297,7 +76297,7 @@ ALTER TABLE BOOKINGS ADD COLUMN "returnFlightId" VARCHAR(128) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:07:13.255777+01:00 jdbc[3]: exception
+2026-05-07 15:55:22.589188+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "returnFlightId"; SQL statement:
 ALTER TABLE PRICEHOLDS ADD COLUMN "returnFlightId" VARCHAR(128) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -76381,7 +76381,7 @@ ALTER TABLE PRICEHOLDS ADD COLUMN "returnFlightId" VARCHAR(128) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:07:13.261760+01:00 jdbc[3]: exception
+2026-05-07 15:55:22.590160+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "date"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN "date" VARCHAR(255) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -76465,7 +76465,7 @@ ALTER TABLE BOOKINGS ADD COLUMN "date" VARCHAR(255) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:07:13.270736+01:00 jdbc[3]: exception
+2026-05-07 15:55:22.590879+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "time"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN "time" VARCHAR(255) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -76549,7 +76549,7 @@ ALTER TABLE BOOKINGS ADD COLUMN "time" VARCHAR(255) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:07:13.275722+01:00 jdbc[3]: exception
+2026-05-07 15:55:22.591608+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "STATUS"; SQL statement:
 ALTER TABLE USERS ADD COLUMN STATUS VARCHAR(30) DEFAULT 'ACTIVE' [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -76633,7 +76633,7 @@ ALTER TABLE USERS ADD COLUMN STATUS VARCHAR(30) DEFAULT 'ACTIVE' [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:13:38.941179+01:00 jdbc[3]: exception
+2026-05-07 16:00:42.580319+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "date"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN "date" VARCHAR(255) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -76717,7 +76717,7 @@ ALTER TABLE BOOKINGS ADD COLUMN "date" VARCHAR(255) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:13:38.978080+01:00 jdbc[3]: exception
+2026-05-07 16:00:42.583338+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "time"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN "time" VARCHAR(255) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -76801,7 +76801,7 @@ ALTER TABLE BOOKINGS ADD COLUMN "time" VARCHAR(255) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:13:39.010993+01:00 jdbc[3]: exception
+2026-05-07 16:00:42.584457+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "CABIN"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN cabin VARCHAR(128) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -76885,7 +76885,7 @@ ALTER TABLE BOOKINGS ADD COLUMN cabin VARCHAR(128) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:13:39.017980+01:00 jdbc[3]: exception
+2026-05-07 16:00:42.585429+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "addOns"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN "addOns" VARCHAR(1000) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -76969,7 +76969,7 @@ ALTER TABLE BOOKINGS ADD COLUMN "addOns" VARCHAR(1000) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:13:39.022968+01:00 jdbc[3]: exception
+2026-05-07 16:00:42.586372+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "ARCHIVED"; SQL statement:
 ALTER TABLE SUPPORT_TICKETS ADD COLUMN ARCHIVED BOOLEAN DEFAULT FALSE [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -77053,7 +77053,7 @@ ALTER TABLE SUPPORT_TICKETS ADD COLUMN ARCHIVED BOOLEAN DEFAULT FALSE [42121-232
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:13:39.028951+01:00 jdbc[3]: exception
+2026-05-07 16:00:42.587318+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "returnFlightId"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN "returnFlightId" VARCHAR(128) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -77137,7 +77137,7 @@ ALTER TABLE BOOKINGS ADD COLUMN "returnFlightId" VARCHAR(128) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:13:39.035456+01:00 jdbc[3]: exception
+2026-05-07 16:00:42.588102+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "returnFlightId"; SQL statement:
 ALTER TABLE PRICEHOLDS ADD COLUMN "returnFlightId" VARCHAR(128) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -77221,7 +77221,7 @@ ALTER TABLE PRICEHOLDS ADD COLUMN "returnFlightId" VARCHAR(128) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:13:39.041440+01:00 jdbc[3]: exception
+2026-05-07 16:00:42.588929+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "date"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN "date" VARCHAR(255) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -77305,7 +77305,7 @@ ALTER TABLE BOOKINGS ADD COLUMN "date" VARCHAR(255) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:13:39.048421+01:00 jdbc[3]: exception
+2026-05-07 16:00:42.589642+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "time"; SQL statement:
 ALTER TABLE BOOKINGS ADD COLUMN "time" VARCHAR(255) [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
@@ -77389,7 +77389,7 @@ ALTER TABLE BOOKINGS ADD COLUMN "time" VARCHAR(255) [42121-232]
 	at io.ktor.server.engine.EmbeddedServer.createApplication(EmbeddedServerJvm.kt:168)
 	at io.ktor.server.engine.EmbeddedServer.start(EmbeddedServerJvm.kt:313)
 	at io.ktor.server.netty.EngineMain.main(EngineMain.kt:25)
-2026-05-07 16:13:39.053408+01:00 jdbc[3]: exception
+2026-05-07 16:00:42.590291+01:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Duplicate column name "STATUS"; SQL statement:
 ALTER TABLE USERS ADD COLUMN STATUS VARCHAR(30) DEFAULT 'ACTIVE' [42121-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)

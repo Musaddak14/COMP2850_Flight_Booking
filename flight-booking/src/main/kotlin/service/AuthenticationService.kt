@@ -1,13 +1,10 @@
-package com.flightsystem.service
+package com.flightsystem.flight_service
 
 import com.flightsystem.model.AccountStatus
 import com.flightsystem.model.Manager
 import com.flightsystem.model.User
 import com.flightsystem.model.Users
-import com.flightsystem.service.EncryptionService
-import com.flightsystem.service.LoyaltyService
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction

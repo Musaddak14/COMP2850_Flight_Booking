@@ -1,4 +1,4 @@
-package com.flightsystem.service
+package com.flightsystem.flight_service
 
 import com.flightsystem.model.Booking
 import com.flightsystem.model.BookingDetails

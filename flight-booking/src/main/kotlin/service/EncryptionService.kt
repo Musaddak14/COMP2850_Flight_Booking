@@ -1,4 +1,4 @@
-package com.flightsystem.service
+package com.flightsystem.flight_service
 
 import java.security.MessageDigest
 import java.security.SecureRandom

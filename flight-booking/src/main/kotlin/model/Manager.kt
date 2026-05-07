@@ -1,6 +1,6 @@
 package com.flightsystem.model
 
-import com.flightsystem.service.BookingService
+import com.flightsystem.flight_service.BookingService
 
 class Manager(
     userId: Int,

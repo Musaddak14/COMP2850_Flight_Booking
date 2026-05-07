@@ -1,4 +1,4 @@
-package com.flightsystem.service
+package com.flightsystem.flight_service
 
 import java.util.Properties
 import javax.activation.DataHandler

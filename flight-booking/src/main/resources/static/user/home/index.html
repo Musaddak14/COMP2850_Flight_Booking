@@ -178,7 +178,7 @@
             <h3>Up to 20% off partners, 5,000 bonus points, and free upgrades at Platinum level.</h3>
 
 
-            <a href="/manage-account" class="apply-link">Apply now →</a>
+            <a href="/log_in/register.html" class="apply-link">Apply now →</a>
 
         </div>
 
@@ -281,16 +281,23 @@
 <script>
     const toggle = document.getElementById("return-toggle");
     const returnDate = document.getElementById("return-date");
+    const searchCard = document.querySelector(".search-card");
 
     // Mirror the checkbox state into the hidden return-date input so one-way searches stay clean.
     toggle.addEventListener("change", function () {
         returnDate.style.display = this.checked ? "inline-block" : "none";
         returnDate.required = this.checked;
 
-        if (!this.checked) {
+        if (toggle.checked) {
+            searchCard.classList.add("return-active");
+        } else {
+            searchCard.classList.remove("return-active");
             returnDate.value = "";
         }
-    });
+    }
+
+    toggle.addEventListener("change", updateReturnSearchLayout);
+    updateReturnSearchLayout();
 </script>
 
 
