@@ -402,7 +402,7 @@ td {
     color: #333333;
 }
 
-@media (max-width: 1050px) {
+@media (max-width: 1000px) {
     .center-nav {
         position: static;
         transform: none;
@@ -445,12 +445,6 @@ td {
 
     .analytics-hero {
         border-radius: 16px;
-    }
-
-    .right-nav {
-        width: 100%;
-        justify-content: center;
-        margin-top: 12px;
     }
 
     .analytics-feedback {

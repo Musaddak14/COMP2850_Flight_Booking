@@ -199,6 +199,7 @@
                                 min="1"
                                 step="1"
                                 placeholder="Points"
+                                aria-label="Points to add"
                                 data-points-input="${userId}"
                                 ${pointsDisabled ? "disabled" : ""}
                             >

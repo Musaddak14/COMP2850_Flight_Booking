@@ -473,7 +473,7 @@ main {
     gap: 10px;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1000px) {
     .center-nav {
         position: static;
         transform: none;
@@ -486,6 +486,10 @@ main {
 
     .top-nav {
         flex-wrap: wrap;
+    }
+
+    .Star_Alliance {
+        display: none;
     }
 
     .summary-grid {

@@ -144,12 +144,12 @@
         </div>
 
         <div class="center-nav">
-            <a href="/manager/home/manager_home.html" class="active">Home</a>
+            <a href="/manager/home/manager_home.html">Home</a>
             <a href="/manager/flight_view">Flight View</a>
             <a href="/manager/edit_bookings/edit_bookings.html">Edit Bookings</a>
             <a href="/manager/analytics">Analytics</a>
             <a href="/manager/accounts/accounts.html">Accounts</a>
-            <a href="/manager/support/support.html">Support</a>
+            <a href="/manager/support/support.html" class="active">Support</a>
         </div>
 
         <div class="right-nav">
@@ -247,7 +247,7 @@
                 </select>
 
                 <label for="note-${ticket.id}">Manager Note</label>
-                <textarea id="note-${ticket.id}">
+                <textarea id="note-${ticket.id}"></textarea>
 
                 <button class="update-btn" onclick="updateTicket(${ticket.id})">Update Ticket</button>
                 <button class="history-btn" onclick="loadTicketHistory(${ticket.id})">View History</button>

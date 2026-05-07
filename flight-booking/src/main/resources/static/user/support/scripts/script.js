@@ -35,3 +35,34 @@ async function createTicket(event) {
 }
 
 document.getElementById("ticketForm").addEventListener("submit", createTicket);
+
+
+// nav bar login/logout state
+const sessionId = sessionStorage.getItem("sessionId");
+const userId = sessionStorage.getItem("userId");
+const firstName = sessionStorage.getItem("firstName");
+
+const welcomeMessage = document.getElementById("welcome-message");
+const loginLink = document.getElementById("login-link");
+const logoutButton = document.getElementById("logout-button");
+
+if (sessionId && firstName) {
+    if (welcomeMessage) welcomeMessage.textContent = `Welcome, ${firstName}`;
+    if (loginLink) loginLink.style.display = "none";
+    if (logoutButton) logoutButton.style.display = "inline-block";
+}
+
+if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+        const currentSessionId = sessionStorage.getItem("sessionId");
+        try {
+            if (currentSessionId) {
+                await fetch(`/api/auth/logout?sessionId=${encodeURIComponent(currentSessionId)}`, {
+                    method: "POST"
+                });
+            }
+        } catch (_) {}
+        sessionStorage.clear();
+        window.location.href = "/log_in";
+    });
+}
