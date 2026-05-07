@@ -1,18 +1,24 @@
 package com.example.com
 
+import com.flightsystem.model.Payment
+import com.flightsystem.model.PaymentStatus
+import com.flightsystem.model.Payments.refundedAt
 import com.flightsystem.service.EncryptionService.generateSalt
 import com.flightsystem.service.EncryptionService.hashPassword
 import com.flightsystem.service.EncryptionService.verifyPassword
 import com.flightsystem.service.LoyaltyService
+import com.flightsystem.service.PaymentService
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import java.time.LocalDateTime
 import java.util.Base64
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ApplicationTest {
@@ -80,5 +86,197 @@ class LoyaltyServiceTest {
         assertFailsWith(IllegalArgumentException::class) { service.applyDiscount(200.00, -1) }
         assertFailsWith(IllegalArgumentException::class) { service.applyDiscount(-200.00, 1) }
         assertFailsWith(IllegalArgumentException::class) { service.applyDiscount(-200.00, -1) }
+    }
+}
+
+class PaymentServiceTest {
+    val service = PaymentService()
+
+    @Test
+    fun validateCardTest() {
+        val correctDetails =
+            service.validateCard(
+                "4111111111111111",
+                "Test Name",
+                9,
+                2029,
+                "301",
+            )
+
+        assertTrue(correctDetails.isSuccess)
+
+        val shortCardNumber =
+            service.validateCard(
+                "411111111111111",
+                "Test Name",
+                9,
+                2029,
+                "301",
+            )
+
+        assertTrue(shortCardNumber.isFailure)
+
+        val noName =
+            service.validateCard(
+                "4111111111111111",
+                "",
+                9,
+                2029,
+                "301",
+            )
+
+        assertTrue(noName.isFailure)
+
+        val mistypedCardNumber =
+            service.validateCard(
+                "4111111111112111",
+                "Test Name",
+                9,
+                2029,
+                "301",
+            )
+
+        assertTrue(mistypedCardNumber.isFailure)
+
+        val recentlyExpiredCard =
+            service.validateCard(
+                "4111111111111111",
+                "Test Name",
+                4,
+                2026,
+                "301",
+            )
+
+        assertTrue(recentlyExpiredCard.isFailure)
+
+        val veryExpiredCard =
+            service.validateCard(
+                "4111111111111111",
+                "Test Name",
+                9,
+                2020,
+                "301",
+            )
+
+        assertTrue(veryExpiredCard.isFailure)
+
+        val badExpiryMonth =
+            service.validateCard(
+                "4111111111111111",
+                "Test Name",
+                14,
+                2029,
+                "301",
+            )
+
+        assertTrue(badExpiryMonth.isFailure)
+
+        val shortCSV =
+            service.validateCard(
+                "4111111111111111",
+                "Test Name",
+                9,
+                2029,
+                "30",
+            )
+
+        assertTrue(shortCSV.isFailure)
+    }
+}
+
+class PaymentTest {
+    @Test
+    fun setSuccessTest() {
+        val payment =
+            Payment(
+                "1",
+                "1",
+                1,
+                100.00,
+                "3948",
+                "name",
+                PaymentStatus.PENDING,
+                LocalDateTime.now(),
+                null,
+            )
+
+        assertNotEquals(payment.status, PaymentStatus.SUCCESS)
+        payment.setStatusSuccess()
+        assertEquals(PaymentStatus.SUCCESS, payment.status)
+    }
+
+    @Test
+    fun setFailureTest() {
+        val payment =
+            Payment(
+                "1",
+                "1",
+                1,
+                100.00,
+                "3948",
+                "name",
+                PaymentStatus.PENDING,
+                LocalDateTime.now(),
+                null,
+            )
+
+        assertNotEquals(payment.status, PaymentStatus.FAILED)
+        payment.setStatusFailed()
+        assertEquals(PaymentStatus.FAILED, payment.status)
+    }
+
+    @Test
+    fun setRefundedTest() {
+        val payment =
+            Payment(
+                "1",
+                "1",
+                1,
+                100.00,
+                "3948",
+                "name",
+                PaymentStatus.SUCCESS,
+                LocalDateTime.now(),
+                null,
+            )
+
+        assertNotEquals(payment.status, PaymentStatus.REFUNDED)
+        payment.setRefunded()
+        assertEquals(PaymentStatus.REFUNDED, payment.status)
+        assertNotNull(payment.refundedAt)
+    }
+
+    @Test
+    fun isRefundableTest() {
+        val payment =
+            Payment(
+                "1",
+                "1",
+                1,
+                100.00,
+                "3948",
+                "name",
+                PaymentStatus.SUCCESS,
+                LocalDateTime.now(),
+                null,
+            )
+        assertEquals(payment.status, PaymentStatus.SUCCESS)
+        assertTrue(payment.isRefundable())
+
+        val payment2 =
+            Payment(
+                "1",
+                "1",
+                1,
+                100.00,
+                "3948",
+                "name",
+                PaymentStatus.FAILED,
+                LocalDateTime.now(),
+                null,
+            )
+
+        assertNotEquals(payment2.status, PaymentStatus.SUCCESS)
+        assertFalse(payment2.isRefundable())
     }
 }

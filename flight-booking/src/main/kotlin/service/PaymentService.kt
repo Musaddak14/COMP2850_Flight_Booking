@@ -81,7 +81,7 @@ class PaymentService {
 
     fun getPaymentid(paymentID: String): Payment? = payments.find { it.paymentID == paymentID }
 
-    private fun validateCard(
+    fun validateCard(
         cardNumber: String,
         cardHolderName: String,
         expiryMonth: Int,
