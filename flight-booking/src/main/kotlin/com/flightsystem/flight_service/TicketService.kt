@@ -1,4 +1,4 @@
-package com.flightsystem.service
+package com.flightsystem.flight_service
 
 import model.CreateTicketRequest
 import model.SupportTicketHistory
@@ -7,7 +7,6 @@ import model.TicketHistoryResponse
 import model.TicketResponse
 import model.TicketStatus
 import model.UpdateTicketRequest
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction

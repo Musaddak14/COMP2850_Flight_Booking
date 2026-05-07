@@ -2,6 +2,16 @@ package com.example.com
 
 import com.example.com.service.ManagerAnalyticsService
 import com.flightsystem.AppEnv
+import com.flightsystem.flight_service.AuthenticationService
+import com.flightsystem.flight_service.BookingService
+import com.flightsystem.flight_service.CheckoutService
+import com.flightsystem.flight_service.EmailService
+import com.flightsystem.flight_service.LoyaltyService
+import com.flightsystem.flight_service.PassengerService
+import com.flightsystem.flight_service.PaymentService
+import com.flightsystem.flight_service.PriceHoldService
+import com.flightsystem.flight_service.PromoCodeService
+import com.flightsystem.flight_service.TicketService
 import com.flightsystem.model.AccountStatus
 import com.flightsystem.model.Airports
 import com.flightsystem.model.BookingDetails
@@ -19,16 +29,6 @@ import com.flightsystem.model.PriceHolds
 import com.flightsystem.model.SavePassengersRequest
 import com.flightsystem.model.Seats
 import com.flightsystem.model.Users
-import com.flightsystem.service.AuthenticationService
-import com.flightsystem.service.BookingService
-import com.flightsystem.service.CheckoutService
-import com.flightsystem.service.EmailService
-import com.flightsystem.service.LoyaltyService
-import com.flightsystem.service.PassengerService
-import com.flightsystem.service.PaymentService
-import com.flightsystem.service.PriceHoldService
-import com.flightsystem.service.PromoCodeService
-import com.flightsystem.service.TicketService
 import createEmptySeatMaps
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application

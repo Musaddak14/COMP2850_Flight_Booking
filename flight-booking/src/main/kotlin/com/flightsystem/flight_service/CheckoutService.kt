@@ -1,4 +1,4 @@
-package com.flightsystem.service
+package com.flightsystem.flight_service
 
 import com.flightsystem.AppEnv
 import com.flightsystem.model.Flights

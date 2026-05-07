@@ -1,4 +1,4 @@
-package com.flightsystem.service
+package com.flightsystem.flight_service
 
 import com.flightsystem.model.PromoCode
 import com.flightsystem.model.PromoCodeUsages

@@ -1,4 +1,4 @@
-package com.flightsystem.service
+package com.flightsystem.flight_service
 
 /**
 Generates a PDF ticket containing booking and passenger details.

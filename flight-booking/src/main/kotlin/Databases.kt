@@ -1,5 +1,7 @@
 package com.example.com
 
+import com.flightsystem.flight_service.AuthenticationService
+import com.flightsystem.flight_service.PromoCodeService
 import com.flightsystem.model.Airports
 import com.flightsystem.model.BookingSeats
 import com.flightsystem.model.Bookings
@@ -14,8 +16,6 @@ import com.flightsystem.model.PromoCodeUsages
 import com.flightsystem.model.PromoCodes
 import com.flightsystem.model.Seats
 import com.flightsystem.model.Users
-import com.flightsystem.service.AuthenticationService
-import com.flightsystem.service.PromoCodeService
 import createEmptySeatMaps
 import io.ktor.server.application.Application
 import model.ManagerSentEmails
