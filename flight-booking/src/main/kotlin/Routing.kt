@@ -836,6 +836,7 @@ fun Application.configureRouting() {
                     guestEmail = request.guestEmail,
                     cabin = request.cabin,
                     addOns = request.addOns,
+                    finalAmountFromFrontEnd = request.finalAmountFromFrontEnd
                 )
 
             if (response.success) {

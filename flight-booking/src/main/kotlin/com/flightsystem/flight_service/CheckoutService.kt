@@ -93,6 +93,7 @@ class CheckoutService(
         cabin: String? = null,
         addOns: String? = null,
         guestEmail: String? = null,
+        finalAmountFromFrontEnd: Double? = null,
     ): PaymentResponse {
         val holdDetails =
             priceHoldService.getHoldDetails(holdId)
@@ -164,10 +165,12 @@ class CheckoutService(
             )
         }
 
-        var finalAmount = hold.totalPrice
+        var finalAmount = finalAmountFromFrontEnd ?: hold.totalPrice
 
-        returnHold?.let {
-            finalAmount += it.totalPrice
+        if (finalAmountFromFrontEnd == null) {
+            returnHold?.let {
+                finalAmount += it.totalPrice
+            }
         }
 
         if (pointsToRedeem > 0) {

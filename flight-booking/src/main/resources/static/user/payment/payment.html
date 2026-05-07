@@ -703,7 +703,8 @@
                     promoCode: promoCode === "" ? null : promoCode,
                     cabin: bookingData?.cabin ?? null,
                     addOns: JSON.stringify(bookingData?.addOns ?? {}),
-                    guestEmail: guestEmail || null
+                    guestEmail: guestEmail || null,
+                    finalAmountFromFrontEnd: Number(bookingData.totalPrice) || null
                 })
             });
 
