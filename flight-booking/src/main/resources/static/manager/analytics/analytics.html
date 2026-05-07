@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/manager/analytics/styles/analytics.css">
 </head>
 <body>
+<!-- Shared manager header keeps analytics alongside the rest of the operations tools. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
@@ -34,6 +35,7 @@
 </header>
 
 <main>
+    <!-- The hero introduces the analytics workspace and frames the metrics shown below. -->
     <section class="analytics-hero" aria-labelledby="analytics-title">
         <p class="eyebrow">Manager Reports</p>
         <h1 id="analytics-title">Analytics Dashboard</h1>
@@ -42,6 +44,7 @@
         </p>
     </section>
 
+    <!-- Snapshot cards surface the highest-level analytics values as soon as data loads. -->
     <section class="analytics-snapshot" aria-labelledby="snapshot-heading">
         <div class="section-heading">
             <h2 id="snapshot-heading">Operations Snapshot</h2>
@@ -86,6 +89,7 @@
         </div>
     </section>
 
+    <!-- Detailed report cards render tabular and chart views from the same analytics payload. -->
     <section class="report-grid" aria-label="Detailed analytics reports">
         <article class="report-card">
             <div class="section-heading compact-heading">
@@ -154,6 +158,7 @@
     </section>
 </main>
 
+<!-- Analytics logic validates the manager session, fetches dashboard data, and renders cards, tables, and charts. -->
 <script src="/manager/analytics/scripts/analytics.js"></script>
 </body>
 </html>

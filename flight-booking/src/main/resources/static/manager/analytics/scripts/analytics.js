@@ -1,4 +1,5 @@
 (async () => {
+    /** Protects the analytics dashboard behind a valid manager session before any reports are requested. */
     const sessionId = sessionStorage.getItem("sessionId");
     if (!sessionId) {
         window.location.href = "/log_in";
@@ -13,6 +14,7 @@
     }
     "use strict";
 
+    /** Core analytics references cover the snapshot cards, expandable reports, and hourly chart area. */
     const analyticsEndpoint = "/api/manager/analytics";
     const analyticsMessage = document.getElementById("analytics-message");
     const analyticsRetry = document.getElementById("analytics-retry");
@@ -36,6 +38,7 @@
     let visibleBookingsPerFlightCount = initialReportLimit;
     let visiblePopularRoutesCount = initialReportLimit;
 
+    /** Writes a metric value into the target element while preserving a readable fallback state. */
     function setText(element, value, fallback = "Not available") {
         if (!element) {
             return;
@@ -49,6 +52,7 @@
         element.textContent = String(value);
     }
 
+    /** Updates the feedback area used for loading, success, and error messaging. */
     function setAnalyticsMessage(message, tone = "") {
         if (!analyticsMessage) {
             return;
@@ -64,6 +68,7 @@
         }
     }
 
+    /** Shows the retry button only when the dashboard cannot be loaded automatically. */
     function setRetryVisible(isVisible) {
         if (!analyticsRetry) {
             return;
@@ -72,10 +77,12 @@
         analyticsRetry.hidden = !isVisible;
     }
 
+    /** Normalizes the different count field names returned by the analytics payload. */
     function getCount(value) {
         return value?.bookingCount ?? value?.count ?? value?.total ?? 0;
     }
 
+    /** Converts route objects into a single readable label for cards and tables. */
     function formatRoute(route) {
         if (!route) {
             return null;
@@ -95,6 +102,7 @@
         return `${departure} to ${arrival}`;
     }
 
+    /** Combines the top route label with its reservation count for the snapshot card. */
     function formatRouteWithCount(route) {
         const label = formatRoute(route);
         if (!label) {
@@ -105,6 +113,7 @@
         return typeof count === "number" ? `${label} (${count} bookings)` : label;
     }
 
+    /** Formats the busiest booking hour into the label shown in the snapshot card. */
     function formatPeakTime(value) {
         if (!value) {
             return null;
@@ -124,6 +133,7 @@
         return typeof count === "number" ? `${hourLabel} (${count} bookings)` : hourLabel;
     }
 
+    /** Renders a single full-width row when a report is loading, empty, or unavailable. */
     function setTableMessage(tbody, colspan, message) {
         if (!tbody) {
             return;
@@ -132,6 +142,7 @@
         tbody.innerHTML = `<tr><td colspan="${colspan}">${message}</td></tr>`;
     }
 
+    /** Keeps each report's show-more controls aligned with the current slice of visible rows. */
     function updateReportControls(showFewerButton, showMoreButton, rows, visibleCount) {
         if (!showFewerButton || !showMoreButton) {
             return;
@@ -147,6 +158,7 @@
         showMoreButton.hidden = visibleCount >= rows.length;
     }
 
+    /** Rebuilds the bookings-per-flight table from the current in-memory report rows. */
     function renderBookingsPerFlight(rows) {
         if (!Array.isArray(rows) || rows.length === 0) {
             setTableMessage(bookingsPerFlightBody, 4, "No bookings-per-flight data yet.");
@@ -184,6 +196,7 @@
         );
     }
 
+    /** Renders the popular-routes report and falls back to the top route when only summary data exists. */
     function renderPopularRoutes(rows, fallbackRoute) {
         if (Array.isArray(rows) && rows.length > 0) {
             popularRouteRows = rows;
@@ -226,6 +239,7 @@
         updateReportControls(popularRoutesShowFewer, popularRoutesShowMore, popularRouteRows, visiblePopularRoutesCount);
     }
 
+    /** Converts numeric hours into consistent labels for the chart and peak-time summary. */
     function formatHourLabel(hour) {
         const numericHour = Number(hour);
         if (!Number.isFinite(numericHour)) {
@@ -235,6 +249,7 @@
         return `${String(numericHour).padStart(2, "0")}:00`;
     }
 
+    /** Expands sparse hourly analytics into all 24 buckets so the bar chart stays aligned. */
     function normaliseBookingsByHour(rows) {
         const buckets = Array.from({ length: 24 }, (_, hour) => ({
             hour,
@@ -257,6 +272,7 @@
         return buckets;
     }
 
+    /** Derives the busiest booking hour when the API does not provide a dedicated peak value. */
     function findPeakHour(rows) {
         const buckets = normaliseBookingsByHour(rows);
         const peak = buckets.reduce((currentPeak, row) => {
@@ -266,6 +282,7 @@
         return peak.count > 0 ? peak : null;
     }
 
+    /** Builds the hourly booking bar chart directly with DOM nodes instead of a charting library. */
     function renderBookingsByHour(rows) {
         if (!hourlyBookingChart) {
             return;
@@ -306,6 +323,7 @@
         }
     }
 
+    /** Clears the chart container and leaves a readable empty-state explanation behind. */
     function clearBookingsByHour(message) {
         if (hourlyBookingChart) {
             hourlyBookingChart.innerHTML = "";
@@ -316,6 +334,7 @@
         }
     }
 
+    /** Maps the analytics payload onto snapshot cards, tabular reports, and the hourly chart. */
     function renderAnalytics(data) {
         const topRoute = data.mostPopularRoute ?? data.popularRoute ?? data.popularRoutes?.[0];
         const bookingsByHour = data.bookingsPerHour ?? data.bookingsByHour ?? data.peakBookingTimes;
@@ -332,6 +351,7 @@
         renderBookingsByHour(bookingsByHour);
     }
 
+    /** Converts fetch and parse failures into user-facing dashboard error text. */
     function describeAnalyticsError(error) {
         if (error?.status) {
             return `Unable to load analytics right now (HTTP ${error.status}).`;
@@ -348,6 +368,7 @@
         return error?.message || "Unable to load analytics right now.";
     }
 
+    /** Resets all report surfaces when analytics cannot be loaded. */
     function renderAnalyticsUnavailable(error) {
         bookingsPerFlightRows = [];
         popularRouteRows = [];
@@ -369,11 +390,13 @@
         setRetryVisible(true);
     }
 
+    /** Shows the dashboard loading state before each analytics fetch begins. */
     function renderLoadingState() {
         setAnalyticsMessage("Loading analytics...");
         setRetryVisible(false);
     }
 
+    /** Fetches the dashboard payload and routes it into either the success or error render path. */
     async function loadAnalytics() {
         renderLoadingState();
 
@@ -402,6 +425,7 @@
         }
     }
 
+    /** Show-more buttons expand the reports in manageable steps without re-fetching data. */
     if (bookingsPerFlightShowMore) {
         bookingsPerFlightShowMore.addEventListener("click", () => {
             visibleBookingsPerFlightCount += reportStepSize;
@@ -430,11 +454,13 @@
         });
     }
 
+    /** Retry re-runs the same dashboard fetch after a failure. */
     if (analyticsRetry) {
         analyticsRetry.addEventListener("click", () => {
             loadAnalytics();
         });
     }
 
+    /** Initial page load requests analytics immediately so cards and reports fill together. */
     loadAnalytics();
 })();

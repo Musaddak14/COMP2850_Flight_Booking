@@ -1,6 +1,7 @@
 (() => {
     "use strict";
 
+    /** This page is only available to signed-in users, so missing session data redirects back to login. */
     const sessionId = sessionStorage.getItem("sessionId");
     const userId = sessionStorage.getItem("userId");
 
@@ -9,6 +10,7 @@
         return;
     }
 
+    /** Loads loyalty totals and tier progress, then updates the account summary and milestone UI. */
     async function loadAccountData() {
         const res = await fetch(`/api/account-summary?userId=${encodeURIComponent(userId)}`);
         if (!res.ok) return;
@@ -73,6 +75,7 @@
         document.getElementById("tier-progress-text").textContent = progressText;
     }
 
+    /** Prefills the editable profile form with the latest server-side user details. */
     async function loadUserDetails() {
         const res = await fetch(`/api/user/details?userId=${encodeURIComponent(userId)}`);
         if (!res.ok) return;
@@ -83,6 +86,7 @@
         document.getElementById("email").value = data.email;
     }
 
+    /** Fetches previously booked flights and renders simple summary cards into the bookings area. */
     async function loadUserBookings() {
 
         // fetch the bookings from the server for this user
@@ -131,10 +135,12 @@
         container.innerHTML = allCards.join("");
     }
 
+    /** Initial page load fetches account stats, profile values, and booking history in parallel. */
     loadAccountData();
     loadUserBookings();
     loadUserDetails();
 
+    /** Saving the form submits one update request and reflects the result in the inline status message. */
     document.getElementById("edit-form").addEventListener("submit", async (e) => {
         e.preventDefault();
         const msg = document.getElementById("save-message");
@@ -160,6 +166,7 @@
             });
 
             if (res.ok) {
+                // Keep the shared navigation greeting in sync with the updated profile data.
                 msg.textContent = "Changes saved successfully.";
                 msg.dataset.state = "success";
                 sessionStorage.setItem("firstName", body.firstName);

@@ -9,17 +9,40 @@
 </head>
 <body>
 
-<header>
-    <h1>Manager – Edit Booking</h1>
-    <p>Edit passenger details, seats, or delete this booking.</p>
-</header>
+<header class="header">
+    <nav class="top-nav">
+        <div class="left-nav">
+            <div class="logo">
+                <img src="/images/Logo.png" class="Airline_Logo" alt="Airline logo">
+                <img src="/images/Star_Alliance.jpg" class="Star_Alliance" alt="Star Alliance logo">
+            </div>
+        </div>
+
+        <div class="center-nav">
+            <a href="/manager/home/manager_home.html">Home</a>
+            <a href="/manager/flight_view">Flight View</a>
+            <a href="/manager/edit_bookings/edit_bookings.html" class="active">Edit Bookings</a>
+            <a href="/manager/analytics">Analytics</a>
+            <a href="/manager/accounts/accounts.html">Accounts</a>
+            <a href="/manager/support/support.html">Support</a>
+        </div>
+
+        <div class="right-nav">
+            <span class="lang">Operations Console</span>
+            <a href="/">Customer Site</a>
+        </div>
+    </nav>
+<!-- This page focuses on one booking so managers can update seats, passenger fields, or delete the booking entirely. -->
 
 <main>
+    <!-- The booking detail form is injected here once the booking payload has loaded successfully. -->
     <div id="booking-content"></div>
+    <!-- Errors during the initial booking fetch are surfaced here instead of rendering partial controls. -->
     <p id="booking-error" style="color:#c0392b;font-weight:600;padding:20px;"></p>
 </main>
 
 <script>
+    /** Reads the booking id from the query string, loads the detail payload, and hands it off to the renderer. */
     const params = new URLSearchParams(window.location.search);
     const bookingId = params.get('bookingId');
     let loadedData = null;
@@ -37,6 +60,7 @@
             document.getElementById('booking-error').textContent = 'Could not load booking.';
         });
 
+    /** Builds the booking summary, passenger editors, seat editor, and delete controls from the loaded API data. */
     function render(data) {
         const container = document.getElementById('booking-content');
         const booking = data.booking.booking;
@@ -48,27 +72,27 @@
                 <h2>Booking Info</h2>
 
                 <div class="user_input_box">
-                    <label>Booking ID</label>
-                    <input type="text" value="${booking.bookingId}" disabled>
+                    <label for="booking-id">Booking ID</label>
+                    <input type="text" id="booking-id" value="${booking.bookingId}" disabled>
                 </div>
 
                 <div class="user_input_box">
-                    <label>Flight ID</label>
-                    <input type="text" value="${booking.flightId}" disabled>
+                    <label for="flight-id">Flight ID</label>
+                    <input type="text" id="flight-id" value="${booking.flightId}" disabled>
                 </div>
 
                 <div class="user_input_box">
-                    <label>Cabin Class</label>
-                    <input type="text" value="${booking.cabin ?? 'N/A'}" disabled>
+                    <label for="cabin-class">Cabin Class</label>
+                    <input type="text" id="cabin-class" value="${booking.cabin ?? 'N/A'}" disabled>
                 </div>
 
                 <div class="user_input_box">
-                    <label>Add-ons</label>
-                    <input type="text" value="${formatAddOns(booking.addOns)}" disabled>
+                    <label for="add-ons">Add-ons</label>
+                    <input type="text" id="add-ons" value="${formatAddOns(booking.addOns)}" disabled>
                 </div>
 
                 <div class="user_input_box">
-                    <label>Seats (comma separated)</label>
+                    <label for="seats-input">Seats (comma separated)</label>
                     <input type="text" id="seats-input" value="${seats.join(', ')}">
                 </div>
 
@@ -91,31 +115,40 @@
                     </div>
 
                     <div class="user_input_box">
-                        <label>First Name</label>
-                        <input type="text" id="p-firstName-${p.passengerId}" value="${p.firstName}">
-                    </div>
-
-                    <div class="user_input_box">
-                        <label>Last Name</label>
-                        <input type="text" id="p-lastName-${p.passengerId}" value="${p.lastName}">
-                    </div>
-
-                    <div class="user_input_box">
-                        <label>Gender</label>
-                        <select id="p-gender-${p.passengerId}">
-                            ${['Male','Female','Other'].map(g =>
-            `<option ${p.gender === g ? 'selected' : ''}>${g}</option>`
-        ).join('')}
+                        <label for="p-title-${p.passengerId}">Title</label>
+                        <select id="p-title-${p.passengerId}">
+                            ${['Mr','Mrs','Miss','Ms','Dr'].map(t =>
+                                `<option ${p.title === t ? 'selected' : ''}>${t}</option>`
+                            ).join('')}
                         </select>
                     </div>
 
                     <div class="user_input_box">
-                        <label>Date of Birth</label>
+                        <label for="p-firstName-${p.passengerId}">First Name</label>
+                        <input type="text" id="p-firstName-${p.passengerId}" value="${p.firstName}">
+                    </div>
+
+                    <div class="user_input_box">
+                        <label for="p-lastName-${p.passengerId}">Last Name</label>
+                        <input type="text" id="p-lastName-${p.passengerId}" value="${p.lastName}">
+                    </div>
+
+                    <div class="user_input_box">
+                        <label for="p-gender-${p.passengerId}">Gender</label>
+                        <select id="p-gender-${p.passengerId}">
+                            ${['Male','Female','Other'].map(g =>
+                                `<option ${p.gender === g ? 'selected' : ''}>${g}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+
+                    <div class="user_input_box">
+                        <label for="p-dob-${p.passengerId}">Date of Birth</label>
                         <input type="text" id="p-dob-${p.passengerId}" value="${p.dateOfBirth}">
                     </div>
 
                     <div class="user_input_box">
-                        <label>Passport Number</label>
+                        <label for="p-passport-${p.passengerId}">Passport Number</label>
                         <input type="text" id="p-passport-${p.passengerId}" value="${p.passportNumber}">
                     </div>
 
@@ -126,7 +159,6 @@
             </div>
 
             <div class="booking_page_1" style="border:1px solid #e74c3c;">
-                <h2>Danger Zone</h2>
                 <button onclick="deleteBooking()" style="padding:9px 24px;background:#c0392b;color:white;border:none;border-radius:30px;cursor:pointer;">Delete Entire Booking</button>
                 <span id="delete-msg" style="margin-left:10px;font-size:13px;"></span>
             </div>
@@ -137,6 +169,7 @@
         `;
     }
 
+    /** Expands the stored add-ons blob into a readable comma-separated label for the disabled booking field. */
     function formatAddOns(raw) {
         if (!raw) return 'None';
         try {
@@ -146,6 +179,7 @@
         } catch { return raw; }
     }
 
+    /** Saves the edited seat list back to the manager seat-update endpoint for this booking. */
     function saveSeats() {
         const raw = document.getElementById('seats-input').value;
         const seats = raw.split(',').map(s => s.trim()).filter(s => s);
@@ -158,6 +192,7 @@
         });
     }
 
+    /** Collects one passenger's editable fields and submits them to the passenger update endpoint. */
     function savePassenger(passengerId) {
         const body = {
             title: document.getElementById(`p-title-${passengerId}`).value,
@@ -176,6 +211,7 @@
         });
     }
 
+    /** Deletes the full booking after confirmation and returns the manager to the booking list view. */
     function deleteBooking() {
         if (!confirm('Delete this entire booking? This cannot be undone.')) return;
 

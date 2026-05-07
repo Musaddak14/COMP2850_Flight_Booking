@@ -15,6 +15,9 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDate
 
+/**
+ * Provides the functions required for the analytics page
+ */
 class ManagerAnalyticsService {
     fun getAnalytics(): ManagerAnalyticsResponse {
         val totalBookings =

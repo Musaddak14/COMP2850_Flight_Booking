@@ -9,18 +9,19 @@
 </head>
 <body>
 
+<!-- Shared customer header for the booking-reference lookup result page. -->
 <header class="header">
     <nav class="top-nav">
         <div class="left-nav">
             <div class="logo">
-                <img src="/images/Logo.png" class="Airline_Logo">
-                <img src="/images/Star_Alliance.jpg" class="Star_Alliance">
+                <img src="/images/Logo.png" class="Airline_Logo" alt="Astraeus Airlines">
+                <img src="/images/Star_Alliance.jpg" class="Star_Alliance" alt="Star Alliance member">
             </div>
         </div>
         <div class="center-nav">
             <a href="/">Home</a>
-            <a href="/manage">Manage</a>
             <a href="/support">Help</a>
+            <a href="/manage">Manage</a>
 
         </div>
         <div class="right-nav">
@@ -30,6 +31,7 @@
     </nav>
 </header>
 
+<!-- Static heading for the retrieved booking details. -->
 <section class="flights-overview-header">
     <div class="flights-overview">
         <h1>Your Booking</h1>
@@ -37,14 +39,25 @@
     </div>
 </section>
 
+<!-- The lookup result is rendered into this container after the booking API responds. -->
 <div id="booking-content"></div>
+<!-- Any lookup or rendering failure is shown here instead of leaving the page blank. -->
 <p id="booking-error" style="max-width:700px;margin:24px auto;padding:0 20px;color:#c0392b;font-weight:600;"></p>
 
 <script>
+    /**
+     * Loads a booking by reference and renders the returned data into read-only booking cards.
+     *
+     * This page is driven entirely by query parameters so the booking-reference
+     * login flow can redirect here directly after a successful lookup.
+     */
     const params = new URLSearchParams(window.location.search);
     const bookingId = params.get('bookingId');
     const lastName = params.get('lastName');
 
+    /**
+     * Escapes API-provided text before it is inserted into HTML templates.
+     */
     function escapeHtml(value) {
         return String(value ?? "")
             .replaceAll("&", "&amp;")
@@ -63,35 +76,35 @@
                 ? data.returnSeatNumbers
                 : (Array.isArray(data.returnSeats) ? data.returnSeats : []);
 
-            // booking info card
+            // Primary booking card summarises the outbound leg, cabin, and selected add-ons.
             container.insertAdjacentHTML('beforeend', `
                 <div class="booking_page_1">
                     <h2>Booking Details</h2>
                     <p class="age-label">Your confirmed booking information</p>
 
                     <div class="user_input_box">
-                        <label>Booking ID</label>
-                        <input type="text" value="${data.bookingId}" disabled>
+                        <label for="booking-id">Booking ID</label>
+                        <input type="text" id="booking-id" value="${data.bookingId}" disabled>
                     </div>
 
                     <div class="user_input_box">
-                        <label>Flight</label>
-                        <input type="text" value="${escapeHtml(data.flightId)}" disabled>
+                        <label for="flight-id">Flight</label>
+                        <input type="text" id="flight-id" value="${escapeHtml(data.flightId)}" disabled>
                     </div>
 
                     <div class="user_input_box">
-                        <label>Seat(s)</label>
-                        <input type="text" value="${escapeHtml(outboundSeats.join(', '))}" disabled>
+                        <label for="seat-numbers">Seat(s)</label>
+                        <input type="text" id="seat-numbers" value="${escapeHtml(outboundSeats.join(', '))}" disabled>
                     </div>
 
                     <div class="user_input_box">
-                        <label>Cabin Class</label>
-                    <input type="text" value="${data.cabin ?? 'N/A'}" disabled>
+                        <label for="cabin-class">Cabin Class</label>
+                        <input type="text" id="cabin-class" value="${data.cabin ?? 'N/A'}" disabled>
                     </div>
 
                     <div class="user_input_box">
-                        <label>Add-ons</label>
-                        <input type="text" value="${formatAddOns(data.addOns)}" disabled>
+                        <label for="add-ons">Add-ons</label>
+                        <input type="text" id="add-ons" value="${formatAddOns(data.addOns)}" disabled>
                     </div>
 
                 </div>
@@ -106,18 +119,21 @@
                         <p class="age-label">Return journey details</p>
 
                         <div class="user_input_box">
-                            <label>Return flight</label>
-                            <input type="text" value="${escapeHtml(data.returnFlightId)}" disabled>
+                            <label for="return-flight">Return flight</label>
+                            <input type="text" id="return-flight" value="${escapeHtml(data.returnFlightId)}" disabled>
                         </div>
 
                         <div class="user_input_box">
-                            <label>Return seat(s)</label>
-                            <input type="text" value="${escapeHtml(returnSeats.length > 0 ? returnSeats.join(', ') : 'Not available')}" disabled>
+                            <label for="return-seats">Return seat(s)</label>
+                            <input type="text" id="return-seats" value="${escapeHtml(returnSeats.length > 0 ? returnSeats.join(', ') : 'Not available')}" disabled>
                         </div>
                     </div>
                 `);
             }
 
+            /**
+             * Formats stored add-ons for display whether they arrive as JSON text or plain text.
+             */
             function formatAddOns(raw) {
                 if (!raw) return 'None';
                 try {
@@ -128,32 +144,34 @@
             }
 
 
-            // one card per passenger
+            // Each passenger is rendered as a separate read-only card beneath the booking summary.
             data.passengers.forEach((name, i) => {
                 container.insertAdjacentHTML('beforeend', `
                     <div class="booking_page_1">
                         <h2>Passenger ${i + 1}</h2>
                         <div class="user_input_box">
-                            <label>Full name</label>
-                            <input type="text" value="${escapeHtml(name)}" disabled>
+                            <label for="passenger-${i}">Full name</label>
+                            <input type="text" id="passenger-${i}" value="${escapeHtml(name)}" disabled>
                         </div>
                     </div>
                 `);
             });
         })
         .catch(() => {
+            // Covers failed lookups, malformed responses, and rendering-time errors.
             document.getElementById('booking-error').textContent = 'Could not load booking details.';
         });
 </script>
 <div class="footer-divider"></div>
+<!-- Shared footer for customer-facing booking and lookup pages. -->
 <footer>
     <a href="/manager" class="footer-left">Operations Console</a>
 
     <div class="footer-center">
         <div class="footer-logos">
-            <img src="/images/Award_1.png">
-            <img src="/images/Award_2.png">
-            <img src="/images/Award_3.png">
+            <img src="/images/Award_1.png" alt="Skytrax World Airline Award">
+            <img src="/images/Award_2.png" alt="Travel Innovation Award">
+            <img src="/images/Award_3.png" alt="Saftey & Reliability Award">
         </div>
         <p class="footer-info">
             © 2026 Astraeus Airlines · All rights reserved
@@ -167,3 +185,4 @@
 
 </body>
 </html>
+

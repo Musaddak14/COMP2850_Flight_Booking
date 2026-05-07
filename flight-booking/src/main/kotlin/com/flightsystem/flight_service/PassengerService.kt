@@ -6,6 +6,10 @@ import com.flightsystem.model.PassengerInput
 import com.flightsystem.model.Passengers
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
+import com.flightsystem.model.*
+import com.flightsystem.model.Passengers.passportNumber
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction

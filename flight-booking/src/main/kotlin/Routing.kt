@@ -14,21 +14,17 @@ import com.flightsystem.flight_service.PromoCodeService
 import com.flightsystem.flight_service.TicketService
 import com.flightsystem.model.AccountStatus
 import com.flightsystem.model.Airports
-import com.flightsystem.model.BookingDetails
 import com.flightsystem.model.Bookings
 import com.flightsystem.model.CheckoutRequest
 import com.flightsystem.model.Flights
 import com.flightsystem.model.Layovers
-import com.flightsystem.model.LoyaltyAccounts
 import com.flightsystem.model.Manager
-import com.flightsystem.model.Passenger
 import com.flightsystem.model.PassengerInput
 import com.flightsystem.model.PaymentRequest
 import com.flightsystem.model.PriceHoldSeats
 import com.flightsystem.model.PriceHolds
-import com.flightsystem.model.SavePassengersRequest
-import com.flightsystem.model.Seats
 import com.flightsystem.model.Users
+
 import createEmptySeatMaps
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
@@ -43,21 +39,43 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
-import kotlinx.serialization.Serializable
 import model.CreateTicketRequest
+import model.UpdateTicketRequest
+
+import io.ktor.server.request.receive
+import io.ktor.server.routing.post
+
+
+import com.flightsystem.model.SavePassengersRequest
+import com.flightsystem.model.Seats
+
+
+
+// imports the flight info
+import io.ktor.http.*
+import kotlinx.serialization.Serializable
+
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import org.jetbrains.exposed.sql.*
+import io.ktor.server.http.content.*
 import model.ManagerSentEmailResponse
 import model.ManagerSentEmails
-import model.UpdateTicketRequest
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
+// import org.h2.api.H2Type.row
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
+import com.flightsystem.model.BookingDetails
+import com.flightsystem.model.LoyaltyAccounts
+import com.flightsystem.model.Passenger
 
 @Serializable
 data class UpdateUserRequest(
@@ -354,18 +372,29 @@ fun Application.configureRouting() {
     val promoCodeService = PromoCodeService()
 
     routing {
+        /**
+         *frontend resources for each page on the webapp, the files for these can be found in src/main/recources
+         */
         staticResources("/styles", "static/user/home/styles")
         staticResources("/scripts", "static/user/home/scripts")
-
         staticResources("/log_in/styles", "static/user/log_in/styles")
         staticResources("/log_in/scripts", "static/user/log_in/scripts")
-
         staticResources("/manager", "static/manager")
         staticResources("/manage-account/styles", "static/user/manage-account/styles")
         staticResources("/manage-account/scripts", "static/user/manage-account/scripts")
         staticResources("/support/styles", "static/user/support/styles")
         staticResources("/support/scripts", "static/user/support/scripts")
         staticResources("/shared", "static/shared")
+        staticResources("/", "static/user/home")
+        staticResources("/log_in", "static/user/log_in")
+        staticResources("/home", "static/user/home")
+        staticResources("/images", "static/Images")
+        staticResources("/loyalty", "static/user/loyalty")
+        staticResources("/manager/flight_view", "static/manager/flight_view")
+        staticResources("/manager/home", "static/manager/home")
+        staticResources("/manager/support", "static/manager/support")
+        staticResources("/manager/edit_bookings", "static/manager/edit_bookings")
+        staticResources("/manager/bookings", "static/manager/bookings")
 
         get("/lounges") {
             call.respondFile(File("src/main/resources/static/user/home/lounges.html"))
@@ -383,6 +412,9 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/user/home/entertainment.html"))
         }
 
+        /**
+         Homepage, HTML file with relevant stylesheet and scripts that begins the paths to every feature on the website
+         */
         get("/") {
             call.respondFile(File("src/main/resources/static/user/home/index.html"))
         }
@@ -406,17 +438,6 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/user/manage-account/index.html"))
         }
 
-        staticResources("/", "static/user/home")
-        staticResources("/log_in", "static/user/log_in")
-        staticResources("/home", "static/user/home")
-        staticResources("/images", "static/Images")
-        staticResources("/loyalty", "static/user/loyalty")
-        staticResources("/manager/flight_view", "static/manager/flight_view")
-        staticResources("/manager/home", "static/manager/home")
-        staticResources("/manager/support", "static/manager/support")
-        staticResources("/manager/edit_bookings", "static/manager/edit_bookings")
-        staticResources("/manager/bookings", "static/manager/bookings")
-
         get("/book") {
             call.respondFile(File("src/main/resources/static/user/book/book.html"))
         }
@@ -439,6 +460,11 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/user/support/support.html"))
         }
 
+        /**
+         * Selects airport rows from the Airports table and maps it to airportData
+         * This data is received by the frontend and used for the airport selection dropdown
+         * menus on the home page
+         */
         get("/api/airports") {
             // get airport data for the drop-down search menu
             val airportData =
@@ -510,9 +536,6 @@ fun Application.configureRouting() {
 
             val flightData =
                 transaction {
-                    // TODO:
-                    // Remove requirement for date in search
-
                     Flights.selectAll().mapNotNull { row ->
 
                         val departure = row[Flights.departureAirport]
@@ -653,10 +676,11 @@ fun Application.configureRouting() {
                 }
             }
         }
-
+        /**
+         * selects flight rows from the Flights table that are today or after
+         * stores them in upcomingFlightData which is then sent to the frontend
+         */
         get("/api/manager/flights") {
-            // TODO:
-            // Add manager only access - requires manager log-in key.
             val upcomingFlightData =
                 transaction {
                     Flights
@@ -673,8 +697,6 @@ fun Application.configureRouting() {
                                 arrivalTime = row[Flights.arrivalTime],
                                 price = row[Flights.price],
                                 length = row[Flights.length],
-                                // TODO:
-                                // Add quantity of tickets sold / still available
                             )
                         }
                 }
@@ -685,6 +707,9 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/manager/flight_view/flight_view.html"))
         }
 
+        /**
+         * receives data from the insert flight form on flight-view and inserts it into the Flights table
+         */
         post("/api/manager/flight_view") {
             val request = call.receive<InsertFlightData>()
 
@@ -707,6 +732,9 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.Created)
         }
 
+        /**
+         * Receives data from the insert flight form on flight-view and inserts it into the Airports table
+         */
         post("/api/manager/airports") {
             val sessionId: String
             val sessionIdFromUrl = call.request.queryParameters["sessionId"]
@@ -738,6 +766,10 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.Created)
         }
 
+        /**
+         * deletes the corresponding flight from the database when the suer clicks delete
+         * on the flight vew page
+         */
         delete("/api/manager/flights/{flightId}") {
             val flightId = call.parameters["flightId"]
 
@@ -960,39 +992,6 @@ fun Application.configureRouting() {
                 ),
             )
         }
-
-        /*
-        post("/api/auth/login") {
-            val request = call.receive<LoginRequest>()
-            val authenticationService = AuthenticationService()
-
-            val result = authenticationService.login(request.email, request.password)
-
-            if (result.isSuccess) {
-                val user = result.getOrThrow()
-
-                val sessionId = authenticationService.createSession(user)
-
-                call.respond(
-                    HttpStatusCode.OK,
-                    LoginResponse(
-                        success = true,
-                        userId = user.userId,
-                        firstName = user.firstName,
-                        lastName = user.lastName,
-                        email = user.email,
-                        role = if (user is Manager) "MANAGER" else "USER",
-                        sessionId = sessionId
-                    )
-                )
-            } else {
-                call.respond(
-                    HttpStatusCode.Unauthorized,
-                    ErrorResponse("Invalid email or password")
-                )
-            }
-        }
-         */
 
         post("/api/auth/register") {
             val request = call.receive<RegisterRequest>()
@@ -1579,7 +1578,10 @@ fun Application.configureRouting() {
             val analytics = ManagerAnalyticsService().getAnalytics()
             call.respond(analytics)
         }
-
+        /**
+         * Validate manager account is accessing
+         * Then select all accounts in the Users table and respond with map of all user rows
+         */
         get("/api/manager/users") {
             val sessionId = call.request.queryParameters["sessionId"]
 
@@ -1621,7 +1623,10 @@ fun Application.configureRouting() {
                 }
             call.respond(HttpStatusCode.OK, managerAccountChanges)
         }
-
+        /**
+         * Validate manager is accessing
+         * marks account as frozen when manager selects it on manage account page
+         */
         post("/api/manager/users/{userId}/freeze") {
             val sessionId = call.request.queryParameters["sessionId"]
 
@@ -1666,6 +1671,9 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.OK)
         }
 
+        /**
+         * Marks account as active again when changed from frozen to active
+         */
         post("/api/manager/users/{userId}/unfreeze") {
             val sessionId = call.request.queryParameters["sessionId"]
 
@@ -1710,6 +1718,9 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.OK)
         }
 
+        /**
+         * Soft deletes accounts, they remain in the database but marked as deleted
+         */
         post("/api/manager/users/{userId}/delete") {
             val sessionId = call.request.queryParameters["sessionId"]
 
@@ -1754,6 +1765,9 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.OK)
         }
 
+        /**
+         * Restores account marked as deleted to active.
+         */
         post("/api/manager/users/{userId}/restore") {
             val sessionId = call.request.queryParameters["sessionId"]
 
@@ -1798,6 +1812,11 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.OK)
         }
 
+        /**
+         * Validates manager access
+         * Receives points and userId from input object on manage accounts page
+         * Increases the points on that users account by the amount specified.
+         */
         post("/api/manager/users/{userId}/points") {
             val sessionId = call.request.queryParameters["sessionId"]
 
