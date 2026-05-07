@@ -4,6 +4,10 @@ package com.flightsystem.model
 import org.jetbrains.exposed.sql.Table
 import kotlinx.serialization.Serializable
 
+/**
+ * stores seat information and defines the seats database table
+ */
+
 @Serializable
 data class Seat(
     val seatId: Int,

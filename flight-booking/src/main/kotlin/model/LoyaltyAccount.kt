@@ -3,6 +3,10 @@ package com.flightsystem.model
 import org.jetbrains.exposed.sql.Table
 import kotlinx.serialization.Serializable
 
+/**
+ * stores loyalty account information and defines the loyalty accounts table
+ */
+
 // one loyalty account per user with a current points balance 
 @Serializable
 data class LoyaltyAccount(

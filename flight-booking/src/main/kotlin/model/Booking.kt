@@ -9,6 +9,10 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * stores booking data and booking related database table definitions
+ */
+
 @Serializable
 data class Booking(
     val bookingId: Int,

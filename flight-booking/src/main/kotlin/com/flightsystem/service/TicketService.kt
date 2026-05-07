@@ -22,11 +22,12 @@ class TicketService (
 ) {
 
 
-
+    // create support ticket
     fun createTicket(request: CreateTicketRequest): TicketResponse {
         return transaction {
             val now = LocalDateTime.now().toString()
 
+            // insert new row in support tickets table
             val insertedRow = SupportTickets.insert {
                 it[bookingId] = request.bookingId
                 it[customerName] = request.customerName
@@ -57,8 +58,10 @@ class TicketService (
         }
     }
 
+    // return all support tickets
     fun getAllTickets(): List<TicketResponse> {
         return transaction {
+            // map db rows into ticket objects
             SupportTickets.selectAll().map { row ->
                 TicketResponse(
                     id = row[SupportTickets.suppTickId],
@@ -77,6 +80,7 @@ class TicketService (
         }
     }
 
+    // update support ticket
     fun updateTicket(ticketId: Int, request: UpdateTicketRequest): TicketResponse? {
         return transaction {
             val now = LocalDateTime.now().toString()
@@ -84,15 +88,18 @@ class TicketService (
             // reuse existing booking logic 
             val bookingService = BookingService()
 
+            // find the ticket
             val row = SupportTickets.selectAll().firstOrNull { resultRow ->
                 resultRow[SupportTickets.suppTickId] == ticketId
             }
 
+            // if ticket doesn't exist -> null
             if (row == null) {
                 null
             } else {
                 val oldStatus = row[SupportTickets.status]
 
+                // check if resolved change booking request includes new seats
                 if (
                     request.status == TicketStatus.RESOLVED &&
                     row[SupportTickets.requestType] == "CHANGE_BOOKING"
@@ -103,11 +110,13 @@ class TicketService (
                         .matches(managerNote)
 
                     if (looksLikeSeatUpdate) {
+                        // split manager note into seat numbers
                         val newSeatNumbers = managerNote
                             .split(",")
                             .map { it.trim() }
                             .filter { it.isNotBlank() }
 
+                        // try update booking seats
                         val bookingUpdated = bookingService.updateBookingSeats(
                             bookingId = row[SupportTickets.bookingId],
                             newSeatNumbers = newSeatNumbers
@@ -118,11 +127,14 @@ class TicketService (
                         }
                     }
                 }
+                // update ticket row
                 SupportTickets.update({ SupportTickets.suppTickId eq ticketId }) {
                     it[status] = request.status
                     it[updatedAt] = now
                     it[managerNote] = request.managerNote
                 }
+
+                // save ticket history if status or note changed
                 if (oldStatus != request.status || request.managerNote != row[SupportTickets.managerNote]) {
                     SupportTicketHistory.insert {
                         it[SupportTicketHistory.ticketId] = ticketId
@@ -134,6 +146,7 @@ class TicketService (
                 }
 
 
+                // send email when ticket is finished
                 if (request.status == TicketStatus.RESOLVED || request.status == TicketStatus.REJECTED) {
                     val email = row[SupportTickets.customerEmail]
                     val name = row[SupportTickets.customerName]
@@ -168,6 +181,7 @@ class TicketService (
                     }
                 }
 
+                // return updated ticket
                 TicketResponse(
                     id = row[SupportTickets.suppTickId],
                     bookingId = row[SupportTickets.bookingId],
@@ -185,10 +199,12 @@ class TicketService (
         }
     }
 
+    // get history for a specific ticket
     fun getTicketHistory(ticketId: Int): List<TicketHistoryResponse> {
         return transaction {
             SupportTicketHistory.selectAll()
                 .where { SupportTicketHistory.ticketId eq ticketId }
+                // map history rows into response object
                 .map { row ->
                 TicketHistoryResponse(
                     historyId = row[SupportTicketHistory.historyId],
@@ -201,6 +217,7 @@ class TicketService (
         }
     }
 
+    // archive tickets instead of deleting it
     fun archiveTicket(ticketId: Int): Boolean {
         return transaction {
             val updatedRows = SupportTickets.update(
@@ -208,6 +225,7 @@ class TicketService (
             ) { row -> 
                 row[SupportTickets.archived] = true 
             }
+            // return true if ticket was updated
             updatedRows > 0
         }
     }

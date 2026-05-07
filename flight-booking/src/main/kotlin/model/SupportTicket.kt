@@ -2,6 +2,10 @@ package model
 
 import org.jetbrains.exposed.sql.Table
 
+/**
+ * stores support ticket data, ticket statuses, and ticket history table definitions
+ */
+
 enum class TicketStatus {
     OPEN,
     IN_PROGRESS,
