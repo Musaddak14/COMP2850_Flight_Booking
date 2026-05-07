@@ -121,7 +121,7 @@ class PaymentService {
      Uses Luhn algorithm to verify card number correctness.
      */
 
-    private fun validateCard(
+    fun validateCard(
         cardNumber: String,
         cardHolderName: String,
         expiryMonth: Int,

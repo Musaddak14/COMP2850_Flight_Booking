@@ -1,13 +1,12 @@
 package com.example.com
 
+import com.flightsystem.flight_service.EncryptionService.generateSalt
+import com.flightsystem.flight_service.EncryptionService.hashPassword
+import com.flightsystem.flight_service.EncryptionService.verifyPassword
+import com.flightsystem.flight_service.LoyaltyService
+import com.flightsystem.flight_service.PaymentService
 import com.flightsystem.model.Payment
 import com.flightsystem.model.PaymentStatus
-import com.flightsystem.model.Payments.refundedAt
-import com.flightsystem.service.EncryptionService.generateSalt
-import com.flightsystem.service.EncryptionService.hashPassword
-import com.flightsystem.service.EncryptionService.verifyPassword
-import com.flightsystem.service.LoyaltyService
-import com.flightsystem.service.PaymentService
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
