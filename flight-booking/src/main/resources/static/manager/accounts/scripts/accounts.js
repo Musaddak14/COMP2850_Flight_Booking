@@ -214,9 +214,14 @@
                                 data-points-input="${userId}"
                                 ${pointsDisabled ? "disabled" : ""}
                             >
-                            <button class="primary-button" type="submit" ${pointsDisabled ? "disabled" : ""}>
-                                Add
-                            </button>
+                            <div class="points-actions">
+                                <button class="primary-button" type="submit" data-points-mode="add" ${pointsDisabled ? "disabled" : ""}>
+                                     Add
+                                </button>
+                                <button class="secondary-button" type="submit" data-points-mode="remove" ${pointsDisabled ? "disabled" : ""}>
+                                    Remove
+                                </button>
+                            </div>
                         </form>
                     </td>
                     <td class="actions-cell">
@@ -375,6 +380,55 @@
         }
     }
 
+    async function removePointsFromAccount(userId, points) {
+        const sessionId = getSessionId();
+
+        if (!sessionId) {
+            setMessage("You must be logged in as a manager to remove points.", "error");
+            return;
+        }
+
+        if (!Number.isInteger(points) || points <= 0) {
+            setMessage("Enter a points value greater than 0.", "error");
+            return;
+        }
+
+        try {
+            busyUserId = userId;
+            renderTable();
+            setMessage("Removing loyalty points.");
+
+            const response = await fetch(`/api/manager/users/${encodeURIComponent(userId)}/points/remove?sessionId=${encodeURIComponent(sessionId)}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ points })
+            });
+
+            const result = await fetchJsonOrText(response);
+            const wasSuccessful = result === true || result === "true" || result?.success === true;
+
+            if (!response.ok || !wasSuccessful) {
+                const errorMessage = typeof result === "string" && result && result !== "false"
+                    ? result
+                    : "Unable to remove points from this account.";
+                setMessage(errorMessage, "error");
+                return;
+            }
+
+            await loadAccounts({
+                keepMessage: true,
+                successMessage: "Points removed successfully."
+            });
+        } catch {
+            setMessage("Unable to remove points right now.", "error");
+        } finally {
+            busyUserId = null;
+            renderTable();
+        }
+    }
+
     /** Search updates the visible subset immediately without needing another API request. */
     if (searchInput) {
         searchInput.addEventListener("input", () => {
@@ -432,13 +486,19 @@
 
             const userId = Number(form.getAttribute("data-user-id"));
             const input = form.querySelector(".points-input");
+            const clickedButton = event.submitter;
+            const mode = clickedButton?.dataset?.pointsMode ?? "add";
             const points = Number(input?.value);
 
             if (!Number.isFinite(userId)) {
                 return;
             }
 
-            addPointsToAccount(userId, points);
+            if (mode === "remove") {
+                removePointsFromAccount(userId, points);
+            } else {
+                addPointsToAccount(userId, points);
+            }
 
             if (input) {
                 input.value = "";

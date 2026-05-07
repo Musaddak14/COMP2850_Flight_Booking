@@ -2,6 +2,7 @@ package com.flightsystem.flight_service
 
 import com.flightsystem.model.LoyaltyAccount
 import com.flightsystem.model.LoyaltyAccounts
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -82,6 +83,43 @@ class LoyaltyService {
             return@transaction true
         }
     }
+
+    fun removePoints(
+        userId: Int,
+        points: Int,
+    ): Boolean {
+        return transaction {
+            if (points <= 0) {
+                return@transaction false
+            }
+            val accountRow =
+                LoyaltyAccounts
+                    .selectAll()
+                    .where {
+                        LoyaltyAccounts.userId eq userId
+                    }.singleOrNull()
+            if (accountRow == null) {
+                return@transaction false
+            }
+            val currentPoints = accountRow[LoyaltyAccounts.loyaltyPoints]
+
+            if (points > currentPoints) {
+                return@transaction false
+            }
+
+            val newBalance = currentPoints - points
+
+            LoyaltyAccounts.update({
+                LoyaltyAccounts.userId eq userId
+            }) {
+                it[loyaltyPoints] = newBalance
+            }
+
+            return@transaction true
+        }
+    }
+
+
 
     // subtract redeemed points only if the account has enough balance
     fun redeemPoints(

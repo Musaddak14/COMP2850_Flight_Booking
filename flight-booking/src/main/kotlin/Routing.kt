@@ -1853,5 +1853,45 @@ fun Application.configureRouting() {
 
             call.respond(HttpStatusCode.OK, success)
         }
+
+        post("/api/manager/users/{userId}/points/remove") {
+            val sessionId = call.request.queryParameters["sessionId"]
+
+            val request = call.receive<AddPointsRequest>()
+
+            if (sessionId == null) {
+                call.respond(HttpStatusCode.BadRequest, "invalid sessionId")
+                return@post
+            }
+
+            val user = authenticationService.validateSession(sessionId)
+
+            if (user == null) {
+                call.respond(HttpStatusCode.BadRequest, "invalid user")
+                return@post
+            }
+
+            if (user !is Manager) {
+                call.respond(HttpStatusCode.BadRequest, "invalid user")
+                return@post
+            }
+
+            val userId = call.parameters["userId"]?.toIntOrNull()
+
+            if (userId == null) {
+                call.respond(HttpStatusCode.BadRequest, "invalid user")
+                return@post
+            }
+
+            val loyaltyService = LoyaltyService()
+
+            val success = loyaltyService.removePoints(userId, request.points)
+
+            call.respond(HttpStatusCode.OK, success)
+        }
+
+
+
+
     }
 }

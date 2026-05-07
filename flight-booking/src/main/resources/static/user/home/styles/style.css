@@ -1536,7 +1536,7 @@ footer { flex-wrap: wrap; gap: 20px; }
 
 .pts small {
     display: block;
-    color: #7a8caa;
+    color: #ffffff;
     font-size: 10px;
 }
 
@@ -1570,7 +1570,7 @@ footer { flex-wrap: wrap; gap: 20px; }
 
 .pk p {
     font-size: 11px;
-    color: #666;
+    color: #000000 !important;
 }
 
 /* badge eg Free or 30% off */
