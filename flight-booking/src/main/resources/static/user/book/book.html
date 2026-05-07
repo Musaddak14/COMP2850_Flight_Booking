@@ -57,7 +57,10 @@
         <label for="filter-select">Filter by:</label>
         <div class="dropdown">
             <select id="filter-select">
-                <option>All flights</option>
+                <option value="all">All flights</option>
+                <option value="morning">Morning (06:00–12:00)</option>
+                <option value="afternoon">Afternoon (12:00–18:00)</option>
+                <option value="evening">Evening (18:00–00:00)</option>
             </select>
         </div>
     </div>
@@ -72,7 +75,12 @@
         <label for="sort-select">Sort by:</label>
         <div class="dropdown">
             <select id="sort-select">
-                <option>Recommended</option>
+                <option value="recommended">Recommended</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="depart-asc">Departure: Earliest</option>
+                <option value="depart-desc">Departure: Latest</option>
+                <option value="duration-asc">Duration: Shortest</option>
             </select>
         </div>
     </div>
@@ -105,6 +113,8 @@
      * lets the user pick a cabin, and then carries the chosen IDs into the
      * passenger-details step through the next page URL or sessionStorage.
      */
+    let allOutboundFlights = [];
+    let allReturnFlights   = [];
     const sessionId = sessionStorage.getItem("sessionId");
     const firstName = sessionStorage.getItem("firstName");
 
@@ -142,7 +152,34 @@
             window.location.href = "/log_in";
         });
     }
+    function applyFilterAndSort() {
+        const filterVal = document.getElementById("filter-select").value;
+        const sortVal   = document.getElementById("sort-select").value;
 
+        function filterFlights(flights) {
+            if (filterVal === "morning")   return flights.filter(f => f.departureTime >= "06:00" && f.departureTime < "12:00");
+            if (filterVal === "afternoon") return flights.filter(f => f.departureTime >= "12:00" && f.departureTime < "18:00");
+            if (filterVal === "evening")   return flights.filter(f => f.departureTime >= "18:00");
+            return flights;
+        }
+
+        function sortFlights(flights) {
+            const copy = [...flights];
+            if (sortVal === "price-asc")   return copy.sort((a, b) => a.price - b.price);
+            if (sortVal === "price-desc")  return copy.sort((a, b) => b.price - a.price);
+            if (sortVal === "depart-asc")  return copy.sort((a, b) => a.departureTime.localeCompare(b.departureTime));
+            if (sortVal === "depart-desc") return copy.sort((a, b) => b.departureTime.localeCompare(a.departureTime));
+            if (sortVal === "duration-asc") return copy.sort((a, b) => a.length - b.length);
+            return copy;
+        }
+
+        const outList = document.getElementById("flight-list");
+        renderFlights(outList, sortFlights(filterFlights(allOutboundFlights)), (flight, cabin) => {
+            // same callback as in loadFlights — you'll need to wire this up
+        });
+    }
+    document.getElementById("filter-select").addEventListener("change", applyFilterAndSort);
+    document.getElementById("sort-select").addEventListener("change",   applyFilterAndSort);
     /**
      * Formats the searched date for the route summary header.
      */
@@ -232,6 +269,7 @@
                         </div>
 
                         <div class="duration">
+                            <small>${flight.date}</small>
                             <small>Direct</small>
                             <div class="line"></div>
                             <small>${hours}h ${minutes}m</small>
@@ -365,6 +403,8 @@
             // Return results are loaded with the route reversed so the user can complete the round trip.
             const returnResponse = await fetch(`/api/flights?from=${to}&to=${from}&date=${returnDate}&passengers=${passengers}`);
             const returnFlights = await returnResponse.json();
+            allReturnFlights = returnFlights;
+
 
             renderFlights(returnList, returnFlights, (flight, cabin) => {
                 selectedReturnFlight = flight;
@@ -392,6 +432,8 @@
             // Main results request for the outbound leg based on the original search parameters.
             const response = await fetch(`/api/flights?from=${from}&to=${to}&date=${date}&passengers=${passengers}`);
             const flights  = await response.json();
+            allOutboundFlights = flights;
+
             const list     = document.getElementById("flight-list");
 
             //gets flight data from an the database endpoint, passing three query parameters — from, to, and date
