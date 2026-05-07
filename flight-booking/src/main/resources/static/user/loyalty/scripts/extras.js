@@ -166,7 +166,9 @@ async function populateAccountCard() {
 
             if (accountNameEl) accountNameEl.textContent = fullName || "Member";
             if (accountTierEl) accountTierEl.textContent = `${data.membershipTier} • ${data.membershipNumber}`;
-            if (accountPointsEl) accountPointsEl.innerHTML = `${data.loyaltyPoints.toLocaleString()}<small>Avios points</small>`;
+            if (accountPointsEl) accountPointsEl.innerHTML = `<span style="color: white;">${data.loyaltyPoints.toLocaleString()}</span><small style="color: white;">Avios points</small>`;
+
+
             if (accountInitialsEl) accountInitialsEl.textContent = getInitials(fullName);
         } catch {
             const fallbackName = `${firstName ?? ""} ${lastName ?? ""}`.trim();
@@ -310,21 +312,33 @@ function saveSelections() {
 
 function updateSelectionsSummary() {
     const lines = document.getElementById("lines");
-    const selections = [];
+    const passengerCount = getPassengerCount();
+    const rows = [];
 
-    if (bookingDraft?.addOns?.baggage) selections.push(bookingDraft.addOns.baggage);
-    if (bookingDraft?.addOns?.meal) selections.push(bookingDraft.addOns.meal);
-    if (bookingDraft?.addOns?.insurance) selections.push(bookingDraft.addOns.insurance);
-    if (Array.isArray(bookingDraft?.addOns?.extras)) {
-        for (let i = 0; i < bookingDraft.addOns.extras.length; i++) {
-            selections.push(bookingDraft.addOns.extras[i]);
-        }
+    const bagInput = document.querySelector('input[name="bag"]:checked');
+    if (bagInput?.dataset.label) {
+        rows.push({ label: bagInput.dataset.label, price: Number(bagInput.dataset.price) || 0 });
     }
 
-    lines.innerHTML = selections.map((selection) => `
+    const mealInput = document.querySelector('input[name="meal"]:checked');
+    if (mealInput?.dataset.label) {
+        rows.push({ label: mealInput.dataset.label, price: Number(mealInput.dataset.price) || 0 });
+    }
+
+    const insInput = document.querySelector('input[name="ins"]:checked');
+    if (insInput?.dataset.label) {
+        rows.push({ label: insInput.dataset.label, price: Number(insInput.dataset.price) || 0 });
+    }
+
+    const extraInputs = document.querySelectorAll('input[type="checkbox"]:checked[data-label]');
+    for (let i = 0; i < extraInputs.length; i++) {
+        rows.push({ label: extraInputs[i].dataset.label, price: Number(extraInputs[i].dataset.price) || 0 });
+    }
+
+    lines.innerHTML = rows.map(({ label, price }) => `
         <div class="sr">
-            <span>${selection}</span>
-            <b>Selected</b>
+            <span>${label}</span>
+            <span>${price > 0 ? `${fmt(price)} × ${passengerCount}` : "—"}</span>
         </div>
     `).join("");
 }

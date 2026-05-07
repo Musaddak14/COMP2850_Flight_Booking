@@ -130,7 +130,7 @@ body {
 
 
 .lang{
-    color: #555;
+    color: #666;
     font-size: clamp(8px, 1.3vw, 16px);
 }
 /* Language text col */
@@ -176,7 +176,7 @@ h1 {
 }
 
 p {
-    color: #555;
+    color: #666;
     margin-bottom: 25px;
 }
 
@@ -242,7 +242,7 @@ footer {
 
 /* right text */
 .footer-right {
-    color: #777;
+    color: #666;
     font-size: 14px;
     white-space: nowrap;
 }
@@ -288,13 +288,57 @@ footer {
 .footer-location,
 .footer-tagline {
     font-size: 12px;
-    color: #888;
+    color: #666;
     margin: 0;
     text-align: center;
 }
 
 /* make tagline slightly stronger */
 .footer-tagline {
-    color: #555;
+    color: #666;
     font-weight: 500;
 }
+
+/* nav stacks centered on small screens  */
+@media (max-width: 700px) {
+    .top-nav {
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: space-between;
+    }
+
+    /* center-nav drops to its own row + centers  */
+    .center-nav {
+        position: static;
+        transform: none;
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    /* hide lang text on small screens  */
+    .lang { display: none; }
+}
+
+/* footer wraps + stacks centered on small screens  */
+footer { flex-wrap: wrap; gap: 20px; }
+
+@media (max-width: 600px) {
+    footer { justify-content: center; }
+    .footer-left, .footer-right { width: 100%; text-align: center; }
+}
+
+.footer-logos { flex-wrap: wrap; gap: 15px; }
+.footer-logos img { height: clamp(30px, 6vw, 50px); }
+
+/* page container shrinks padding on small screens  */
+@media (max-width: 600px) {
+    .page-container {
+        margin: 20px 16px;
+        padding: 20px;
+    }
+}
+
+/* box sizing fix so padding dont overflow  */
+*, *::before, *::after { box-sizing: border-box; }

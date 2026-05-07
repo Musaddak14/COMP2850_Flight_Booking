@@ -1438,6 +1438,47 @@ footer { flex-wrap: wrap; gap: 20px; }
     grid-template-columns: 1fr 260px;
     gap: 16px;
 }
+/* mobile fixes for extras page  */
+@media (max-width: 900px) {
+
+    /* wrap grid stacks - cards on top, summary below  */
+    .wrap {
+        grid-template-columns: 1fr;
+        padding: 0 16px;
+    }
+
+    /* unstick the summary so it sits under the cards  */
+    .sum {
+        position: static;
+    }
+
+    /* perks row goes vertical on mobile  */
+    .perks {
+        grid-template-columns: 1fr;
+    }
+
+    /* perks borders - bottom only when stacked  */
+    .pk {
+        border-right: none;
+        border-bottom: 1px solid #e4e4e4;
+    }
+
+    .pk:last-child {
+        border-bottom: none;
+    }
+
+    /* member card top - allow wrappin if name + points dont fit  */
+    .lt {
+        flex-wrap: wrap;
+    }
+
+    /* points pushed under on small screens  */
+    .pts {
+        margin-left: 0;
+        text-align: left;
+        width: 100%;
+    }
+}
 
 /* ----------------------------- */
 /* MEMBER CARD - TOP BLUE BAR */
@@ -1578,7 +1619,7 @@ footer { flex-wrap: wrap; gap: 20px; }
 /* gold discount label in heading */
 .sh .gs {
     font-size: 11px;
-    color: #c8a830;
+    color: #604f00;
     font-weight: 400;
     margin-left: auto;
 }
@@ -1641,7 +1682,7 @@ label.row input {
 
 /* strikethrough original price */
 .rp s {
-    color: #bbb;
+    color: #666;
     font-weight: 400;
     font-size: 11px;
     margin-right: 2px;
@@ -1649,7 +1690,7 @@ label.row input {
 
 /* gold discounted price */
 .gld {
-    color: #c8a830;
+    color: #8a6200;
 }
 
 /* ----------------------------- */
