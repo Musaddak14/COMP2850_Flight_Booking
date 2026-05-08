@@ -2,6 +2,10 @@ package model
 
 import kotlinx.serialization.Serializable
 
+/**
+ * stores request and response models used for support ticket operations
+ */
+
 @Serializable
 data class CreateTicketRequest(
     val bookingId: Int,

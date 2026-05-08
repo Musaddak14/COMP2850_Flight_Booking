@@ -2,6 +2,10 @@ package com.flightsystem.model
 
 import org.jetbrains.exposed.sql.Table
 
+/**
+ * stores temporary price hold data and defines related seat linking tables and models
+ */
+
 data class PriceHold(
     val holdId: Int,
     val userId: Int,

@@ -4,6 +4,10 @@ import com.flightsystem.model.Users.userId
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 
+/**
+ * stores booking data and booking related database table definitions
+ */
+
 @Serializable
 data class Booking(
     val bookingId: Int,

@@ -3,6 +3,10 @@ package com.flightsystem.model
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 
+/**
+ * stores seat selections linked to bookings and defines the booking seats table
+ */
+
 @Serializable
 data class BookingSeat(
     val bookingId: Int,

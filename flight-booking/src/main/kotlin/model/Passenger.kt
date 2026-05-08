@@ -3,6 +3,10 @@ package com.flightsystem.model
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 
+/**
+ * stores passenger information and defines passenger related request models and database tables
+ */
+
 // represents 1 passenger linked to a booking
 @Serializable
 data class Passenger(
